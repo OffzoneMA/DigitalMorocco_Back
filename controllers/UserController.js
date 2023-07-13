@@ -1,7 +1,5 @@
-router.route("/").post(UserController.addUser)
+const AuthService = require("../services/AuthService");
 
-
-const AuthService = require("../services/User/AuthService");
 const addUser = async (req, res) => {
   try {
     const result = await AuthService.createUser(req.body);
