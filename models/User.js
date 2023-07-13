@@ -8,7 +8,13 @@ const UserSchema = new mongoose.Schema({
     },
     password: String,
     dateCreated:Date,
-    lastLogin:Date
+    lastLogin:Date,
+    approved:
+            {
+        type: String,
+        enum: ['accepted', 'pending','rejected'],
+        default: 'pending'
+    }
 })
 
 
