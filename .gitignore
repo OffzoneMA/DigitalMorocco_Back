@@ -1,0 +1,10 @@
+
+# dependencies
+/node_modules
+
+# local env files
+.env
+
+/jest-html-reporters-attach
+
+jest_html_reporters.html
