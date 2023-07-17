@@ -7,19 +7,20 @@ const MemberSchema = new mongoose.Schema({
         unique: true,
         required: true
     },
-
     name: {
         type: String,
         unique: true,
         required: true
     },
-
     description: String,
     image: String,
+    rc: String,
+    ice: String,
     document: [{
         name: String,
         link: String,
-    }]
+    }],
+    dateCreated: { type: Date, default: Date.now },
 
 })
 

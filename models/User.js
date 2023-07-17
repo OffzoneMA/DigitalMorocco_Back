@@ -6,20 +6,19 @@ const UserSchema = new mongoose.Schema({
         type: String,
         unique: true
     },
-    role:{
+    role: {
         type: String,
-        enum: ['Admin', 'Partner','Investor','Member'],
-       
+        enum: ['Admin', 'Partner', 'Investor', 'Member']
     },
     password: String,
-    dateCreated:Date,
-    lastLogin:Date,
+    dateCreated: { type: Date, default: Date.now },
+    lastLogin: Date,
     approved:
-            {
+    {
         type: String,
-        enum: ['accepted', 'pending','rejected'],
+        enum: ['accepted', 'pending'],
         default: 'pending'
-    }
+    },
 
 })
 

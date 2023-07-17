@@ -4,16 +4,10 @@ const jwt = require("jsonwebtoken")
 const salt = 10
 
 
-const createUser = async (u) => {
-    const password = u.password;
-    const hashedPassword = await bcrypt.hash(password, salt)
-    u.password = hashedPassword
-    return await User.create(u)
-}
 
 
 
-const SignInUser = async (u) => {
+const signInUser = async (u) => {
     const user = await User.findOne({ email: u.email });
     if (user) {
         const cmp = await bcrypt.compare(u.password, user.password);
@@ -36,4 +30,4 @@ const generateAccessToken = async (user) => {
 }
 
 
-module.exports = { createUser, SignInUser }
+module.exports = {  signInUser }

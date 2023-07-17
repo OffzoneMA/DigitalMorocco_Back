@@ -1,7 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors")
-const userouter = require("./routes/userouter")
+const Userouter = require("./routes/Userouter")
+const Adminrouter = require("./routes/Adminrouter")
 
 const app = express();
 
@@ -18,7 +19,8 @@ mongoose.connect(process.env.MONGO_URL)
     })
     .catch(err => console.log(err))
 
-app.use("/users", userouter)
+app.use("/users", Userouter)
+app.use("/admin", Adminrouter)
 
 
 
