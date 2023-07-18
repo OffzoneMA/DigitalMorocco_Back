@@ -13,19 +13,20 @@ const PartnerSchema = new mongoose.Schema({
         unique: true,
         required: true
     },
-    
+
     description: String,
     image: String,
     country: String,
     subscription: [{
         type: mongoose.Types.ObjectId,
         ref: "Subscription"
-        
     }],
     document: [{
         name: String,
         link: String,
-    }]
+    }],
+    num_rc: String,
+    dateCreated: { type: Date, default: Date.now },
 
 })
 
