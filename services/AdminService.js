@@ -1,12 +1,13 @@
-const Member = require('../models/Member');
-const Investor = require('../models/Investor');
-const Partner = require('../models/Partner');
+const User = require('../models/User');
+const bcrypt = require('bcrypt');
+const salt = 10
+
 
 const createAdmin = async (u) => {
     const password = u.password;
     const hashedPassword = await bcrypt.hash(password, salt)
     u.password = hashedPassword
-    u.roles = "Admin"
+    u.role = "Admin"
     u.approved = "accepted"
     try {
         return await User.create(u)

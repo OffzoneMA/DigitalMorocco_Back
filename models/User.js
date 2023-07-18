@@ -8,7 +8,7 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['Admin', 'Partner', 'Investor', 'Member']
+        enum: ['Admin', 'partner', 'investor', 'member']
     },
     password: String,
     dateCreated: { type: Date, default: Date.now },
@@ -16,7 +16,7 @@ const UserSchema = new mongoose.Schema({
     approved:
     {
         type: String,
-        enum: ['accepted', 'pending'],
+        enum: ['accepted', 'pending','rejected'],
         default: 'pending'
     },
 

@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors")
 const Userouter = require("./routes/Userouter")
 const Adminrouter = require("./routes/Adminrouter")
+const Requestouter = require("./routes/Requestrouter")
 
 const app = express();
 
@@ -21,6 +22,7 @@ mongoose.connect(process.env.MONGO_URL)
 
 app.use("/users", Userouter)
 app.use("/admin", Adminrouter)
+app.use("/requests", Requestouter)
 
 
 

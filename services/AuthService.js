@@ -26,7 +26,7 @@ const signInUser = async (u) => {
 
 
 const generateAccessToken = async (user) => {
-    return jwt.sign({ user: { _id: user._id, email: user.email } }, process.env.ACCESS_TOKEN_SECRET)
+    return jwt.sign({ user: { _id: user._id, email: user.email, role: user.role } }, process.env.ACCESS_TOKEN_SECRET)
 }
 
 

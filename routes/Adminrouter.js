@@ -1,9 +1,10 @@
 const express = require("express")
 const router = express.Router()
-const AuthConroller = require("../controllers/AuthConroller")
+const AuthController = require("../controllers/AuthController")
 const AdminController = require("../controllers/AdminController")
 
-router.route("/").post(AdminController.addAdmin)
+router.route("/").post(AuthController.AuthenticateAdmin,AdminController.addAdmin)
+
 
 
 module.exports = router
