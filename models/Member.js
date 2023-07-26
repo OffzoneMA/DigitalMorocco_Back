@@ -14,8 +14,7 @@ const MemberSchema = new mongoose.Schema({
     },
     description: String,
     image: String,
-    rc: String,
-    ice: String,
+    rc_ice: String,
     document: [{
         name: String,
         link: String,

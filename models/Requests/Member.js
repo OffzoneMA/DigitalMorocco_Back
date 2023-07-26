@@ -5,8 +5,7 @@ const MemberRequestSchema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: "User",
     },
-    rc: String,
-    ice: String,
+    rc_ice: String,
     dateCreated: { type: Date, default: Date.now },
 })
 

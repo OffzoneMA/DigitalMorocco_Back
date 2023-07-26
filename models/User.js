@@ -13,11 +13,11 @@ const UserSchema = new mongoose.Schema({
     password: String,
     dateCreated: { type: Date, default: Date.now },
     lastLogin: Date,
-    approved:
+    status:
     {
         type: String,
-        enum: ['accepted', 'pending','rejected'],
-        default: 'pending'
+        enum: ['accepted', 'pending', 'rejected', 'NotVerified', 'Verified'],
+        default: 'NotVerified'
     },
 
 })

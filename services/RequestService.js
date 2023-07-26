@@ -1,19 +1,29 @@
 const Member = require('../models/Requests/Member');
 const Investor = require('../models/Requests/Investor');
 const Partner = require('../models/Requests/Partner');
-const UserService = require('../services/UserService');
+const User = require('../models/User');
+
+const uploadService = require('./FileService')
 
 
-const createRequest = async (data, id, role) => {
-    const request = { ...data, user: id }
+const createRequest = async (data, id, role,file) => {
     if (role == "investor") {
-        return await Investor.create(request)
+        return await Investor.create({ linkedin_link: data?.linkedin_link, user: id })
+            .then(async(res) => await User.findByIdAndUpdate(id, {status:'pending'}))
     }
     else if (role == "partner") {
-        return await Partner.create(request)
+        return await Partner.create({ num_rc: data?.num_rc, user: id })
+            .then(async (res) => await User.findByIdAndUpdate(id, { status: 'pending' }))
     }
     else if (role == "member") {
-        return await Member.create(request)
+       if (!file) {    
+           throw new Error( 'File required' );
+        }
+     return  await Member.create({user: id }).then(async(member)=>{
+            const fileLink = await uploadService.uploadFile(file, "Members/" + id + "", "rc_ice")
+         await Member.findByIdAndUpdate(member._id, { rc_ice: fileLink })
+         .then(async (res) => await User.findByIdAndUpdate(id, { status: 'pending' }))
+        })
     }
 }
 

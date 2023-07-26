@@ -15,10 +15,10 @@ const InvestorSchema = new mongoose.Schema({
     description: String,
     image: String,
     linkedin_link: String,
-    invested_startups: {
+    invested_startups:[ {
         type: mongoose.Types.ObjectId,
         ref: "Member"
-    },
+    }],
     document: [{
         name: String,
         link: String,

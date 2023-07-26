@@ -7,7 +7,7 @@ const SubscriptionSchema = new mongoose.Schema({
         required: true
     },
     description: String,
-
+    credits:Number
 })
 
 
