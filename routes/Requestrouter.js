@@ -14,9 +14,4 @@ router.route("/").get(requestController.getRequests)
 
 
 
-//For testing
-router.route("/request/:id").delete(requestController.rejectRequest)
-
-
-
 module.exports = router

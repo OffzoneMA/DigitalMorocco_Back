@@ -8,7 +8,7 @@ const createAdmin = async (u) => {
     const hashedPassword = await bcrypt.hash(password, salt)
     u.password = hashedPassword
     u.role = "Admin"
-    u.approved = "accepted"
+    u.status = "accepted"
     try {
         return await User.create(u)
     }

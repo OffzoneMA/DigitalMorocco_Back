@@ -1,32 +1,36 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors")
-const Userouter = require("./routes/Userouter")
-const Adminrouter = require("./routes/Adminrouter")
-const Requestouter = require("./routes/Requestrouter")
-
-const app = express();
+const cors = require("cors");
+const upload = require('./middelware/multer');
+const EmailVerification = require('./services/EmailVerification');
 
 require("dotenv").config();
-app.use(express.json())
-app.use(cors());
 
+
+
+const Userouter = require("./routes/Userouter");
+const Adminrouter = require("./routes/Adminrouter");
+const Requestouter = require("./routes/Requestrouter");
+
+// Connect to MongoDB
 mongoose.connect(process.env.MONGO_URL)
     .then(result => {
+        // Start the server after successful database connection
         app.listen(process.env.PORT, () => {
-            console.log("Server is running ! ");
-        })
-        
+            console.log("Server is running!");
+        });
     })
-    .catch(err => console.log(err))
+    .catch(err => console.log(err));
 
-app.use("/users", Userouter)
-app.use("/admin", Adminrouter)
-app.use("/requests", Requestouter)
+const app = express();
+app.use(express.json());
+app.use(cors());
+
+// Routes
+app.use("/users", Userouter);
+app.use("/admin", Adminrouter);
+app.use("/requests", Requestouter);
 
 
 
-
-
-module.exports=app
-
+module.exports = app;
