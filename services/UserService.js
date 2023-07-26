@@ -13,6 +13,9 @@ const getUsers = async (args) => {
 }
 
 const createUser = async (u) => {
+    if(await User.findOne({email:u.email})){
+        throw new Error('Email already exists!')
+    }
     const password = u.password;
     const hashedPassword = await bcrypt.hash(password, salt)
     u.password = hashedPassword
@@ -32,7 +35,13 @@ const getUserByID = async (id) => {
 }
 
 const approveUser = async (id,role) => {
+    if (!(await User.findById(id))) {
+        throw new Error('User doesn t exist !')
+    }
     const request = await requestServive.getRequestByUserId(id, role);
+    if (!request) {
+        throw new Error('Request not found!');
+    }
     const updateRequest = { status: 'accepted' };
     if (request.rc_ice) {
         updateRequest.rc_ice = request.rc_ice;

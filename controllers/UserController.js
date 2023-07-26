@@ -18,8 +18,8 @@ const addUser = async (req, res) => {
     const result = await UserService.createUser(req.body);
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json(error);
-  }
+    res.status(400).json({ error: error.message }); 
+   }
 };
 
 const complete_signup = async (req, res) => {
@@ -51,7 +51,7 @@ const sendVerification = async (req, res) => {
 
 const confirmVerification = async (req, res) => {
   try {
-    const result = await EmailVerificationService.VerifyUser(req.params.userid);
+    const result = await EmailVerificationService.VerifyUser(req.params.userid,req.query.token);
     res.redirect(`${process.env.FRONTEND_URL}/user_verified`);
   } catch (error) {
     res.status(500).json(error);
@@ -70,7 +70,7 @@ const approveUser = async (req, res) => {
       res.status(400).json({ error: "Missing role" });
     }
   } catch (error) {
-    res.status(500).json(error);
+    res.status(400).json({ error: error.message }); 
   }
 };
 
@@ -84,7 +84,7 @@ const rejectUser = async (req, res) => {
   res.status(400).json({ error: "Missing role " });
 }
   } catch (error) {
-    res.status(500).json(error);
+    res.status(400).json({ error: error.message }); 
   }
 };
 

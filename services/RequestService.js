@@ -9,11 +9,11 @@ const uploadService = require('./FileService')
 const createRequest = async (data, id, role,file) => {
     if (role == "investor") {
         return await Investor.create({ linkedin_link: data?.linkedin_link, user: id })
-            .then(async(res) => await User.findByIdAndUpdate(id, {status:'pending'}))
+            .then(async(res) => await User.findByIdAndUpdate(id, {status:'pending',role}))
     }
     else if (role == "partner") {
         return await Partner.create({ num_rc: data?.num_rc, user: id })
-            .then(async (res) => await User.findByIdAndUpdate(id, { status: 'pending' }))
+            .then(async (res) => await User.findByIdAndUpdate(id, { status: 'pending', role }))
     }
     else if (role == "member") {
        if (!file) {    
@@ -22,7 +22,7 @@ const createRequest = async (data, id, role,file) => {
      return  await Member.create({user: id }).then(async(member)=>{
             const fileLink = await uploadService.uploadFile(file, "Members/" + id + "", "rc_ice")
          await Member.findByIdAndUpdate(member._id, { rc_ice: fileLink })
-         .then(async (res) => await User.findByIdAndUpdate(id, { status: 'pending' }))
+             .then(async (res) => await User.findByIdAndUpdate(id, { status: 'pending', role }))
         })
     }
 }

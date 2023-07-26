@@ -9,7 +9,7 @@ const upload = require('../middelware/multer');
 router.route("/").post(UserController.addUser).get(UserController.getUsers)
 router.route("/complete_signup/:userid").post(UserService.checkUserVerification,upload.single('rc_ice'), UserController.complete_signup)
 router.route("/sendverify/:userid").get(UserController.sendVerification)
-router.route("/confim_verification/:userid").get(UserController.confirmVerification)
+router.route("/confirm_verification/:userid").get(UserController.confirmVerification)
 router.route("/UserInfo").get(AuthController.userInfo)
 router.route("/User/:id").delete(UserController.deleteUser)
 router.route("/Login").post(AuthController.login)
