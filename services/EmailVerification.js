@@ -5,15 +5,17 @@ const User = require('../models/User');
 
 async function sendVerificationEmail(userId) {
     try {
-        const user = UserService.getUserByID(userId)
+
+        const user = await UserService.getUserByID(userId)
+
         const token = generateVerificationToken(userId);
 
-        const verificationLink = `${process.env.BACKEND_URL}/confim_verification/${userId}?token=${token}`;
-
+        const verificationLink = `${process.env.BACKEND_URL}/users/confirm_verification/${userId}?token=${token}`;
         const messageId = await EmailService.sendEmail(user.email, 'Account Verification', `Click the following link to verify your account: ${verificationLink}`,false)
        
         return messageId
     } catch (err) {
+        console.log(err)
         throw err
     }
 }
@@ -36,7 +38,7 @@ function generateVerificationToken(userId) {
         userId: userId,
         exp: Math.floor(Date.now() / 1000) + (60 * 60)
     };
-    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn });
+    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET);
 }
 
 function isTokenExpired(decoded) {
