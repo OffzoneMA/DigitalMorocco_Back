@@ -2,6 +2,9 @@ const jwt = require('jsonwebtoken');
 const EmailService = require('./EmailService');
 const UserService = require('./UserService');
 const User = require('../models/User');
+const ejs = require('ejs');
+const fs = require('fs');
+const path = require('path');
 
 async function sendVerificationEmail(userId) {
     try {
@@ -11,7 +14,13 @@ async function sendVerificationEmail(userId) {
         const token = generateVerificationToken(userId);
 
         const verificationLink = `${process.env.BACKEND_URL}/users/confirm_verification/${userId}?token=${token}`;
-        const messageId = await EmailService.sendEmail(user.email, 'Account Verification', `Click the following link to verify your account: ${verificationLink}`,false)
+        // Read the EJS template file
+        const templatePath = path.join(__dirname,'..','templates', 'verification_template.ejs');
+        const templateContent = fs.readFileSync(templatePath, 'utf-8');
+    // Compile the EJS template with user-specific data
+        const compiledTemplate = ejs.compile(templateContent);
+        const htmlContent = compiledTemplate({ email:user.email, verificationLink });
+        const messageId = await EmailService.sendEmail(user.email, 'Account Verification',htmlContent ,true)
        
         return messageId
     } catch (err) {
