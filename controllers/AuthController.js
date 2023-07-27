@@ -10,7 +10,7 @@ const login=async(req,res)=>{
       const user = await AuthService.signInUser(req.body)
         res.status(200).json(user)
     }catch(error){
-      res.status(404).json({ error: "Sign In failed" })
+      res.status(404).json({ message: error.message})
     }
 
 }
@@ -22,11 +22,11 @@ const userInfo=async(req,res)=>{
     if (token == null) return  res.status(200).json(null)
   
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => { 
-      const result = await UserService.getUserByID(user.user._id);
+      const result = await UserService.getUserByID(user?.user?._id);
       res.status(200).json(result)
     })
   }catch(error){
-    res.status(404).json({ error: "No user found" })
+    res.status(404).json({ message: "No user found" })
   }
 
 }
@@ -36,7 +36,7 @@ const authenticateToken=async(req,res,next)=>{
     if (token == null) return res.sendStatus(401)
   
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => { 
-      if (err) return res.status(401).json({ error: "Invalid or expired token." });
+      if (err) return res.status(401).json({ message: "Invalid or expired token." });
       req.user = user.user
       next()
     })

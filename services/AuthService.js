@@ -22,12 +22,22 @@ const signInUser = async (u) => {
     }
 }
 
-
-
-
-const generateAccessToken = async (user) => {
-    return jwt.sign({ user: { _id: user._id, email: user.email, role: user.role } }, process.env.ACCESS_TOKEN_SECRET)
+const createUser = async (u) => {
+    if (await User.findOne({ email: u.email })) {
+        throw new Error('Email already exists!')
+    }
+    const password = u.password;
+    const hashedPassword = await bcrypt.hash(password, salt)
+    u.password = hashedPassword
+     const user=await User.create(u)
+     const accessToken = await generateAccessToken(user)
+     return { accessToken: accessToken, user: user }
 }
 
 
-module.exports = {  signInUser }
+const generateAccessToken = async (user) => {
+    return jwt.sign({ user: { _id: user._id, email: user.email } }, process.env.ACCESS_TOKEN_SECRET)
+}
+
+
+module.exports = { signInUser, createUser }

@@ -19,7 +19,7 @@ async function sendVerificationEmail(userId) {
         const templateContent = fs.readFileSync(templatePath, 'utf-8');
     // Compile the EJS template with user-specific data
         const compiledTemplate = ejs.compile(templateContent);
-        const htmlContent = compiledTemplate({ email:user.email, verificationLink });
+        const htmlContent = compiledTemplate({ em: user.email, verificationLink });
         const messageId = await EmailService.sendEmail(user.email, 'Account Verification',htmlContent ,true)
        
         return messageId
@@ -33,7 +33,7 @@ async function VerifyUser(userId,token) {
     try {
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         if (userId == decoded.userId && !isTokenExpired(decoded) ){
-            return await User.findByIdAndUpdate(userId, { status:'Verified'})
+            return await User.findByIdAndUpdate(userId, { status:'verified'})
         }
     } catch (err) {
         throw err

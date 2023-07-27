@@ -16,8 +16,8 @@ const UserSchema = new mongoose.Schema({
     status:
     {
         type: String,
-        enum: ['accepted', 'pending', 'rejected', 'NotVerified', 'Verified'],
-        default: 'NotVerified'
+        enum: ['accepted', 'pending', 'rejected', 'notVerified', 'verified'],
+        default: 'notVerified'
     },
 
 })

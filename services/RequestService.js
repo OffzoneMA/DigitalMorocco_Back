@@ -22,7 +22,8 @@ const createRequest = async (data, id, role,file) => {
      return  await Member.create({user: id }).then(async(member)=>{
             const fileLink = await uploadService.uploadFile(file, "Members/" + id + "", "rc_ice")
          await Member.findByIdAndUpdate(member._id, { rc_ice: fileLink })
-             .then(async (res) => await User.findByIdAndUpdate(id, { status: 'pending', role }))
+             .then(async (res) => {
+                await User.findByIdAndUpdate(id, { status: 'pending', role })})
         })
     }
 }

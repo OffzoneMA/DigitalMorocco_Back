@@ -12,15 +12,7 @@ const getUsers = async (args) => {
     return await User.find().skip(args.start ? args.start : null).limit(args.qt ? args.qt : null);
 }
 
-const createUser = async (u) => {
-    if(await User.findOne({email:u.email})){
-        throw new Error('Email already exists!')
-    }
-    const password = u.password;
-    const hashedPassword = await bcrypt.hash(password, salt)
-    u.password = hashedPassword
-    return await User.create(u)
-}
+
 
 
 
@@ -69,7 +61,7 @@ async function checkUserVerification(req, res, next) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        if (user.status =='NotVerified') {
+        if (user.status =='notVerified') {
             return res.status(403).json({ error: 'User is not verified' });
         }
 
@@ -80,4 +72,4 @@ async function checkUserVerification(req, res, next) {
 }
 
 
-module.exports = { createUser, getUserByID, deleteUser, approveUser, rejectUser, getUsers, checkUserVerification }
+module.exports = { getUserByID, deleteUser, approveUser, rejectUser, getUsers, checkUserVerification }

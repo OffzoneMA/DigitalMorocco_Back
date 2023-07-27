@@ -5,13 +5,12 @@ const { ref, uploadBytesResumable, getDownloadURL,  deleteObject } = require('fi
 const uploadFile = async (file,path,filename) => {
 
     try {
-        const storageRef = ref(storage, `${path}/${filename}`); //        const storageRef = ref(storage, `files/${req.file.originalname + "       " + dateTime}`);
+        const storageRef = ref(storage, `${path}/${filename}`); //const storageRef = ref(storage, `files/${req.file.originalname + "       " + dateTime}`);
         const metadata = {
             contentType: file.mimetype,
         };
         const snapshot = await uploadBytesResumable(storageRef, file.buffer, metadata);
         const downloadURL = await getDownloadURL(snapshot.ref);
-
         return downloadURL
     } catch (error) {
         throw new Error('Error uploading file');

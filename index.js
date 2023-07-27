@@ -1,8 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const upload = require('./middelware/multer');
-const EmailVerification = require('./services/EmailVerification');
 
 require("dotenv").config();
 
@@ -11,6 +9,7 @@ require("dotenv").config();
 const Userouter = require("./routes/Userouter");
 const Adminrouter = require("./routes/Adminrouter");
 const Requestouter = require("./routes/Requestrouter");
+const storage = require("./config/FireStorage");
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URL)

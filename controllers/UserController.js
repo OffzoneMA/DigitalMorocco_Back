@@ -1,8 +1,11 @@
 const UserService = require("../services/UserService");
 const RequestService = require("../services/RequestService");
 const EmailVerificationService = require("../services/EmailVerification");
+const AuthService = require("../services/AuthService");
 
-
+const ejs = require('ejs');
+const fs = require('fs');
+const path = require('path');
 
 const getUsers = async (req, res) => {
   try {
@@ -15,10 +18,10 @@ const getUsers = async (req, res) => {
 
 const addUser = async (req, res) => {
   try { 
-    const result = await UserService.createUser(req.body);
+    const result = await AuthService.createUser(req.body);
     res.status(200).json(result);
   } catch (error) {
-    res.status(400).json({ error: error.message }); 
+    res.status(400).json({ message: error.message }); 
    }
 };
 
@@ -32,7 +35,7 @@ const complete_signup = async (req, res) => {
       res.status(200).json(request);
     }
     else {
-      res.status(400).json({ error: "Missing role" });
+      res.status(400).json({ message: "Missing role" });
     }
   } catch (error) {
     res.status(500).json(error);
@@ -52,7 +55,8 @@ const sendVerification = async (req, res) => {
 const confirmVerification = async (req, res) => {
   try {
     const result = await EmailVerificationService.VerifyUser(req.params.userid,req.query.token);
-    res.redirect(`${process.env.FRONTEND_URL}/user_verified`);
+    //res.redirect(`${process.env.FRONTEND_URL}/user_verified`);
+    res.redirect(`https://github.com/`);
   } catch (error) {
     res.status(500).json(error);
   }
@@ -67,10 +71,10 @@ const approveUser = async (req, res) => {
       res.status(200).json(result);
     }
     else {
-      res.status(400).json({ error: "Missing role" });
+      res.status(400).json({ message: "Missing role" });
     }
   } catch (error) {
-    res.status(400).json({ error: error.message }); 
+    res.status(400).json({ message: error.message }); 
   }
 };
 
@@ -81,10 +85,10 @@ const rejectUser = async (req, res) => {
     res.status(200).json(result);
   }
     else {
-  res.status(400).json({ error: "Missing role " });
+      res.status(400).json({ message: "Missing role " });
 }
   } catch (error) {
-    res.status(400).json({ error: error.message }); 
+    res.status(400).json({ message: error.message }); 
   }
 };
 
