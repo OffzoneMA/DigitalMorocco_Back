@@ -32,13 +32,13 @@ const createRequest = async (data, id, role,file) => {
 
 const getRequests = async (args) => {
     if (args.type == "investor") {
-        return await Investor.find().skip(args.start ? args.start : null).limit(args.qt ? args.qt : null);
+        return await Investor.find().populate({ path: 'user', select: 'email' }).skip(args.start ? args.start : null).limit(args.qt ? args.qt : 8);
     }
     else if (args.type == "partner") {
-        return await Partner.find().skip(args.start ? args.start : null).limit(args.qt ? args.qt : null);
+        return await Partner.find().populate({ path: 'user', select: 'email' }).skip(args.start ? args.start : null).limit(args.qt ? args.qt : 8);
     }
     else if (args.type == "member") {
-        return await Member.find().skip(args.start ? args.start : null).limit(args.qt ? args.qt : null);
+        return await Member.find().populate({ path: 'user', select: 'email' }).skip(args.start ? args.start : null).limit(args.qt ? args.qt : 8);
     }
 }
 
