@@ -9,6 +9,11 @@ const salt = 10
 
 const signInUser = async (u) => {
     const user = await User.findOne({ email: u.email });
+    if(!user.password){
+        if(user.googleId)  { throw new Error("This email is registered through Google.");}
+        if (user.linkedinId)  { throw new Error("This email is registered through Linkedin.");}
+        else { throw new Error("This email is registered through another provider."); }
+     }
     if (user) {
         const cmp = await bcrypt.compare(u.password, user.password);
         if (cmp) {
@@ -35,9 +40,12 @@ const createUser = async (u) => {
 }
 
 
-const generateAccessToken = async (user) => {
-    return jwt.sign({ user: { _id: user._id, email: user.email } }, process.env.ACCESS_TOKEN_SECRET)
+ const generateAccessToken = async (user) => {
+    const payload = user.role
+  ? { user: { _id: user._id, email: user.email, role: user.role } }
+  : { user: { _id: user._id, email: user.email } };
+     return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET)
 }
 
 
-module.exports = { signInUser, createUser }
+module.exports = { signInUser, createUser, generateAccessToken }

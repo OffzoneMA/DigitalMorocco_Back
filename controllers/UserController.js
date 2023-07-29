@@ -29,8 +29,8 @@ const complete_signup = async (req, res) => {
   try {
     let userId = req.params.userid
     let file = req?.file ? req?.file : null
-    let data = isJsonString(req.body) ? JSON.parse(req.body) : req.body
-    if (data?.role == "investor" || data?.role == "member" || data?.role == "partner") {
+    let data = isJsonString(req?.body) ? JSON.parse(req?.body) : req?.body
+   if (data?.role == "investor" || data?.role == "member" || data?.role == "partner") {
      const request= await RequestService.createRequest(data, userId, data?.role, file);
       res.status(200).json(request);
     }
@@ -55,8 +55,7 @@ const sendVerification = async (req, res) => {
 const confirmVerification = async (req, res) => {
   try {
     const result = await EmailVerificationService.VerifyUser(req.params.userid,req.query.token);
-    //res.redirect(`${process.env.FRONTEND_URL}/user_verified`);
-    res.redirect(`https://github.com/`);
+    res.redirect(`${process.env.FRONTEND_URL}/Complete_SignUp`);
   } catch (error) {
     res.status(500).json(error);
   }
