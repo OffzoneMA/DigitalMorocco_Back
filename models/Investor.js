@@ -7,11 +7,7 @@ const InvestorSchema = new mongoose.Schema({
         unique: true,
         required: true
     },
-    name: {
-        type: String,
-        unique: true,
-        required: true
-    },
+    name:  String,
     description: String,
     image: String,
     linkedin_link: String,

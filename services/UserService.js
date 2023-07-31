@@ -1,12 +1,10 @@
 const User = require('../models/User');
-const Member = require('../models/Requests/Member');
-const Investor = require('../models/Requests/Investor');
-const Partner = require('../models/Requests/Partner');
+const MemberService = require('../services/MemberService');
+const PartnerService = require('../services/PartnerService');
+const InvestorService = require('../services/InvestorService');
 const requestServive = require('../services/RequestService');
 const FileService = require('../services/FileService');
 
-const bcrypt = require('bcrypt');
-const salt = 10
 
 const getUsers = async (args) => {
     return await User.find().skip(args.start ? args.start : null).limit(args.qt ? args.qt : null);
@@ -34,12 +32,12 @@ const approveUser = async (id,role) => {
     if (!request) {
         throw new Error('Request not found!');
     }
-    const updateRequest = { status: 'accepted' };
-    if (request.rc_ice) {
-        updateRequest.rc_ice = request.rc_ice;
-    }
+
+    role == "member" && await MemberService.CreateMember({ owner: id, rc_ice: request?.rc_ice })
+    role == "partner" && await PartnerService.CreatePartner({ owner: id, num_rc: request?.num_rc })
+    role == "investor" && await InvestorService.CreateInvestor({ owner: id, linkedin_link: request?.linkedin_link })
     await requestServive.removeRequestByUserId(id,role)
-    return await User.findByIdAndUpdate(id, updateRequest)
+    return await User.findByIdAndUpdate(id, { status: 'accepted' })
 }
 
 const rejectUser = async (id, role) => {

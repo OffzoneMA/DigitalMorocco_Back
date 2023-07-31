@@ -7,11 +7,7 @@ const MemberSchema = new mongoose.Schema({
         unique: true,
         required: true
     },
-    name: {
-        type: String,
-        unique: true,
-        required: true
-    },
+    name: String,
     description: String,
     image: String,
     rc_ice: String,
