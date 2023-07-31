@@ -9,7 +9,7 @@ const salt = 10
 
 const signInUser = async (u) => {
     const user = await User.findOne({ email: u.email });
-    if(!user.password){
+    if (user &&!user?.password){
         if(user.googleId)  { throw new Error("This email is registered through Google.");}
         if (user.linkedinId)  { throw new Error("This email is registered through Linkedin.");}
         else { throw new Error("This email is registered through another provider."); }
