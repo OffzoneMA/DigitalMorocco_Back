@@ -29,6 +29,67 @@ async function sendVerificationEmail(userId) {
     }
 }
 
+async function sendUnderReviewEmail(userId) {
+    try {
+
+        const user = await UserService.getUserByID(userId)
+
+
+        // Read the EJS template file
+        const templatePath = path.join(__dirname, '..', 'templates', 'accountUnderReview_template.ejs');
+        const templateContent = fs.readFileSync(templatePath, 'utf-8');
+        // Compile the EJS template with user-specific data
+        const compiledTemplate = ejs.compile(templateContent);
+        const htmlContent = compiledTemplate({ Page: `${process.env.FRONTEND_URL}/Complete_SignUp` });
+        const messageId = await EmailService.sendEmail(user.email, 'Acknowledgement of Your Request - Under Review', htmlContent, true)
+        return messageId
+    } catch (err) {
+        console.log(err)
+        throw err
+    }
+}
+
+async function sendAcceptedEmail(userId) {
+    try {
+
+        const user = await UserService.getUserByID(userId)
+
+
+        // Read the EJS template file
+        const templatePath = path.join(__dirname, '..', 'templates', 'accountAccepted_template.ejs');
+        const templateContent = fs.readFileSync(templatePath, 'utf-8');
+        // Compile the EJS template with user-specific data
+        const compiledTemplate = ejs.compile(templateContent);
+        const htmlContent = compiledTemplate({ Page: `${process.env.FRONTEND_URL}/Complete_SignUp` });
+        const messageId = await EmailService.sendEmail(user.email, 'Your Request Has Been Approved!', htmlContent, true)
+        return messageId
+    } catch (err) {
+        console.log(err)
+        throw err
+    }
+}
+
+async function sendRejectedEmail(userId) {
+    try {
+
+        const user = await UserService.getUserByID(userId)
+
+
+        // Read the EJS template file
+        const templatePath = path.join(__dirname, '..', 'templates', 'accountRejected_template.ejs');
+        const templateContent = fs.readFileSync(templatePath, 'utf-8');
+        // Compile the EJS template with user-specific data
+        const compiledTemplate = ejs.compile(templateContent);
+        const htmlContent = compiledTemplate({ Page: `${process.env.FRONTEND_URL}/Complete_SignUp` });
+        const messageId = await EmailService.sendEmail(user.email, 'Rejection of Your Request - Reason Provided', htmlContent, true)
+        return messageId
+    } catch (err) {
+        console.log(err)
+        throw err
+    }
+}
+
+
 async function VerifyUser(userId,token) {
     try {
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
@@ -62,4 +123,4 @@ function isTokenExpired(decoded) {
     }
 }
 
-module.exports = { generateVerificationToken, isTokenExpired, sendVerificationEmail, VerifyUser }
+module.exports = { generateVerificationToken, isTokenExpired, sendVerificationEmail, VerifyUser, sendRejectedEmail,sendAcceptedEmail,sendUnderReviewEmail }
