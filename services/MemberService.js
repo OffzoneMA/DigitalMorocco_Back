@@ -8,10 +8,14 @@ const getMemberById = async (id) => {
     return await Member.findById(id);
 }
 
-const memberByNameExists = async (name) => {
-    return await Member.exists({ name: name })
-
+const getMemberByName= async (name) => {
+    return await Member.find({name:name})
 }
 
 
-module.exports = { CreateMember, getMemberById, memberByNameExists }
+const memberByNameExists = async (name) => {
+    return await Member.exists({ name: name })
+}
+
+
+module.exports = { CreateMember, getMemberById, memberByNameExists,getMemberByName }
