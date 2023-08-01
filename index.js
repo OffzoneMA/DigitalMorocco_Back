@@ -7,6 +7,7 @@ const Userouter = require("./routes/Userrouter");
 const MemberRouter = require("./routes/MemberRouter");
 const Adminrouter = require("./routes/Adminrouter");
 const Requestouter = require("./routes/Requestrouter");
+const SubscriptionRouter = require("./routes/SubscriptionRouter");
 const session = require('express-session');
 const { passport } = require("./config/passport-setup");
 
@@ -21,7 +22,7 @@ mongoose.connect(process.env.MONGO_URL)
         // Start the server after successful database connection
         app.listen(process.env.PORT, () => {
             console.log("Server is running!");
-           app.use(passport.initialize());
+            app.use(passport.initialize());
             app.use(passport.session());
         });
     })
@@ -45,6 +46,7 @@ app.use("/users", Userouter);
 app.use("/members", MemberRouter);
 app.use("/admin", Adminrouter);
 app.use("/requests", Requestouter);
+app.use("/subscriptions", SubscriptionRouter);
 
 
 
