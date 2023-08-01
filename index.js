@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 const Userouter = require("./routes/Userrouter");
+const MemberRouter = require("./routes/MemberRouter");
 const Adminrouter = require("./routes/Adminrouter");
 const Requestouter = require("./routes/Requestrouter");
 const session = require('express-session');
@@ -41,6 +42,7 @@ app.use(
 
 // Routes
 app.use("/users", Userouter);
+app.use("/members", MemberRouter);
 app.use("/admin", Adminrouter);
 app.use("/requests", Requestouter);
 
