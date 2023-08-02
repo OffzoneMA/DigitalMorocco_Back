@@ -2,7 +2,7 @@ const passport = require('passport');
 const LinkedInStrategy = require('passport-linkedin-oauth2').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/User'); 
-const {generateAccessToken} = require('../services/AuthService'); 
+const {generateAccessToken,generateUserInfos} = require('../services/AuthService'); 
 
 
 
@@ -18,8 +18,8 @@ passport.use(
             try {
                 const existingUser = await User.findOne({ googleId: profile.id }) ;
                 if (existingUser) {
-                    const token = await generateAccessToken(existingUser)
-                    return done(null, { user: existingUser, auth: token });
+                    const result = await generateUserInfos(existingUser)
+                    return done(null, { user: result.user, auth: result.accessToken });
                 }
                 const existingEmail = await User.findOne({ email: profile.emails[0].value })
                 if (existingEmail){
@@ -35,8 +35,8 @@ passport.use(
 
                 });
 
-               const token = await generateAccessToken(newUser)
-                return done(null, { user: newUser, auth: token });
+                const result = await generateUserInfos(newUser)
+                return done(null, { user: result.user, auth: result.accessToken });
             } catch (error) {
                 const errorMessage = error.message;
                 return done(null, false, { error: errorMessage });
@@ -60,8 +60,8 @@ passport.use(
                 const existingUser = await User.findOne({ linkedinId: profile.id }) ;
 
                 if (existingUser) {
-                    const token = await generateAccessToken(existingUser)
-                    return done(null, { user: existingUser, auth: token });
+                    const result = await generateUserInfos(existingUser)
+                    return done(null, { user: result.user, auth: result.accessToken });
                 }
 
 
@@ -79,8 +79,8 @@ passport.use(
 
                 });
 
-                const token = await generateAccessToken(newUser)
-                return done(null, { user: newUser, auth: token });
+                 const result = await generateUserInfos(newUser)
+                return done(null, { user: result.user, auth: result.accessToken });
             } catch (error) {
                 const errorMessage = error.message;
                 return done(null, false, { error: errorMessage });
