@@ -18,6 +18,14 @@ const getByName = async (req, res) => {
     }
 };
 
+const subUser = async (req, res) => {
+    try {
+        const result = await MemberService.SubscribeMember(req.memberId, req.params.subid);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: error.message }); 
+    }
+};
 
 
-module.exports = { addStartup, getByName }
+module.exports = { addStartup, getByName,subUser }

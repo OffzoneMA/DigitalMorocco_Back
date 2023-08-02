@@ -7,6 +7,7 @@ const MemberSchema = new mongoose.Schema({
         unique: true,
         required: true
     },
+    
     name: String,
     description: String,
     image: String,
@@ -17,6 +18,21 @@ const MemberSchema = new mongoose.Schema({
     }],
     dateCreated: { type: Date, default: Date.now },
 
+    subscriptionId: {
+        type: mongoose.Types.ObjectId,
+        ref: "Subscription",
+    },
+    credits:{
+        type:Number,
+        default:0
+    },
+    subStatus:
+    {
+        type: String,
+        enum: ['notActive', 'active'],
+        default: 'notActive'
+    },
+    expireDate:Date
 })
 
 
