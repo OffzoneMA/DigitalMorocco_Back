@@ -33,6 +33,11 @@ const SubscribeMember = async (memberId,subid) => {
     //Expire Date calculation
     const expiry_date = new Date();
     expiry_date.setDate(expiry_date.getDate() + subscription?.duration);
+    const member = await getMemberById(memberId)
+    if (member?.subStatus =="active"){
+        throw new Error('Your Subscription is still active !')
+
+    }
     return await Member.findByIdAndUpdate(memberId,{
             subscriptionId: subscription._id,
             subStatus:"active",
