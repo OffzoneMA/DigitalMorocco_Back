@@ -26,6 +26,7 @@ async function sendVerificationEmail(userId) {
     });
 
     const htmlContent = compiledTemplate({
+      title,
       body: htmlContent2,
     });
 
@@ -51,6 +52,7 @@ async function sendUnderReviewEmail(userId) {
       const compiledTemplate = ejs.compile(commonTemplateContent);
 
       const htmlContent = compiledTemplate({
+        title,
         body: underReviewContent,
       });
 
@@ -77,6 +79,7 @@ async function sendUnderReviewEmail(userId) {
   
       const compiledTemplate = ejs.compile(commonTemplateContent);
       const htmlContent = compiledTemplate({
+        title,
         body: acceptanceContent, 
       });
   
@@ -103,6 +106,7 @@ async function sendUnderReviewEmail(userId) {
   
       const compiledTemplate = ejs.compile(commonTemplateContent);
       const htmlContent = compiledTemplate({
+        title,
         body: rejectionContent, 
       });
   
