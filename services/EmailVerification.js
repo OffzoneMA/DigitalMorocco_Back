@@ -12,20 +12,21 @@ async function sendVerificationEmail(userId) {
     const title = 'Account Verification';
     const verificationLink = `${process.env.BACKEND_URL}/users/confirm_verification/${userId}?token=${generateVerificationToken(userId)}`;
 
-    // Read the common email template
     const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
     const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
 
-    // Read the specific body for account verification
     const accountVerificationPath = path.join(__dirname, '..', 'templates', 'accountVerification.ejs');
     const accountVerificationContent = fs.readFileSync(accountVerificationPath, 'utf-8');
 
-    // Compile the common template with the account verification body
     const compiledTemplate = ejs.compile(commonTemplateContent);
-    const htmlContent = compiledTemplate({
-      title,
-      body: accountVerificationContent, // Replace body with the specific content
+    const compiledTemplate2 = ejs.compile(accountVerificationContent);
+
+    const htmlContent2 = compiledTemplate2({
       verificationLink,
+    });
+
+    const htmlContent = compiledTemplate({
+      body: htmlContent2,
     });
 
     const messageId = await EmailService.sendEmail(user.email, title, htmlContent, true);
@@ -41,20 +42,18 @@ async function sendUnderReviewEmail(userId) {
       const user = await UserService.getUserByID(userId);
       const title = 'Acknowledgement of Your Request - Under Review';
   
-      // Read the common email template
       const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
       const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
   
-      // Read the specific body for under review email
       const underReviewPath = path.join(__dirname, '..', 'templates', 'accountUnderReview.ejs');
       const underReviewContent = fs.readFileSync(underReviewPath, 'utf-8');
   
-      // Compile the common template with the under review body
       const compiledTemplate = ejs.compile(commonTemplateContent);
+
       const htmlContent = compiledTemplate({
-        title,
-        body: underReviewContent, // Replace body with the specific content
+        body: underReviewContent,
       });
+
   
       const messageId = await EmailService.sendEmail(user.email, title, htmlContent, true);
       return messageId;
@@ -70,19 +69,15 @@ async function sendUnderReviewEmail(userId) {
       const user = await UserService.getUserByID(userId);
       const title = 'Your Request Has Been Approved!';
   
-      // Read the common email template
       const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
       const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
   
-      // Read the specific body for acceptance email
       const acceptancePath = path.join(__dirname, '..', 'templates', 'accountAccepted.ejs');
       const acceptanceContent = fs.readFileSync(acceptancePath, 'utf-8');
   
-      // Compile the common template with the acceptance body
       const compiledTemplate = ejs.compile(commonTemplateContent);
       const htmlContent = compiledTemplate({
-        title,
-        body: acceptanceContent, // Replace body with the specific content
+        body: acceptanceContent, 
       });
   
       const messageId = await EmailService.sendEmail(user.email, title, htmlContent, true);
@@ -100,19 +95,15 @@ async function sendUnderReviewEmail(userId) {
       const user = await UserService.getUserByID(userId);
       const title = 'Rejection of Your Request - Reason Provided';
   
-      // Read the common email template
       const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
       const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
   
-      // Read the specific body for rejection email
       const rejectionPath = path.join(__dirname, '..', 'templates', 'accountRejected.ejs');
       const rejectionContent = fs.readFileSync(rejectionPath, 'utf-8');
   
-      // Compile the common template with the rejection body
       const compiledTemplate = ejs.compile(commonTemplateContent);
       const htmlContent = compiledTemplate({
-        title,
-        body: rejectionContent, // Replace body with the specific content
+        body: rejectionContent, 
       });
   
       const messageId = await EmailService.sendEmail(user.email, title, htmlContent, true);
