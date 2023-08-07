@@ -10,6 +10,7 @@ const Requestouter = require("./routes/Requestrouter");
 const SubscriptionRouter = require("./routes/SubscriptionRouter");
 const session = require('express-session');
 const { passport } = require("./config/passport-setup");
+const { checkSubscriptionStatus } = require("./services/MemberService");
 
 
 const app = express();
@@ -24,6 +25,10 @@ mongoose.connect(process.env.MONGO_URL)
             console.log("Server is running!");
             app.use(passport.initialize());
             app.use(passport.session());
+
+            //Checking the subscription expire date (For all members) every 24Hr
+            const taskInterval = 24 * 60 * 60 * 1000; 
+            setInterval(checkSubscriptionStatus, taskInterval);
         });
     })
     .catch(err => console.log(err));

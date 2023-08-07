@@ -90,4 +90,4 @@ const checkMemberSubscription = async (memberId) => {
     }
 };
 
-module.exports = { CreateMember, getMemberById, memberByNameExists, getMemberByName, SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus }
+module.exports = { checkSubscriptionStatus,CreateMember, getMemberById, memberByNameExists, getMemberByName, SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus }
