@@ -56,7 +56,12 @@ const checkSubscriptionStatus = async () => {
 
         for (const Member of activeSubscribers) {
             if (Member.expireDate < current_date) {
-                await Member.findByIdAndUpdate(Member._id, { subStatus: 'notActive' });
+                await Member.findByIdAndUpdate(Member._id, {
+                    subscriptionId: null,
+                    expireDate: null,
+                    subStatus: 'notActive'
+
+                });
             }
         }
     } catch (err) {
