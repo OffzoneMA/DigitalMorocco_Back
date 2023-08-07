@@ -3,6 +3,7 @@ const LinkedInStrategy = require('passport-linkedin-oauth2').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/User'); 
 const {generateAccessToken,generateUserInfos} = require('../services/AuthService'); 
+const UserLogService = require('../services/UserLogService'); 
 
 
 
@@ -19,6 +20,7 @@ passport.use(
                 const existingUser = await User.findOne({ googleId: profile.id }) ;
                 if (existingUser) {
                     const result = await generateUserInfos(existingUser)
+                    const log = await UserLogService.createUserLog('Account Signin', existingUser._id);
                     return done(null, { user: result.user, auth: result.accessToken });
                 }
                 const existingEmail = await User.findOne({ email: profile.emails[0].value })
@@ -36,6 +38,8 @@ passport.use(
                 });
 
                 const result = await generateUserInfos(newUser)
+                const log = await UserLogService.createUserLog('Account Initial Signup', newUser._id);
+                const log2 = await UserLogService.createUserLog('Verified', newUser._id);
                 return done(null, { user: result.user, auth: result.accessToken });
             } catch (error) {
                 const errorMessage = error.message;
@@ -61,6 +65,7 @@ passport.use(
 
                 if (existingUser) {
                     const result = await generateUserInfos(existingUser)
+                    const log = await UserLogService.createUserLog('Account Signin', existingUser._id);
                     return done(null, { user: result.user, auth: result.accessToken });
                 }
 
@@ -80,6 +85,8 @@ passport.use(
                 });
 
                  const result = await generateUserInfos(newUser)
+                const log = await UserLogService.createUserLog('Account Initial Signup', newUser._id);
+                const log2 = await UserLogService.createUserLog('Verified', newUser._id);
                 return done(null, { user: result.user, auth: result.accessToken });
             } catch (error) {
                 const errorMessage = error.message;
