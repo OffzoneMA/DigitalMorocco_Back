@@ -1,14 +1,15 @@
 const UserService=require('../services/UserService');
 const jwt=require("jsonwebtoken")
 const MemberService = require('../services/MemberService');
-
-const AuthService=require('../services/AuthService');
+const AuthService = require('../services/AuthService');
+const UserLogService =require('../services/UserLogService');
 
 
 
 const login=async(req,res)=>{
     try{ 
       const user = await AuthService.signInUser(req.body)
+      const log = await UserLogService.createUserLog('Account Signin', user.user._id);
         res.status(200).json(user)
     }catch(error){
       res.status(404).json({ message: error.message})
