@@ -11,6 +11,14 @@ const getAllLogs= async (req, res) => {
     }
 }
 
+const getAllLogsByUser = async (req, res) => {
+    try {
+        const result = await UserLogService.getAllUsersLogsByUser(req.userId,req.query);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+}
 
 
-module.exports = { getAllLogs }
+module.exports = { getAllLogs, getAllLogsByUser }
