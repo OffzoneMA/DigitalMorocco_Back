@@ -84,7 +84,6 @@ const AuthenticateUser = async (req, res, next) => {
 }
 
 const AuthenticateMember = async (req, res, next) => {
-
   const authHeader = req.headers['authorization']
   const token = authHeader && authHeader.split(' ')[1]
   if (token == null) return res.sendStatus(401)
@@ -94,6 +93,7 @@ const AuthenticateMember = async (req, res, next) => {
     const member = await MemberService.getMemberByUserId(userMember?._id)
 
     if (member) {
+
       req.memberId = member._id
       next()
     }

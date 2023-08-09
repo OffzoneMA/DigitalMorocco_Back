@@ -9,6 +9,7 @@ const Adminrouter = require("./routes/Adminrouter");
 const Requestouter = require("./routes/Requestrouter");
 const SubscriptionRouter = require("./routes/SubscriptionRouter");
 const UserLogRouter = require("./routes/UserLogRouter");
+const SubscriptionLogRouter = require("./routes/SubscriptionLogRouter");
 const session = require('express-session');
 const { passport } = require("./config/passport-setup");
 const { checkSubscriptionStatus } = require("./services/MemberService");
@@ -54,6 +55,7 @@ app.use("/admin", Adminrouter);
 app.use("/requests", Requestouter);
 app.use("/subscriptions", SubscriptionRouter);
 app.use("/logs", UserLogRouter);
+app.use("/Sublogs", SubscriptionLogRouter);
 
 
 
