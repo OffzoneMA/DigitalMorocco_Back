@@ -12,6 +12,11 @@ const UserLogSchema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: "User",
     },
+    envStatus: {
+        type: String,
+        enum: ['dev', 'prod'],
+        default: process.env.NODE_ENV === 'development' ? 'dev' : 'prod',
+    },
 })
 
 

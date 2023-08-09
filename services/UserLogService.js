@@ -12,11 +12,20 @@ const createUserLog = async (type,owner) => {
 }
 
 const getAllUsersLogs = async (args) => {
-        return await UserLog.find().sort({ dateCreated: 'desc' }).populate({ path: 'owner', select: '_id email role' }).skip(args.start ? args.start : null).limit(args.qt ? args.qt : 8);
+        return await UserLog.find({
+                $or: [
+                        { envStatus: 'prod' },
+                        { envStatus: null }
+                ]
+        }).sort({ dateCreated: 'desc' }).populate({ path: 'owner', select: '_id email role' }).skip(args.start ? args.start : null).limit(args.qt ? args.qt : 8);
 }
 
 const getAllUsersLogsByUser = async (userId,args) => {
-        return await UserLog.find({ owner: userId }).sort({ dateCreated: 'desc' }).populate({ path: 'owner', select: '_id email role' }).skip(args.start ? args.start : null).limit(args.qt ? args.qt : 8);
+        return await UserLog.find({
+                owner: userId, $or: [
+                        { envStatus: 'prod' },
+                        { envStatus: null }
+                ] }).sort({ dateCreated: 'desc' }).populate({ path: 'owner', select: '_id email role' }).skip(args.start ? args.start : null).limit(args.qt ? args.qt : 8);
 }
 
 
