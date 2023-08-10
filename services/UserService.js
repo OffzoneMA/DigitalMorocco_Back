@@ -19,6 +19,10 @@ const deleteUser = async (id) => {
     return await User.deleteOne({ _id: id })
 }
 
+const updateUser = async (userId,user) => {
+    return await User.findByIdAndUpdate(userId, user)
+}
+
 
 const getUserByID = async (id) => {
     return await User.findById(id);
@@ -70,4 +74,4 @@ async function checkUserVerification(req, res, next) {
 }
 
 
-module.exports = { getUserByID, deleteUser, approveUser, rejectUser, getUsers, checkUserVerification }
+module.exports = { getUserByID, deleteUser, approveUser, rejectUser, getUsers, checkUserVerification, updateUser }

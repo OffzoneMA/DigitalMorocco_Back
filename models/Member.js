@@ -8,16 +8,33 @@ const MemberSchema = new mongoose.Schema({
         required: true
     },
     
-    name: String,
+    companyName: String,
+    legalName: String,
+    website: String,
+    contactEmail: String,
+    address: String,
+    country: String,
+    city: String,
+    state: String,
+    companyType: String,
+    taxNbr: String,
+    corporateNbr: String,
     description: String,
-    image: String,
-    rc_ice: String,
-    document: [{
+    logo: String,
+    listEmployee: [{
+        firstName: String,
+        lastName: String,
+        role: String,
+    }],
+    legalDocument: [{
         name: String,
         link: String,
     }],
+
+    rc_ice: String,
     dateCreated: { type: Date, default: Date.now },
 
+    //Current subscription infos
     subscriptionId: {
         type: mongoose.Types.ObjectId,
         ref: "Subscription",

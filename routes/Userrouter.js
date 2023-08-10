@@ -8,6 +8,8 @@ const upload = require('../middelware/multer');
 const {passport} = require("../config/passport-setup")
 
 router.route("/").post(UserController.addUser).get(UserController.getUsers)
+router.route("/uspdateUser").put(AuthController.AuthenticateUser,UserController.updateUser)
+
 router.route("/complete_signup/:userid").post(UserService.checkUserVerification,upload.single('rc_ice'), UserController.complete_signup)
 
 

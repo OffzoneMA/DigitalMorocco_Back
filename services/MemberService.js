@@ -1,9 +1,26 @@
 const Member = require("../models/Member");
+const ProjectSchema = require("../models/Project");
 const SubscriptionService = require("../services/SubscriptionService");
 const SubscriptionLogService = require("../services/SubscriptionLogService");
 
 const CreateMember = async (member) => {
     return await Member.create(member);
+}
+
+
+const createEnterprise = async (memberId,Enterprise) => {
+    return await Member.findByIdAndUpdate(memberId, Enterprise);
+}
+
+const createProject = async (memberId, Project) => {
+    const member = await Member.findById(memberId)
+    if (!member) {
+        throw new Error('Member doesn t exist !')
+    }
+    if (!member?.companyName) {
+        throw new Error('You must create an Entreprise !')
+    }
+    return await ProjectSchema.create(Project)
 }
 
 const getMemberById = async (id) => {
@@ -125,4 +142,4 @@ const checkMemberSubscription = async (memberId) => {
     }
 };
 
-module.exports = { checkSubscriptionStatus,CreateMember, getMemberById, memberByNameExists, getMemberByName, SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus }
+module.exports = { createProject,checkSubscriptionStatus, CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus }

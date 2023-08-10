@@ -3,7 +3,7 @@ const router = express.Router()
 const MemberController = require("../controllers/MemberController")
 const AuthController = require("../controllers/AuthController")
 
-router.route("/").post(MemberController.addStartup)
+router.route("/").post(AuthController.AuthenticateMember,MemberController.createEnterprise)
 
 router.route("/name/:name").get(MemberController.getByName)
 
