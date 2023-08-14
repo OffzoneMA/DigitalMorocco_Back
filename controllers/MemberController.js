@@ -4,7 +4,10 @@ const UserService = require('../services/UserService');
 
 const createEnterprise = async (req, res) => {
     try {
-        const result = await MemberService.createEnterprise(req.memberId,req.body);
+        let data = isJsonString(req?.body.infos) ? JSON.parse(req?.body.infos) : req?.body.infos
+        const result = await MemberService.createEnterprise(req.memberId, data, req?.files.files, req?.files.logo);
+        const member = await MemberService.getMemberById(req.memberId);
+        const log = await UserLogService.createUserLog('Enterprise Edited', member.owner);
         res.status(200).json(result);
     } catch (error) {
         res.status(500).json({ message: error.message }); 
@@ -40,7 +43,14 @@ const subUser = async (req, res) => {
     }
 };
 
-
+function isJsonString(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
 
 
 
