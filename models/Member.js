@@ -19,16 +19,16 @@ const MemberSchema = new mongoose.Schema({
     companyType: String,
     taxNbr: String,
     corporateNbr: String,
-    description: String,
     logo: String,
     listEmployee: [{
         firstName: String,
         lastName: String,
-        role: String,
     }],
     legalDocument: [{
-        name: String,
-        link: String,
+        name: {type:String},
+       link: {type:String},
+       date: { type: Date, default: Date.now },
+        type: {type:String},
     }],
 
     rc_ice: String,
