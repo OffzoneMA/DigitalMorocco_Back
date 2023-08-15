@@ -1,6 +1,7 @@
 const UserService=require('../services/UserService');
 const jwt=require("jsonwebtoken")
 const MemberService = require('../services/MemberService');
+const ProjectService = require('../services/ProjectService');
 const AuthService = require('../services/AuthService');
 const UserLogService =require('../services/UserLogService');
 
@@ -25,9 +26,18 @@ const userInfo=async(req,res)=>{
   
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => { 
       const u = await UserService.getUserByID(user?.user?._id);
-      let role
-      role = u.role == "member" && await MemberService.getMemberByUserId(u._id)
-      const result = { ...u._doc, "member": role }
+
+      let data
+
+      if (u?.role == "member") {
+        let member = await MemberService.getMemberByUserId(u._id)
+        data = member?._doc ? member?._doc :member
+        if (member?.companyName) {
+          let project = await ProjectService.getProjectByMemberId(member._id)
+          if (project) data={...data,"project":project}
+        }
+      }
+      const result = u?._doc ? { ...u._doc, [u?.role]: data } : { ...u, [u?.role]: data }
       res.status(200).json(result)
     })
   }catch(error){

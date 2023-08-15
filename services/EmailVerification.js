@@ -33,7 +33,6 @@ async function sendVerificationEmail(userId) {
     const messageId = await EmailService.sendEmail(user.email, title, htmlContent, true);
     return messageId;
   } catch (err) {
-    console.log(err);
     throw err;
   }
 }
@@ -60,7 +59,6 @@ async function sendUnderReviewEmail(userId) {
       const messageId = await EmailService.sendEmail(user.email, title, htmlContent, true);
       return messageId;
     } catch (err) {
-      console.log(err);
       throw err;
     }
   }
@@ -86,7 +84,6 @@ async function sendUnderReviewEmail(userId) {
       const messageId = await EmailService.sendEmail(user.email, title, htmlContent, true);
       return messageId;
     } catch (err) {
-      console.log(err);
       throw err;
     }
   }
@@ -113,7 +110,6 @@ async function sendUnderReviewEmail(userId) {
       const messageId = await EmailService.sendEmail(user.email, title, htmlContent, true);
       return messageId;
     } catch (err) {
-      console.log(err);
       throw err;
     }
   }

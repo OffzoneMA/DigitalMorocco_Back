@@ -47,7 +47,7 @@ const createEnterprise = async (memberId, infos, documents, logo) => {
     }
 }
 
-const createProject = async (memberId, Project) => {
+const createProject = async (memberId, infos,documents) => {
     const member = await Member.findById(memberId)
     if (!member) {
         throw new Error('Member doesn t exist !')
@@ -55,7 +55,26 @@ const createProject = async (memberId, Project) => {
     if (!member?.companyName) {
         throw new Error('You must create an Entreprise !')
     }
-    return await ProjectSchema.create(Project)
+
+    try {
+        let Docs = []
+        let project = {...infos}
+
+        if (documents?.files) {
+            for (const doc of documents?.files) {
+                let fileLink = await uploadService.uploadFile(doc, "Members/" + member.owner + "/Project_documents", doc.originalname)
+                Docs.push({ name: doc.originalname, link: fileLink, type: doc.mimetype })
+            }
+            project.documents = Docs
+        }
+        return  await ProjectSchema.create({...project,owner:member._id})
+
+    }
+    catch (err) {
+        throw new Error('Something went wrong !')
+    }
+
+
 }
 
 const getMemberById = async (id) => {

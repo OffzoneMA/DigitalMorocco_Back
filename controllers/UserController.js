@@ -94,8 +94,6 @@ const approveUser = async (req, res) => {
       res.status(400).json({ message: "Missing role" });
     }
   } catch (error) {
-    console.log(error)
-
     res.status(400).json({ message: error.message }); 
   }
 };
