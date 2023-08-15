@@ -15,14 +15,17 @@ const createEnterprise = async (req, res) => {
 };
 
 const createProject= async (req, res) => {
-    try {
-        const result = await MemberService.createProject(req.memberId, req.body);
-        res.status(200).json(result);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
 
+        try {
+            let data = isJsonString(req?.body.infos) ? JSON.parse(req?.body.infos) : req?.body.infos
+            const result = await MemberService.createProject(req.memberId, data, req?.files);
+            const member = await MemberService.getMemberById(req.memberId);
+            const log = await UserLogService.createUserLog('Project Creation', member.owner);
+            res.status(200).json(result);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
 const getByName = async (req, res) => {
     try {
         const result = await MemberService.getMemberByName(req.params.name);
@@ -54,4 +57,4 @@ function isJsonString(str) {
 
 
 
-module.exports = { createEnterprise, getByName,subUser }
+module.exports = { createEnterprise, getByName, subUser, createProject }

@@ -14,16 +14,23 @@ const ProjectSchema = new mongoose.Schema({
         enum: ['MAD','€','$'],
     },
     listMembers: [{
-        firstName: String,
-        lastName: String,
-        role: String,
+        firstName: { type: String },
+        lastName: { type: String },
+        role: { type: String },
     }],
     details: String,
     milestoneProgress: String,
     documents: [{
-        name: String,
-        link: String,
+        name: { type: String },
+        link: { type: String },
+        date: { type: Date, default: Date.now },
+        type: { type: String },
     }],
+    visbility:{
+        type: String,
+        enum: ['public', 'private'],
+        default:'public'
+    },
     dateCreated: { type: Date, default: Date.now },
 })
 

@@ -21,13 +21,13 @@ const MemberSchema = new mongoose.Schema({
     corporateNbr: String,
     logo: String,
     listEmployee: [{
-        firstName: String,
-        lastName: String,
+        firstName: { type: String },
+        lastName: { type: String },
     }],
     legalDocument: [{
         name: {type:String},
-       link: {type:String},
-       date: { type: Date, default: Date.now },
+        link: {type:String},
+        date: { type: Date, default: Date.now },
         type: {type:String},
     }],
 
