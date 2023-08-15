@@ -52,7 +52,6 @@ const generateUserInfos = async (user) => {
         }
     }
     const result = user?._doc ? { ...user._doc, [user?.role]: data } : { ...user, [user?.role]: data }
-    console.log(result)
     return { accessToken: accessToken, user: result }
 }
 
