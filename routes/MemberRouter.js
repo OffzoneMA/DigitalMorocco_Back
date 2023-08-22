@@ -4,7 +4,7 @@ const MemberController = require("../controllers/MemberController")
 const AuthController = require("../controllers/AuthController")
 const upload = require("../middelware/multer")
 
-router.route("/").get(AuthController.AuthenticateSubMemberOrAdmin, MemberController.getMembers).post(AuthController.AuthenticateMember, upload.fields([{ name: 'logo', maxCount: 1 }, { name: 'files', maxCount: 5 }]) ,MemberController.createEnterprise)
+router.route("/").get( MemberController.getMembers).post(AuthController.AuthenticateMember, upload.fields([{ name: 'logo', maxCount: 1 }, { name: 'files', maxCount: 5 }]) ,MemberController.createEnterprise)
 
 router.route("/name/:name").get(MemberController.getByName)
 router.route("/project").post(AuthController.AuthenticateMember, upload.fields([{ name: 'files', maxCount: 8 }]), MemberController.createProject)
