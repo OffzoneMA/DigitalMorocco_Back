@@ -4,6 +4,31 @@ const SubscriptionService = require("../services/SubscriptionService");
 const SubscriptionLogService = require("../services/SubscriptionLogService");
 const uploadService = require('./FileService')
 
+
+
+const getAllMembers = async (args) => {
+    const page = args.page || 1; 
+    const pageSize = args.pageSize || 10;
+    const skip = (page - 1) * pageSize;
+
+
+    const countries = args.countries ? args.countries.split(',') : [];
+    const query = {};
+    if(countries.length > 0)  query.country = { $in: countries };
+
+    const totalCount = await Member.countDocuments(query);
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    const members =await Member.find(query)
+                        .select("_id companyName website logo")
+                        .skip(skip)
+                        .limit(pageSize);
+     
+    return { members, totalPages }
+
+
+}
+
 const CreateMember = async (member) => {
     return await Member.create(member);
 }
@@ -196,4 +221,4 @@ const checkMemberSubscription = async (memberId) => {
     }
 };
 
-module.exports = { createProject, checkSubscriptionStatus, CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus }
+module.exports = { getAllMembers,createProject, checkSubscriptionStatus, CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus }

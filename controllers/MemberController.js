@@ -2,10 +2,22 @@ const MemberService = require('../services/MemberService');
 const UserLogService = require('../services/UserLogService');
 const UserService = require('../services/UserService');
 
+
+
+
+const getMembers = async (req, res) => {
+    try {
+        const result = await MemberService.getAllMembers(req.query);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 const createEnterprise = async (req, res) => {
     try {
         let data = isJsonString(req?.body.infos) ? JSON.parse(req?.body.infos) : req?.body.infos
-        const result = await MemberService.createEnterprise(req.memberId, data, req?.files.files, req?.files.logo);
+        const result = await MemberService.createEnterprise(req.memberId, data, req?.files?.files, req?.files?.logo);
         const member = await MemberService.getMemberById(req.memberId);
         const log = await UserLogService.createUserLog('Enterprise Edited', member.owner);
         res.status(200).json(result);
@@ -57,4 +69,4 @@ function isJsonString(str) {
 
 
 
-module.exports = { createEnterprise, getByName, subUser, createProject }
+module.exports = { getMembers,createEnterprise, getByName, subUser, createProject }
