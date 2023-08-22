@@ -16,7 +16,7 @@ const SubscriptionLogsSchema = new mongoose.Schema({
     type:{
         type: String,
         enum: ['Renew', 'Initial Purchase'],
-        default: 'purchase',
+        default: 'Initial Purchase',
 
     }
 })
