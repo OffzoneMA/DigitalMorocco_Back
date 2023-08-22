@@ -11,19 +11,23 @@ const getAllMembers = async (args) => {
     const pageSize = args.pageSize || 10;
     const skip = (page - 1) * pageSize;
 
-
     const countries = args.countries ? args.countries.split(',') : [];
+    const sectors = args.sectors ? args.sectors.split(',') : [];
+    const stages = args.stages ? args.stages.split(',') : [];
+
     const query = {};
+    query.companyName = { $exists: true }
+    query.visbility = 'public'
     if(countries.length > 0)  query.country = { $in: countries };
+    if (sectors.length > 0) query.sector = { $in: sectors };
+    if (stages.length > 0) query.stage = { $in: stages };
 
     const totalCount = await Member.countDocuments(query);
     const totalPages = Math.ceil(totalCount / pageSize);
-
     const members =await Member.find(query)
-                        .select("_id companyName website logo")
-                        .skip(skip)
-                        .limit(pageSize);
-     
+                        .select("_id companyName website logo desc")
+                         .skip(skip)
+                         .limit(pageSize);
     return { members, totalPages }
 
 
@@ -44,6 +48,7 @@ const createEnterprise = async (memberId, infos, documents, logo) => {
             website: infos.website,
             contactEmail: infos.contactEmail,
             address: infos.address,
+            desc: infos.desc,
             country: infos.country,
             city: infos.city,
             state: infos?.state,
@@ -51,6 +56,7 @@ const createEnterprise = async (memberId, infos, documents, logo) => {
             taxNbr: infos.tin,
             corporateNbr: infos.cin,
             listEmployee: infos.listEmployees,
+            visbility: infos.visbility,
         }
 
 

@@ -12,6 +12,7 @@ const MemberSchema = new mongoose.Schema({
     legalName: String,
     website: String,
     contactEmail: String,
+    desc:String,
     address: String,
     country: String,
     city: String,
