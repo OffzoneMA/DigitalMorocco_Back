@@ -49,7 +49,11 @@ const MemberSchema = new mongoose.Schema({
         enum: ['notActive', 'active'],
         default: 'notActive'
     },
-    expireDate:Date
+    expireDate:Date,
+    visbility: {
+        type: String,
+        enum: ['public', 'private'],
+    },
 })
 
 

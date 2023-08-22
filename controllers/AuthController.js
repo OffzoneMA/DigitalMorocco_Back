@@ -65,7 +65,7 @@ const AuthenticateAdmin = async (req, res, next) => {
   if (token == null) return res.sendStatus(401)
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
     if (err) return res.sendStatus(403)
-    if (user.user.role == "Admin") {
+    if (user?.user?.role == "Admin") {
       next()
     }
     else {
@@ -114,6 +114,28 @@ const AuthenticateMember = async (req, res, next) => {
   })
 }
 
+const AuthenticateSubMemberOrAdmin = async (req, res, next) => {
+  const authHeader = req.headers['authorization']
+  const token = authHeader && authHeader.split(' ')[1]
+  if (token == null) return res.sendStatus(401)
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
+    if (err) { return res.sendStatus(403) }
+    if (user?.user?.role == "Admin") {
+      next()
+    }
+    const userMember = await UserService.getUserByID(user?.user?._id)
+    const member = await MemberService.getMemberByUserId(userMember?._id)
+
+    if (member?.subStatus =="active") {
+      next()
+    }
+    else {
+      return res.sendStatus(403)
+    }
+
+  })
+}
+
 module.exports={
-  login, authenticateToken, userInfo, AuthenticateAdmin, AuthenticateMember, AuthenticateUser
+  AuthenticateSubMemberOrAdmin, login, authenticateToken, userInfo, AuthenticateAdmin, AuthenticateMember, AuthenticateUser
 }
