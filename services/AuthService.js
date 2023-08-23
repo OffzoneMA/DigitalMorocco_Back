@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken")
 const salt = 10
 const MemberService = require('../services/MemberService');
+const PartnerService = require('../services/PartnerService');
 const ProjectService = require('../services/ProjectService');
 
 
@@ -50,6 +51,10 @@ const generateUserInfos = async (user) => {
         let project= await ProjectService.getProjectByMemberId(member._id)  
             if (project) data = { ...data, "project": project }
         }
+    }
+    if (user?.role == "partner") {
+        let partner = await PartnerService.getPartnerByUserId(user._id)
+        data = partner?._doc ? partner?._doc : partner
     }
     const result = user?._doc ? { ...user._doc, [user?.role]: data } : { ...user, [user?.role]: data }
     return { accessToken: accessToken, user: result }

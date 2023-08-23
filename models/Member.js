@@ -12,6 +12,7 @@ const MemberSchema = new mongoose.Schema({
     legalName: String,
     website: String,
     contactEmail: String,
+    desc:String,
     address: String,
     country: String,
     city: String,
@@ -30,7 +31,10 @@ const MemberSchema = new mongoose.Schema({
         date: { type: Date, default: Date.now },
         type: {type:String},
     }],
-
+    visbility: {
+        type: String,
+        enum: ['public', 'private'],
+    },
     rc_ice: String,
     dateCreated: { type: Date, default: Date.now },
 
@@ -49,7 +53,7 @@ const MemberSchema = new mongoose.Schema({
         enum: ['notActive', 'active'],
         default: 'notActive'
     },
-    expireDate:Date
+    expireDate:Date,
 })
 
 
