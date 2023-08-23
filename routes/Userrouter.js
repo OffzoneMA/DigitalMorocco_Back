@@ -7,6 +7,50 @@ const { AuthorizationError } = require('passport-oauth2');
 const upload = require('../middelware/multer');
 const {passport} = require("../config/passport-setup")
 
+/**
+ * @swagger
+ * tags:
+ *   name: Users
+ *   description: User management
+ */
+
+/**
+ * @swagger
+ * /users:
+ *   post:
+ *     summary: Create a new user
+ *     description: Create a new user with the provided information
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               displayName:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *             required:
+ *               - displayName
+ *               - email
+ *               - role
+ *               - password
+ *     responses:
+ *       200:
+ *         description: User created successfully
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Error message describing the issue
+ */
 router.route("/").post(UserController.addUser).get(UserController.getUsers).put(AuthController.AuthenticateUser, UserController.updateUser)
 
 router.route("/complete_signup/:userid").post(UserService.checkUserVerification,upload.single('rc_ice'), UserController.complete_signup)
@@ -37,13 +81,30 @@ router.get('/auth/google/callback', (req, res, next) => {
 
 router.route("/sendverify/:userid").get(UserController.sendVerification)
 router.route("/confirm_verification/:userid").get(UserController.confirmVerification)
-
+/**
+ * @swagger
+ * /members?page=1:
+ *   get:
+ *     summary: Get user information
+ *     description: Retrieve information about the authenticated user
+ *     tags: [Users]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: User information
+ */
 router.route("/UserInfo").get(AuthController.userInfo)
 router.route("/User/:id").delete(UserController.deleteUser)
 router.route("/Login").post(AuthController.login)
 
 router.route("/ApproveUser/:id").get(AuthController.AuthenticateAdmin,UserController.approveUser)
 router.route("/RejectUser/:id").get(AuthController.AuthenticateAdmin, UserController.rejectUser)
+
 
 
 module.exports=router
