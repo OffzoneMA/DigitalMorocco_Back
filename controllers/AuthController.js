@@ -1,6 +1,7 @@
 const UserService=require('../services/UserService');
 const jwt=require("jsonwebtoken")
 const MemberService = require('../services/MemberService');
+const PartnerService = require('../services/PartnerService');
 const ProjectService = require('../services/ProjectService');
 const AuthService = require('../services/AuthService');
 const UserLogService =require('../services/UserLogService');
@@ -26,19 +27,8 @@ const userInfo=async(req,res)=>{
   
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => { 
       const u = await UserService.getUserByID(user?.user?._id);
-
-      let data
-
-      if (u?.role == "member") {
-        let member = await MemberService.getMemberByUserId(u._id)
-        data = member?._doc ? member?._doc :member
-        if (member?.companyName) {
-          let project = await ProjectService.getProjectByMemberId(member._id)
-          if (project) data={...data,"project":project}
-        }
-      }
-      const result = u?._doc ? { ...u._doc, [u?.role]: data } : { ...u, [u?.role]: data }
-      res.status(200).json(result)
+      const result= await AuthService.generateUserInfos(u)
+      res.status(200).json(result?.user)
     })
   }catch(error){
     res.status(404).json({ message: "No user found" })
@@ -114,6 +104,27 @@ const AuthenticateMember = async (req, res, next) => {
   })
 }
 
+const AuthenticatePartner = async (req, res, next) => {
+  const authHeader = req.headers['authorization']
+  const token = authHeader && authHeader.split(' ')[1]
+  if (token == null) return res.sendStatus(401)
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
+    if (err) { return res.sendStatus(403) }
+    const userPartner = await UserService.getUserByID(user?.user?._id)
+    const partner = await PartnerService.getPartnerByUserId(userPartner?._id)
+
+    if (partner) {
+      req.partnerId = partner._id
+      next()
+    }
+    else {
+      return res.sendStatus(403)
+    }
+
+  })
+}
+
+
 const AuthenticateSubMemberOrAdmin = async (req, res, next) => {
   const authHeader = req.headers['authorization']
   const token = authHeader && authHeader.split(' ')[1]
@@ -137,5 +148,5 @@ const AuthenticateSubMemberOrAdmin = async (req, res, next) => {
 }
 
 module.exports={
-  AuthenticateSubMemberOrAdmin, login, authenticateToken, userInfo, AuthenticateAdmin, AuthenticateMember, AuthenticateUser
+  AuthenticateSubMemberOrAdmin, login, authenticateToken, userInfo, AuthenticateAdmin, AuthenticateMember, AuthenticateUser, AuthenticatePartner
 }

@@ -31,7 +31,10 @@ const MemberSchema = new mongoose.Schema({
         date: { type: Date, default: Date.now },
         type: {type:String},
     }],
-
+    visbility: {
+        type: String,
+        enum: ['public', 'private'],
+    },
     rc_ice: String,
     dateCreated: { type: Date, default: Date.now },
 
@@ -51,10 +54,6 @@ const MemberSchema = new mongoose.Schema({
         default: 'notActive'
     },
     expireDate:Date,
-    visbility: {
-        type: String,
-        enum: ['public', 'private'],
-    },
 })
 
 
