@@ -99,8 +99,68 @@ router.route("/confirm_verification/:userid").get(UserController.confirmVerifica
  *               message: User information
  */
 router.route("/UserInfo").get(AuthController.userInfo)
+/**
+ * @swagger
+ * /User/{id}:
+ *   delete:
+ *     summary: Delete a user
+ *     description: Delete a user by their ID
+ *     tags: [Users]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: ID of the user to delete
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
 router.route("/User/:id").delete(UserController.deleteUser)
-router.route("/Login").post(AuthController.login)
+/**
+ * @swagger
+ * /Login:
+ *   post:
+ *     summary: User login
+ *     description: Authenticate a user and generate an authentication token
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *             required:
+ *               - email
+ *               - password
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             example:
+ *               token: JWT_Authentication_Token
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Invalid credentials
+ *       500:
+ *         description: Internal server error
+ */
+router.route("/Login").post(AuthController.login);
+
 
 router.route("/ApproveUser/:id").get(AuthController.AuthenticateAdmin,UserController.approveUser)
 router.route("/RejectUser/:id").get(AuthController.AuthenticateAdmin, UserController.rejectUser)
