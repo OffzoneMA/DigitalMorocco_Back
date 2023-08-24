@@ -3,7 +3,7 @@ const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const app = express();
 
-// Options de configuration Swagger
+//  configuration Swagger
 const swaggerOptions = {
   swaggerDefinition: {
     openapi: '3.0.0',
@@ -13,14 +13,14 @@ const swaggerOptions = {
       description: 'Documentation for your API',
     },
   },
-  // Chemin vers les fichiers de définition des routes
+
   apis: ['./routes/*.js'],
 };
 
-// Générer les spécifications Swagger
+
 const specs = swaggerJsdoc(swaggerOptions);
 
-// Utiliser Swagger UI pour afficher la documentation
+
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 const PORT = process.env.PORT || 3000;

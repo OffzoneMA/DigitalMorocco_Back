@@ -10,6 +10,6 @@ module.exports = {
             description: 'Documentation for your API',
         },
     },
-    // Spécifiez le chemin correct vers vos fichiers de définition de routes
+    
     apis: ['./routes/*.js'],
 };

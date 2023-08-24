@@ -52,6 +52,50 @@ const {passport} = require("../config/passport-setup")
  *               message: Error message describing the issue
  */
 router.route("/").post(UserController.addUser).get(UserController.getUsers).put(AuthController.AuthenticateUser, UserController.updateUser)
+/**
+ * @swagger
+ * /complete_signup/{userid}:
+ *   post:
+ *     summary: Complete user signup
+ *     description: Complete user signup process by providing necessary information (Admin only)
+ *     tags: [Users]
+ *     parameters:
+ *       - name: userid
+ *         in: path
+ *         description: ID of the user to complete signup
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               rc_ice:
+ *                 type: string
+ *                 format: binary
+ *               role:
+ *                 type: string
+ *                 enum: [investor, member, partner]
+ *             required:
+ *               - rc_ice
+ *               - role
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User signup completed successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden (user not authorized)
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
 
 router.route("/complete_signup/:userid").post(UserService.checkUserVerification,upload.single('rc_ice'), UserController.complete_signup)
 
@@ -78,9 +122,54 @@ router.get('/auth/google/callback', (req, res, next) => {
     })(req, res, next);
 });
 
+/**
+ * @swagger
+ * /sendverify/{userid}:
+ *   get:
+ *     summary: Send email verification
+ *     description: Send email verification link to a user by their ID
+ *     tags: [Users]
+ *     parameters:
+ *       - name: userid
+ *         in: path
+ *         description: ID of the user to send verification email
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Verification email sent successfully
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+router.route("/sendverify/:userid").get(UserController.sendVerification);
 
-router.route("/sendverify/:userid").get(UserController.sendVerification)
-router.route("/confirm_verification/:userid").get(UserController.confirmVerification)
+/**
+ * @swagger
+ * /confirm_verification/{userid}:
+ *   get:
+ *     summary: Confirm email verification
+ *     description: Confirm email verification for a user by their ID
+ *     tags: [Users]
+ *     parameters:
+ *       - name: userid
+ *         in: path
+ *         description: ID of the user to confirm email verification
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Email verification confirmed successfully
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+router.route("/confirm_verification/:userid").get(UserController.confirmVerification);
+
 /**
  * @swagger
  * /members?page=1:
@@ -162,8 +251,94 @@ router.route("/User/:id").delete(UserController.deleteUser)
 router.route("/Login").post(AuthController.login);
 
 
-router.route("/ApproveUser/:id").get(AuthController.AuthenticateAdmin,UserController.approveUser)
-router.route("/RejectUser/:id").get(AuthController.AuthenticateAdmin, UserController.rejectUser)
+/**
+ * @swagger
+ * /ApproveUser/{id}:
+ *   get:
+ *     summary: Approve a user
+ *     description: Approve a user by their ID (Admin only)
+ *     tags: [Users]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: ID of the user to approve
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: role
+ *         in: query
+ *         description: Role of the user to approve (investor, member, or partner)
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [investor, member, partner]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User approved successfully
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Error message describing the issue
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden (user not authorized)
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+
+router.route("/ApproveUser/:id").get(AuthController.AuthenticateAdmin, UserController.approveUser);
+
+/**
+ * @swagger
+ * /RejectUser/{id}:
+ *   get:
+ *     summary: Reject a user
+ *     description: Reject a user by their ID (Admin only)
+ *     tags: [Users]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: ID of the user to reject
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: role
+ *         in: query
+ *         description: Role of the user to reject (investor, member, or partner)
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [investor, member, partner]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User rejected successfully
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Error message describing the issue
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden (user not authorized)
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+
+router.route("/RejectUser/:id").get(AuthController.AuthenticateAdmin, UserController.rejectUser);
+
 
 
 
