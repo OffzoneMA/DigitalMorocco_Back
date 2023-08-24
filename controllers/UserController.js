@@ -4,10 +4,6 @@ const EmailVerificationService = require("../services/EmailVerification");
 const AuthService = require("../services/AuthService");
 const UserLogService = require("../services/UserLogService");
 
-const ejs = require('ejs');
-const fs = require('fs');
-const path = require('path');
-
 const getUsers = async (req, res) => {
   try {
     const result = await UserService.getUsers(req.query);
@@ -18,8 +14,8 @@ const getUsers = async (req, res) => {
 }
 const updateUser = async (req, res) => {
   try {
-   
   const result = await UserService.updateUser(req.userId, req.body);
+    const log = await UserLogService.createUserLog('Account Update', req.userId);
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ message: error.message }); 

@@ -51,7 +51,7 @@ const {passport} = require("../config/passport-setup")
  *             example:
  *               message: Error message describing the issue
  */
-router.route("/").post(UserController.addUser).get(UserController.getUsers).put(AuthController.AuthenticateUser, UserController.updateUser)
+router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAdmin,UserController.getUsers).put(AuthController.AuthenticateUser, UserController.updateUser)
 /**
  * @swagger
  * /complete_signup/{userid}:
