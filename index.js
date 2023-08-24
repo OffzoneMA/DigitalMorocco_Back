@@ -21,11 +21,9 @@ const swaggerUi = require('swagger-ui-express');
 
 const app = express();
 
-// Spécifications Swagger (assurez-vous que le chemin est correct)
 const swaggerOptions = require('./config/swagger_config');
 const specs = swaggerJsdoc(swaggerOptions);
 
-// Utiliser Swagger UI pour afficher la documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 app.use(express.json());
