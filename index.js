@@ -1,4 +1,3 @@
-
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -15,8 +14,19 @@ const session = require('express-session');
 const { passport } = require("./config/passport-setup");
 const { checkSubscriptionStatus } = require("./services/MemberService");
 
+// Importez les dépendances pour Swagger
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 
 const app = express();
+
+// Spécifications Swagger (assurez-vous que le chemin est correct)
+const swaggerOptions = require('./config/swagger_config');
+const specs = swaggerJsdoc(swaggerOptions);
+
+// Utiliser Swagger UI pour afficher la documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
 app.use(express.json());
 app.use(cors());
 
@@ -36,9 +46,6 @@ mongoose.connect(process.env.MONGO_URL)
     })
     .catch(err => console.log(err));
 
-
-
-
 app.use(
     session({
         secret: process.env.ACCESS_TOKEN_SECRET,
@@ -46,8 +53,6 @@ app.use(
         saveUninitialized: true,
     })
 );
-
-
 
 // Routes
 app.use("/users", Userouter);
@@ -58,7 +63,5 @@ app.use("/requests", Requestouter);
 app.use("/subscriptions", SubscriptionRouter);
 app.use("/logs", UserLogRouter);
 app.use("/Sublogs", SubscriptionLogRouter);
-
-
 
 module.exports = app;

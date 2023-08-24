@@ -7,7 +7,95 @@ const { AuthorizationError } = require('passport-oauth2');
 const upload = require('../middelware/multer');
 const {passport} = require("../config/passport-setup")
 
+/**
+ * @swagger
+ * tags:
+ *   name: Users
+ *   description: User management
+ */
+
+/**
+ * @swagger
+ * /users:
+ *   post:
+ *     summary: Create a new user
+ *     description: Create a new user with the provided information
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               displayName:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *             required:
+ *               - displayName
+ *               - email
+ *               - role
+ *               - password
+ *     responses:
+ *       200:
+ *         description: User created successfully
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Error message describing the issue
+ */
 router.route("/").post(UserController.addUser).get(UserController.getUsers).put(AuthController.AuthenticateUser, UserController.updateUser)
+/**
+ * @swagger
+ * /complete_signup/{userid}:
+ *   post:
+ *     summary: Complete user signup
+ *     description: Complete user signup process by providing necessary information (Admin only)
+ *     tags: [Users]
+ *     parameters:
+ *       - name: userid
+ *         in: path
+ *         description: ID of the user to complete signup
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               rc_ice:
+ *                 type: string
+ *                 format: binary
+ *               role:
+ *                 type: string
+ *                 enum: [investor, member, partner]
+ *             required:
+ *               - rc_ice
+ *               - role
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User signup completed successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden (user not authorized)
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
 
 router.route("/complete_signup/:userid").post(UserService.checkUserVerification,upload.single('rc_ice'), UserController.complete_signup)
 
@@ -34,16 +122,224 @@ router.get('/auth/google/callback', (req, res, next) => {
     })(req, res, next);
 });
 
+/**
+ * @swagger
+ * /sendverify/{userid}:
+ *   get:
+ *     summary: Send email verification
+ *     description: Send email verification link to a user by their ID
+ *     tags: [Users]
+ *     parameters:
+ *       - name: userid
+ *         in: path
+ *         description: ID of the user to send verification email
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Verification email sent successfully
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+router.route("/sendverify/:userid").get(UserController.sendVerification);
 
-router.route("/sendverify/:userid").get(UserController.sendVerification)
-router.route("/confirm_verification/:userid").get(UserController.confirmVerification)
+/**
+ * @swagger
+ * /confirm_verification/{userid}:
+ *   get:
+ *     summary: Confirm email verification
+ *     description: Confirm email verification for a user by their ID
+ *     tags: [Users]
+ *     parameters:
+ *       - name: userid
+ *         in: path
+ *         description: ID of the user to confirm email verification
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Email verification confirmed successfully
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+router.route("/confirm_verification/:userid").get(UserController.confirmVerification);
 
+/**
+ * @swagger
+ * /members?page=1:
+ *   get:
+ *     summary: Get user information
+ *     description: Retrieve information about the authenticated user
+ *     tags: [Users]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: User information
+ */
 router.route("/UserInfo").get(AuthController.userInfo)
+/**
+ * @swagger
+ * /User/{id}:
+ *   delete:
+ *     summary: Delete a user
+ *     description: Delete a user by their ID
+ *     tags: [Users]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: ID of the user to delete
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
 router.route("/User/:id").delete(UserController.deleteUser)
-router.route("/Login").post(AuthController.login)
+/**
+ * @swagger
+ * /Login:
+ *   post:
+ *     summary: User login
+ *     description: Authenticate a user and generate an authentication token
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *             required:
+ *               - email
+ *               - password
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             example:
+ *               token: JWT_Authentication_Token
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Invalid credentials
+ *       500:
+ *         description: Internal server error
+ */
+router.route("/Login").post(AuthController.login);
 
-router.route("/ApproveUser/:id").get(AuthController.AuthenticateAdmin,UserController.approveUser)
-router.route("/RejectUser/:id").get(AuthController.AuthenticateAdmin, UserController.rejectUser)
+
+/**
+ * @swagger
+ * /ApproveUser/{id}:
+ *   get:
+ *     summary: Approve a user
+ *     description: Approve a user by their ID (Admin only)
+ *     tags: [Users]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: ID of the user to approve
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: role
+ *         in: query
+ *         description: Role of the user to approve (investor, member, or partner)
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [investor, member, partner]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User approved successfully
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Error message describing the issue
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden (user not authorized)
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+
+router.route("/ApproveUser/:id").get(AuthController.AuthenticateAdmin, UserController.approveUser);
+
+/**
+ * @swagger
+ * /RejectUser/{id}:
+ *   get:
+ *     summary: Reject a user
+ *     description: Reject a user by their ID (Admin only)
+ *     tags: [Users]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: ID of the user to reject
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: role
+ *         in: query
+ *         description: Role of the user to reject (investor, member, or partner)
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [investor, member, partner]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User rejected successfully
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Error message describing the issue
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden (user not authorized)
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+
+router.route("/RejectUser/:id").get(AuthController.AuthenticateAdmin, UserController.rejectUser);
+
+
 
 
 module.exports=router
