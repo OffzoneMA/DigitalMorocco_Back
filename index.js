@@ -5,6 +5,7 @@ require("dotenv").config();
 const Userouter = require("./routes/Userrouter");
 const MemberRouter = require("./routes/MemberRouter");
 const PartnerRouter = require("./routes/PartnerRouter");
+const InvestorRouter = require("./routes/InvestorRouter");
 const Adminrouter = require("./routes/Adminrouter");
 const Requestouter = require("./routes/Requestrouter");
 const SubscriptionRouter = require("./routes/SubscriptionRouter");
@@ -58,6 +59,7 @@ app.use(
 app.use("/users", Userouter);
 app.use("/members", MemberRouter);
 app.use("/partners", PartnerRouter);
+app.use("/investors", InvestorRouter);
 app.use("/admin", Adminrouter);
 app.use("/requests", Requestouter);
 app.use("/subscriptions", SubscriptionRouter);
