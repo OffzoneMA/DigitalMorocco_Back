@@ -5,5 +5,7 @@ const getSubscriptions = async () => {
 }
 
 
-
-module.exports = { getSubscriptions }
+const getSubscriptionById = async (id) => {
+    return await Subscription.findById(id);
+}
+module.exports = { getSubscriptions, getSubscriptionById }

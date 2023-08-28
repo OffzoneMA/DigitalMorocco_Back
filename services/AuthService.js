@@ -2,7 +2,9 @@ const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken")
 const salt = 10
-
+const MemberService = require('../services/MemberService');
+const PartnerService = require('../services/PartnerService');
+const ProjectService = require('../services/ProjectService');
 
 
 
@@ -17,8 +19,8 @@ const signInUser = async (u) => {
     if (user) {
         const cmp = await bcrypt.compare(u.password, user.password);
         if (cmp) {
-            const accessToken = await generateAccessToken(user)
-            return { accessToken: accessToken, user: user }
+          const result= await generateUserInfos(user)
+            return result
         } else {
             throw new Error('Wrong password !');
         }
@@ -39,6 +41,24 @@ const createUser = async (u) => {
      return { accessToken: accessToken, user: user }
 }
 
+const generateUserInfos = async (user) => {
+    const accessToken = await generateAccessToken(user)
+    let data
+    if (user?.role == "member"){
+        let member = await MemberService.getMemberByUserId(user._id)
+        data = member?._doc ? member?._doc : member
+        if(member?.companyName) {
+        let project= await ProjectService.getProjectByMemberId(member._id)  
+            if (project) data = { ...data, "project": project }
+        }
+    }
+    if (user?.role == "partner") {
+        let partner = await PartnerService.getPartnerByUserId(user._id)
+        data = partner?._doc ? partner?._doc : partner
+    }
+    const result = user?._doc ? { ...user._doc, [user?.role]: data } : { ...user, [user?.role]: data }
+    return { accessToken: accessToken, user: result }
+}
 
  const generateAccessToken = async (user) => {
     const payload = user.role
@@ -48,4 +68,4 @@ const createUser = async (u) => {
 }
 
 
-module.exports = { signInUser, createUser, generateAccessToken }
+module.exports = { signInUser, createUser, generateAccessToken, generateUserInfos }
