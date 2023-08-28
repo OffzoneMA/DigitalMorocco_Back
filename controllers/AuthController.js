@@ -2,6 +2,7 @@ const UserService=require('../services/UserService');
 const jwt=require("jsonwebtoken")
 const MemberService = require('../services/MemberService');
 const PartnerService = require('../services/PartnerService');
+const InvestorService = require('../services/InvestorService');
 const ProjectService = require('../services/ProjectService');
 const AuthService = require('../services/AuthService');
 const UserLogService =require('../services/UserLogService');
@@ -88,12 +89,52 @@ const AuthenticateMember = async (req, res, next) => {
   const token = authHeader && authHeader.split(' ')[1]
   if (token == null) return res.sendStatus(401)
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
-    if (err) {return res.sendStatus(403)}
+    if (err) { return res.sendStatus(403) }
     const userMember = await UserService.getUserByID(user?.user?._id)
     const member = await MemberService.getMemberByUserId(userMember?._id)
 
     if (member) {
 
+      req.memberId = member._id
+      next()
+    }
+    else {
+      return res.sendStatus(403)
+    }
+
+  })
+}
+const AuthenticateInvestor = async (req, res, next) => {
+  const authHeader = req.headers['authorization']
+  const token = authHeader && authHeader.split(' ')[1]
+  if (token == null) return res.sendStatus(401)
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
+    if (err) { return res.sendStatus(403) }
+    const userInvestor = await UserService.getUserByID(user?.user?._id)
+    const investor = await InvestorService.getInvestorByUserId(userInvestor?._id)
+
+    if (investor) {
+
+      req.investorId = investor._id
+      next()
+    }
+    else {
+      return res.sendStatus(403)
+    }
+
+  })
+}
+
+const AuthenticateSubMember = async (req, res, next) => {
+  const authHeader = req.headers['authorization']
+  const token = authHeader && authHeader.split(' ')[1]
+  if (token == null) return res.sendStatus(401)
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
+    if (err) { return res.sendStatus(403) }
+    const userMember = await UserService.getUserByID(user?.user?._id)
+    const member = await MemberService.getMemberByUserId(userMember?._id)
+
+    if (member && member.subStatus =="active") {
       req.memberId = member._id
       next()
     }
@@ -148,5 +189,5 @@ const AuthenticateSubMemberOrAdmin = async (req, res, next) => {
 }
 
 module.exports={
-  AuthenticateSubMemberOrAdmin, login, authenticateToken, userInfo, AuthenticateAdmin, AuthenticateMember, AuthenticateUser, AuthenticatePartner
+  AuthenticateInvestor, AuthenticateSubMemberOrAdmin, AuthenticateSubMember, login, authenticateToken, userInfo, AuthenticateAdmin, AuthenticateMember, AuthenticateUser, AuthenticatePartner
 }

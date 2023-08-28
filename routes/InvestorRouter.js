@@ -6,5 +6,6 @@ const upload = require("../middelware/multer")
 
 router.route("/").get(AuthController.AuthenticateSubMemberOrAdmin,InvestorController.getInvestors)
 
+router.route("/ContactRequest").get(AuthController.AuthenticateInvestor, InvestorController.getContactRequests)
 
 module.exports = router

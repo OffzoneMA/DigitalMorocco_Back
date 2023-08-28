@@ -1,6 +1,8 @@
 const MemberService = require('../services/MemberService');
+const InvestorContactService = require('../services/InvestorContactService');
 const UserLogService = require('../services/UserLogService');
 const UserService = require('../services/UserService');
+const EmailingService = require('../services/EmailingService');
 
 
 
@@ -38,6 +40,30 @@ const createProject= async (req, res) => {
             res.status(500).json({ message: error.message });
         }
     }
+
+
+const contactRequest = async (req, res) => {
+    try {
+        const result = await InvestorContactService.CreateInvestorContactReq(req.memberId,req.params.investorId)
+       // const member = await MemberService.getMemberById(req.memberId);
+       // const log = await UserLogService.createUserLog('Project Creation', member.owner);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+const getContactRequests = async (req, res) => {
+    try {
+        const result = await InvestorContactService.getAllContactRequest(req.query,"member",req.memberId)
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: "Something went wrong!"});
+    }
+}
+
+
+
 const getByName = async (req, res) => {
     try {
         const result = await MemberService.getMemberByName(req.params.name);
@@ -69,4 +95,4 @@ function isJsonString(str) {
 
 
 
-module.exports = { getMembers,createEnterprise, getByName, subUser, createProject }
+module.exports = { getMembers, createEnterprise, getByName, subUser, createProject, contactRequest, getContactRequests }
