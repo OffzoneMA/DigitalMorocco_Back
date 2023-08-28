@@ -4,22 +4,24 @@ const PartnerService = require('../services/PartnerService');
 const InvestorService = require('../services/InvestorService');
 const requestServive = require('../services/RequestService');
 const FileService = require('../services/FileService');
+const bcrypt = require('bcrypt');
+const salt=10
 
 
 const getUsers = async (args) => {
     return await User.find().skip(args.start ? args.start : null).limit(args.qt ? args.qt : null);
 }
 
-
-
-
-
-
 const deleteUser = async (id) => {
     return await User.deleteOne({ _id: id })
 }
 
 const updateUser = async (userId,user) => {
+    if (user.password){
+        const password = user.password;
+        const hashedPassword = await bcrypt.hash(password, salt)
+        user.password = hashedPassword
+    }
     return await User.findByIdAndUpdate(userId, user)
 }
 

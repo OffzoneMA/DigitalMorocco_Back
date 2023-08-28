@@ -5,6 +5,7 @@ require("dotenv").config();
 const Userouter = require("./routes/Userrouter");
 const MemberRouter = require("./routes/MemberRouter");
 const PartnerRouter = require("./routes/PartnerRouter");
+const InvestorRouter = require("./routes/InvestorRouter");
 const Adminrouter = require("./routes/Adminrouter");
 const Requestouter = require("./routes/Requestrouter");
 const SubscriptionRouter = require("./routes/SubscriptionRouter");
@@ -20,11 +21,9 @@ const swaggerUi = require('swagger-ui-express');
 
 const app = express();
 
-// Spécifications Swagger (assurez-vous que le chemin est correct)
 const swaggerOptions = require('./config/swagger_config');
 const specs = swaggerJsdoc(swaggerOptions);
 
-// Utiliser Swagger UI pour afficher la documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 app.use(express.json());
@@ -58,6 +57,7 @@ app.use(
 app.use("/users", Userouter);
 app.use("/members", MemberRouter);
 app.use("/partners", PartnerRouter);
+app.use("/investors", InvestorRouter);
 app.use("/admin", Adminrouter);
 app.use("/requests", Requestouter);
 app.use("/subscriptions", SubscriptionRouter);

@@ -1,12 +1,8 @@
 const UserService = require("../services/UserService");
 const RequestService = require("../services/RequestService");
-const EmailVerificationService = require("../services/EmailVerification");
+const EmailingService = require("../services/EmailingService");
 const AuthService = require("../services/AuthService");
 const UserLogService = require("../services/UserLogService");
-
-const ejs = require('ejs');
-const fs = require('fs');
-const path = require('path');
 
 const getUsers = async (req, res) => {
   try {
@@ -18,8 +14,8 @@ const getUsers = async (req, res) => {
 }
 const updateUser = async (req, res) => {
   try {
-   
   const result = await UserService.updateUser(req.userId, req.body);
+    const log = await UserLogService.createUserLog('Account Update', req.userId);
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ message: error.message }); 
@@ -44,7 +40,7 @@ const complete_signup = async (req, res) => {
     if (userId){
    if (data?.role == "investor" || data?.role == "member" || data?.role == "partner") {
      const request= await RequestService.createRequest(data, userId, data?.role, file);
-     const result = await EmailVerificationService.sendUnderReviewEmail(userId);
+     const result = await EmailingService.sendUnderReviewEmail(userId);
      const log = await UserLogService.createUserLog('Account Under Review', userId);
       res.status(200).json(request);
     }
@@ -63,7 +59,7 @@ const complete_signup = async (req, res) => {
 
 const sendVerification = async (req, res) => {
   try {
-    const result = await EmailVerificationService.sendVerificationEmail(req.params.userid);
+    const result = await EmailingService.sendVerificationEmail(req.params.userid);
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json(error);
@@ -72,7 +68,7 @@ const sendVerification = async (req, res) => {
 
 const confirmVerification = async (req, res) => {
   try {
-    const result = await EmailVerificationService.VerifyUser(req.params.userid,req.query.token);
+    const result = await EmailingService.VerifyUser(req.params.userid,req.query.token);
     const log = await UserLogService.createUserLog('Verified', req.params.userid);
     res.redirect(`${process.env.FRONTEND_URL}/Complete_SignUp`);
   } catch (error) {
@@ -86,7 +82,7 @@ const approveUser = async (req, res) => {
   try {
     if (req.query?.role == "investor" || req.query?.role == "member" || req.query?.role == "partner") {
       const result = await UserService.approveUser(req.params.id, req.query?.role);
-      const emailResult = await EmailVerificationService.sendAcceptedEmail(req.params.id);
+      const emailResult = await EmailingService.sendAcceptedEmail(req.params.id);
       const log = await UserLogService.createUserLog('Approved', req.params.id);
       res.status(200).json(result);
     }
@@ -102,7 +98,7 @@ const rejectUser = async (req, res) => {
   try {
     if (req.query?.role == "investor" || req.query?.role == "member" || req.query?.role == "partner") {
       const result = await UserService.rejectUser(req.params.id, req.query?.role);
-      const emailResult = await EmailVerificationService.sendRejectedEmail(req.params.id);
+      const emailResult = await EmailingService.sendRejectedEmail(req.params.id);
       const log = await UserLogService.createUserLog('Rejected', req.params.id);
     res.status(200).json(result);
   }

@@ -11,14 +11,33 @@ const InvestorSchema = new mongoose.Schema({
     description: String,
     image: String,
     linkedin_link: String,
-    invested_startups:[ {
-        type: mongoose.Types.ObjectId,
-        ref: "Member"
-    }],
     document: [{
         name: String,
         link: String,
     }],
+
+    //Members Requests
+    membersRequestsAccepted: [
+        {
+            type: mongoose.Types.ObjectId,
+            ref: "Member"
+        }
+    ],
+    membersRequestsPending: [
+        {
+            type: mongoose.Types.ObjectId,
+            ref: "Member"
+        }
+    ],
+    /*membersRequestsRejected: [
+        {
+            type: mongoose.Types.ObjectId,
+            ref: "Member"
+        }
+    ],*/
+
+
+
     dateCreated: { type: Date, default: Date.now },
 
 })

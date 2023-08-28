@@ -8,6 +8,8 @@ router.route("/").get( MemberController.getMembers).post(AuthController.Authenti
 
 router.route("/name/:name").get(MemberController.getByName)
 router.route("/project").post(AuthController.AuthenticateMember, upload.fields([{ name: 'files', maxCount: 8 }]), MemberController.createProject)
+router.route("/ContactRequest/:investorId").post(AuthController.AuthenticateSubMember, MemberController.contactRequest )
+router.route("/ContactRequest").get(AuthController.AuthenticateMember, MemberController.getContactRequests)
 
 router.route("/SubscribeMember/:subid").get(AuthController.AuthenticateMember, MemberController.subUser)
 

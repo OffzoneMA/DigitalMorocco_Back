@@ -7,7 +7,7 @@ const MemberSchema = new mongoose.Schema({
         unique: true,
         required: true
     },
-    
+    //Entrepise Infos
     companyName: String,
     legalName: String,
     website: String,
@@ -37,6 +37,25 @@ const MemberSchema = new mongoose.Schema({
     },
     rc_ice: String,
     dateCreated: { type: Date, default: Date.now },
+
+    //Investors
+    investorsRequestsAccepted: [
+           { type: mongoose.Types.ObjectId,
+            ref: "Investor" }
+    ],
+    investorsRequestsPending: [
+        {
+            type: mongoose.Types.ObjectId,
+            ref: "Investor"
+        }
+    ],
+    /*investorsRequestsRejected: [
+        {
+            type: mongoose.Types.ObjectId,
+            ref: "Investor"
+        }
+    ],*/
+
 
     //Current subscription infos
     subscriptionId: {
