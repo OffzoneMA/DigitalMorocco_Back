@@ -1,11 +1,12 @@
 const express = require('express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+
 const app = express();
 
-//  configuration Swagger
+// Définitions Swagger
 const swaggerOptions = {
-  swaggerDefinition: {
+  definition: {
     openapi: '3.0.0',
     info: {
       title: 'API Documentation',
@@ -13,15 +14,11 @@ const swaggerOptions = {
       description: 'Documentation for your API',
     },
   },
-
-  apis: ['./routes/*.js'],
+  apis: ['./routes/*.js'], 
 };
 
-
-const specs = swaggerJsdoc(swaggerOptions);
-
-
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
