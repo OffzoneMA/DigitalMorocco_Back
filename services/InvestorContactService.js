@@ -41,8 +41,8 @@ const CreateInvestorContactReq = async (memberId, investorId) => {
        const updatedInvestor = await Investor.findByIdAndUpdate(investorId, updateInvestor)
        const updatedMemeber = await Member.findByIdAndUpdate(memberId, updateMember)
 
-       const userInvestor=await User.findById(investor.owner).select('_id')
-       const mail = await EmailingService.sendNewContactRequestEmail(userInvestor?._id,member?.companyName,member?.country);
+       //Send Email Notification to the investor
+       const mail = await EmailingService.sendNewContactRequestEmail(investor.owner,member?.companyName,member?.country);
 
        return ("contactrequest")
 }
