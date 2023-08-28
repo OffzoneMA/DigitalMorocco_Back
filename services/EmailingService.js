@@ -1,11 +1,35 @@
 const jwt = require('jsonwebtoken');
-const EmailService = require('./EmailService');
 const UserService = require('./UserService');
+const InvestorService = require('./InvestorService');
 const User = require('../models/User');
 const ejs = require('ejs');
 const fs = require('fs');
 const path = require('path');
+const nodemailer = require('nodemailer');
 
+async function sendEmail(userEmail, subject, emailContent, isHTML) {
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.email,
+      pass: process.env.password,
+    },
+  });
+
+  const emailOptions = {
+    from: process.env.email,
+    to: userEmail,
+    subject: subject,
+    [isHTML ? 'html' : 'text']: emailContent,
+  };
+
+  return await transporter.sendMail(emailOptions);
+
+}
+
+//Users
 async function sendVerificationEmail(userId) {
   try {
     const user = await UserService.getUserByID(userId);
@@ -30,7 +54,7 @@ async function sendVerificationEmail(userId) {
       body: htmlContent2,
     });
 
-    const messageId = await EmailService.sendEmail(user.email, title, htmlContent, true);
+    const messageId = await sendEmail(user.email, title, htmlContent, true);
     return messageId;
   } catch (err) {
     throw err;
@@ -56,15 +80,14 @@ async function sendUnderReviewEmail(userId) {
       });
 
   
-      const messageId = await EmailService.sendEmail(user.email, title, htmlContent, true);
+      const messageId = await sendEmail(user.email, title, htmlContent, true);
       return messageId;
     } catch (err) {
       throw err;
     }
   }
 
-
-  async function sendAcceptedEmail(userId) {
+async function sendAcceptedEmail(userId) {
     try {
       const user = await UserService.getUserByID(userId);
       const title = 'Your Request Has Been Approved!';
@@ -81,16 +104,14 @@ async function sendUnderReviewEmail(userId) {
         body: acceptanceContent, 
       });
   
-      const messageId = await EmailService.sendEmail(user.email, title, htmlContent, true);
+      const messageId = await sendEmail(user.email, title, htmlContent, true);
       return messageId;
     } catch (err) {
       throw err;
     }
   }
   
-
-  
-  async function sendRejectedEmail(userId) {
+async function sendRejectedEmail(userId) {
     try {
       const user = await UserService.getUserByID(userId);
       const title = 'Rejection of Your Request - Reason Provided';
@@ -107,12 +128,13 @@ async function sendUnderReviewEmail(userId) {
         body: rejectionContent, 
       });
   
-      const messageId = await EmailService.sendEmail(user.email, title, htmlContent, true);
+      const messageId = await sendEmail(user.email, title, htmlContent, true);
       return messageId;
     } catch (err) {
       throw err;
     }
   }
+
 async function VerifyUser(userId, token) {
   try {
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
@@ -123,6 +145,52 @@ async function VerifyUser(userId, token) {
     throw err;
   }
 }
+
+
+
+//Investors
+async function sendNewContactRequestEmail(userId, companyName,country) {
+  try {
+    const user = await UserService.getUserByID(userId);
+    const title = 'New Contact Request Notification';
+    const link = `${process.env.FRONTEND_URL}/Dashboard_investor#Contact Requests}`;
+
+    const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
+    const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
+
+    const contactRequestPath = path.join(__dirname, '..', 'templates', 'contactRequest.ejs');
+    const contactRequestContent = fs.readFileSync(contactRequestPath, 'utf-8');
+
+    const compiledTemplate = ejs.compile(commonTemplateContent);
+    const compiledTemplate2 = ejs.compile(contactRequestContent);
+
+    const htmlContent2 = compiledTemplate2({
+      link,
+      companyName,
+      country
+    });
+
+    const htmlContent = compiledTemplate({
+      title,
+      body: htmlContent2,
+    });
+
+    const messageId = await sendEmail(user.email, title, htmlContent, true);
+    return messageId;
+  } catch (err) {
+    throw err;
+  }
+}
+
+
+
+
+
+
+
+
+
+
 
 function generateVerificationToken(userId) {
   const expiresIn = '1h';
@@ -144,5 +212,5 @@ function isTokenExpired(decoded) {
   }
 }
 
-module.exports = { generateVerificationToken, isTokenExpired, sendVerificationEmail, VerifyUser, sendRejectedEmail,sendAcceptedEmail,sendUnderReviewEmail }
+module.exports = { sendEmail, generateVerificationToken, isTokenExpired, sendNewContactRequestEmail,sendVerificationEmail, VerifyUser, sendRejectedEmail,sendAcceptedEmail,sendUnderReviewEmail }
 
