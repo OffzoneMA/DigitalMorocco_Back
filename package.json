@@ -9,7 +9,7 @@
   },
   "scripts": {
     "serve": "nodemon index.js",
-    "start": "node config/swagger.js",
+    "start": "node index.js",
     "test": "jest --reporters=default --reporters=jest-html-reporters"
   },
   "keywords": [],
