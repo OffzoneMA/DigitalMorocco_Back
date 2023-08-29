@@ -15,16 +15,19 @@ const session = require('express-session');
 const { passport } = require("./config/passport-setup");
 const { checkSubscriptionStatus } = require("./services/MemberService");
 
-// Importez les dépendances pour Swagger
+// Swagger Imports
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const swaggerOptions = require('./config/swagger_config');
+
+const specs = swaggerJsdoc(swaggerOptions);
+
+
 
 const app = express();
 
-const swaggerOptions = require('./config/swagger_config');
-const specs = swaggerJsdoc(swaggerOptions);
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
 
 app.use(express.json());
 app.use(cors());
@@ -63,5 +66,9 @@ app.use("/requests", Requestouter);
 app.use("/subscriptions", SubscriptionRouter);
 app.use("/logs", UserLogRouter);
 app.use("/Sublogs", SubscriptionLogRouter);
+
+//Swagger route
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
 
 module.exports = app;

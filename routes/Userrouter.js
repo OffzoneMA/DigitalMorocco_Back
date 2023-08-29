@@ -57,7 +57,7 @@ router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAd
  * /complete_signup/{userid}:
  *   post:
  *     summary: Complete user signup
- *     description: Complete user signup process by providing necessary information
+ *     description: Complete user signup process by providing necessary information (Admin only)
  *     tags: [Users]
  *     parameters:
  *       - name: userid
@@ -66,8 +66,6 @@ router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAd
  *         required: true
  *         schema:
  *           type: string
- *     security:
- *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -75,28 +73,17 @@ router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAd
  *           schema:
  *             type: object
  *             properties:
- *               role:
- *                 type: string
- *                 enum: [member, investor, partner]
  *               rc_ice:
  *                 type: string
- *                 format: binary  # This field should only be used for 'member' role
- *               linkedin:
- *                 type: string    # This field should only be used for 'investor' role
- *               rc_number:
- *                 type: string    # This field should only be used for 'partner' role
+ *                 format: binary
+ *               role:
+ *                 type: string
+ *                 enum: [investor, member, partner]
  *             required:
+ *               - rc_ice
  *               - role
- *           examples:
- *             member:
- *               role: member
- *               rc_ice: 'file-content-here'
- *             investor:
- *               role: investor
- *               linkedin: 'linkedin-profile-link-here'
- *             partner:
- *               role: partner
- *               rc_number: 'rc-number-here'
+ *     security:
+ *       - BearerAuth: []
  *     responses:
  *       200:
  *         description: User signup completed successfully
@@ -109,7 +96,6 @@ router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAd
  *       500:
  *         description: Internal server error
  */
-
 
 router.route("/complete_signup/:userid").post(UserService.checkUserVerification,upload.single('rc_ice'), UserController.complete_signup)
 
@@ -184,23 +170,7 @@ router.route("/sendverify/:userid").get(UserController.sendVerification);
  */
 router.route("/confirm_verification/:userid").get(UserController.confirmVerification);
 
-/**
- * @swagger
- * /members?page=1:
- *   get:
- *     summary: Get user information
- *     description: Retrieve information about the authenticated user
- *     tags: [Users]
- *     security:
- *       - BearerAuth: []
- *     responses:
- *       200:
- *         description: Successful response
- *         content:
- *           application/json:
- *             example:
- *               message: User information
- */
+
 router.route("/UserInfo").get(AuthController.userInfo)
 /**
  * @swagger
