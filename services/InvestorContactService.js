@@ -1,16 +1,17 @@
+const EmailingService = require("./EmailingService");
 const Investor = require("../models/Investor");
 const Member = require("../models/Member");
 const ContactRequest = require("../models/ContactRequest");
 const MemberService = require("./MemberService");
 const InvestorService = require("./InvestorService");
-const EmailingService = require("./EmailingService");
+const UserService = require("./UserService");
 
 const User = require("../models/User");
 
 
 
 const CreateInvestorContactReq = async (memberId, investorId) => {
-        const cost = 3
+       const cost = 3
         const member = await MemberService.getMemberById(memberId)
         const investor = await InvestorService.getInvestorById(investorId)
         if (!member || !investor) {
@@ -27,7 +28,7 @@ const CreateInvestorContactReq = async (memberId, investorId) => {
         if (member?.credits < cost) {
             throw new Error('Not Enough Credits!')
         }
-        const contactrequest = await ContactRequest.create({ member: memberId, investor: investorId, cost :cost})
+        const contact = await ContactRequest.create({ member: memberId, investor: investorId, cost :cost})
 
        
         const updateMember = {
@@ -42,9 +43,9 @@ const CreateInvestorContactReq = async (memberId, investorId) => {
        const updatedMemeber = await Member.findByIdAndUpdate(memberId, updateMember)
 
        //Send Email Notification to the investor
-       const mail = await EmailingService.sendNewContactRequestEmail(investor.owner,member?.companyName,member?.country);
+       await EmailingService.sendNewContactRequestEmail(investor.owner,member?.companyName,member?.country);
 
-       return ("contactrequest")
+    return "contact"
 }
 
 const getAllContactRequest = async (args,role,id) => {
@@ -61,7 +62,7 @@ const getAllContactRequest = async (args,role,id) => {
     const totalCount = await ContactRequest.countDocuments(query);
     const totalPages = Math.ceil(totalCount / pageSize);
     const ContactsHistory = await ContactRequest.find(query).sort({ dateCreated: 'desc' })
-        .populate(role == "member" ? { path: 'investor', select: 'name linkedin_link' } : { path: 'member', select: '_id companyName logo country' } )
+        .populate(role == "member" ? { path: 'investor', select: 'name linkedin_link' } : { path: 'member', select: '_id companyName website city contactEmail logo country' } )
         .skip(skip)
         .limit(pageSize);
     return { ContactsHistory, totalPages }

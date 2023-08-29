@@ -30,6 +30,7 @@ const getUserByID = async (id) => {
     return await User.findById(id);
 }
 
+
 const approveUser = async (id,role) => {
     if (!(await User.findById(id))) {
         throw new Error('User doesn t exist !')
@@ -76,4 +77,4 @@ async function checkUserVerification(req, res, next) {
 }
 
 
-module.exports = { getUserByID, deleteUser, approveUser, rejectUser, getUsers, checkUserVerification, updateUser }
+module.exports = {  getUserByID, deleteUser, approveUser, rejectUser, getUsers, checkUserVerification, updateUser }

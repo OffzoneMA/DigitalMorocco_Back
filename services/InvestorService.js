@@ -1,6 +1,7 @@
 const Investor = require("../models/Investor");
 const Member = require("../models/Member");
 const ContactRequest = require("../models/ContactRequest");
+const EmailingService = require("../services/EmailingService");
 const MemberService = require("../services/MemberService");
 const InvestorService = require("../services/InvestorService");
 
@@ -50,9 +51,7 @@ const getInvestorByUserId = async (userId) => {
 }
 
 const updateContactStatus=async(investorId,requestId,response)=>{
-
-    const investor = await getInvestorById(investorId)
-    const request = await ContactRequest.find(requestId)
+    const request = await ContactRequest.findById(requestId)
     if (!request) {
         throw new Error('Request doesn t exist')
     }
@@ -81,7 +80,7 @@ const updateContactStatus=async(investorId,requestId,response)=>{
 }
 
 const acceptContact = async (investorId, requestId, memberId) => {
-    const request = await ContactRequest.findByIdAndUpdate(requestId, { status: "accepted" })
+   const request = await ContactRequest.findByIdAndUpdate(requestId, { status: "accepted" })
     const member = await Member.findByIdAndUpdate(memberId, {
         $push: { investorsRequestsAccepted:  investorId  },
         $pull: { investorsRequestsPending: investorId },
@@ -90,6 +89,8 @@ const acceptContact = async (investorId, requestId, memberId) => {
         $push: { membersRequestsAccepted: memberId },
         $pull: { membersRequestsPending: memberId },
     })
+    const mail = await EmailingService.sendContactAcceptToMember(member.owner, investor?.name, investor?.linkedin_link, request.dateCreated);
+
     return request
 
 
@@ -107,6 +108,8 @@ const rejectContact= async (investorId, requestId, memberId) => {
         //$push: { membersRequestsRejected: memberId },
         $pull: { membersRequestsPending: memberId },
     })
+   const mail = await EmailingService.sendContactRejectToMember(member.owner, investor?.name, investor?.linkedin_link, request.dateCreated);
+
     return request
 }
 
