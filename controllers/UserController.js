@@ -37,8 +37,10 @@ const complete_signup = async (req, res) => {
     let userId = req.params.userid
     let file = req?.file ? req?.file : null
     let data = isJsonString(req?.body) ? JSON.parse(req?.body) : req?.body
-    if (userId){
-   if (data?.role == "investor" || data?.role == "member" || data?.role == "partner") {
+    const user = await UserService.getUserByID(userId)
+    if (user && user?.role) res.status(400).json({ message: "Already has a Role!" });
+    if (user && !user?.role){
+     if (data?.role == "investor" || data?.role == "member" || data?.role == "partner") {
      const request= await RequestService.createRequest(data, userId, data?.role, file);
      const result = await EmailingService.sendUnderReviewEmail(userId);
      const log = await UserLogService.createUserLog('Account Under Review', userId);
