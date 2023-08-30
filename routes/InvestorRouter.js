@@ -9,4 +9,6 @@ router.route("/").get(AuthController.AuthenticateSubMemberOrAdmin,InvestorContro
 router.route("/ContactRequest").get(AuthController.AuthenticateInvestor, InvestorController.getContactRequests)
 router.route("/ContactRequest/:requestId").put(AuthController.AuthenticateInvestor, InvestorController.updateContactStatus)
 
+router.route("/Contacts").get(AuthController.AuthenticateInvestor, InvestorController.getContacts)
+
 module.exports = router
