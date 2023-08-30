@@ -19,7 +19,7 @@ const {passport} = require("../config/passport-setup")
  * /users:
  *   post:
  *     summary: Create a new user
- *     description: Create a new user with the provided information
+ *     description: Initial Signup 
  *     tags: [Users]
  *     requestBody:
  *       required: true
@@ -28,18 +28,12 @@ const {passport} = require("../config/passport-setup")
  *           schema:
  *             type: object
  *             properties:
- *               displayName:
- *                 type: string
  *               email:
- *                 type: string
- *               role:
  *                 type: string
  *               password:
  *                 type: string
  *             required:
- *               - displayName
  *               - email
- *               - role
  *               - password
  *     responses:
  *       200:
@@ -57,7 +51,7 @@ router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAd
  * /complete_signup/{userid}:
  *   post:
  *     summary: Complete user signup
- *     description: Complete user signup process by providing necessary information (Admin only)
+ *     description: Complete user signup process by providing necessary information
  *     tags: [Users]
  *     parameters:
  *       - name: userid
@@ -66,6 +60,8 @@ router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAd
  *         required: true
  *         schema:
  *           type: string
+ *     security:
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -73,17 +69,28 @@ router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAd
  *           schema:
  *             type: object
  *             properties:
- *               rc_ice:
- *                 type: string
- *                 format: binary
  *               role:
  *                 type: string
- *                 enum: [investor, member, partner]
+ *                 enum: [member, investor, partner]
+ *               rc_ice:
+ *                 type: string
+ *                 format: binary  
+ *               linkedin_link:
+ *                 type: string   
+ *               num_rc:
+ *                 type: string    
  *             required:
- *               - rc_ice
  *               - role
- *     security:
- *       - BearerAuth: []
+ *           examples:
+ *             member:
+ *               role: member
+ *               rc_ice: 'file-content-here'
+ *             investor:
+ *               role: investor
+ *               linkedin_link: 'linkedin-profile-link-here'
+ *             partner:
+ *               role: partner
+ *               num_rc: 'rc-number-here'
  *     responses:
  *       200:
  *         description: User signup completed successfully
