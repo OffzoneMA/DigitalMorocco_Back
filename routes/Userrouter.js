@@ -51,13 +51,13 @@ const {passport} = require("../config/passport-setup")
  *             example:
  *               message: Error message describing the issue
  */
-router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAdmin,UserController.getUsers).put(AuthController.AuthenticateUser, UserController.updateUser)
+router.route("/").post(UserController.addUser).get(UserController.getUsers).put(AuthController.AuthenticateUser, UserController.updateUser)
 /**
  * @swagger
  * /complete_signup/{userid}:
  *   post:
  *     summary: Complete user signup
- *     description: Complete user signup process by providing necessary information (Admin only)
+ *     description: Complete user signup process by providing necessary information
  *     tags: [Users]
  *     parameters:
  *       - name: userid
@@ -66,6 +66,8 @@ router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAd
  *         required: true
  *         schema:
  *           type: string
+ *     security:
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -73,17 +75,28 @@ router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAd
  *           schema:
  *             type: object
  *             properties:
- *               rc_ice:
- *                 type: string
- *                 format: binary
  *               role:
  *                 type: string
- *                 enum: [investor, member, partner]
+ *                 enum: [member, investor, partner]
+ *               rc_ice:
+ *                 type: string
+ *                 format: binary  
+ *               linkedin:
+ *                 type: string   
+ *               rc_number:
+ *                 type: string    
  *             required:
- *               - rc_ice
  *               - role
- *     security:
- *       - BearerAuth: []
+ *           examples:
+ *             member:
+ *               role: member
+ *               rc_ice: 'file-content-here'
+ *             investor:
+ *               role: investor
+ *               linkedin: 'linkedin-profile-link-here'
+ *             partner:
+ *               role: partner
+ *               rc_number: 'rc-number-here'
  *     responses:
  *       200:
  *         description: User signup completed successfully
@@ -96,6 +109,8 @@ router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAd
  *       500:
  *         description: Internal server error
  */
+
+
 
 router.route("/complete_signup/:userid").post(UserService.checkUserVerification,upload.single('rc_ice'), UserController.complete_signup)
 
@@ -170,7 +185,23 @@ router.route("/sendverify/:userid").get(UserController.sendVerification);
  */
 router.route("/confirm_verification/:userid").get(UserController.confirmVerification);
 
-
+/**
+ * @swagger
+ * /members?page=1:
+ *   get:
+ *     summary: Get user information
+ *     description: Retrieve information about the authenticated user
+ *     tags: [Users]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: User information
+ */
 router.route("/UserInfo").get(AuthController.userInfo)
 /**
  * @swagger
@@ -234,9 +265,13 @@ router.route("/User/:id").delete(UserController.deleteUser)
  */
 router.route("/Login").post(AuthController.login);
 
-
 /**
  * @swagger
+ * securityDefinitions:
+ *   BearerAuth:
+ *     type: apiKey
+ *     name: Authorization
+ *     in: header
  * /ApproveUser/{id}:
  *   get:
  *     summary: Approve a user
@@ -256,6 +291,11 @@ router.route("/Login").post(AuthController.login);
  *         schema:
  *           type: string
  *           enum: [investor, member, partner]
+ *       - name: Authorization
+ *         in: header
+ *         description: Bearer access token
+ *         required: true
+ *         type: string
  *     security:
  *       - BearerAuth: []
  *     responses:
@@ -278,6 +318,7 @@ router.route("/Login").post(AuthController.login);
  */
 
 router.route("/ApproveUser/:id").get(AuthController.AuthenticateAdmin, UserController.approveUser);
+
 
 /**
  * @swagger
