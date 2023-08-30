@@ -14,13 +14,11 @@ const SubscriptionLogRouter = require("./routes/SubscriptionLogRouter");
 const session = require('express-session');
 const { passport } = require("./config/passport-setup");
 const { checkSubscriptionStatus } = require("./services/MemberService");
-const { deleteFolder } = require("./services/FileService");
 
 // Swagger Imports
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const swaggerOptions = require('./config/swagger_config');
-const { deleteUser } = require("./services/UserService");
 
 const specs = swaggerJsdoc(swaggerOptions);
 
@@ -38,7 +36,7 @@ app.use(cors());
 mongoose.connect(process.env.MONGO_URL)
     .then(result => {
         // Start the server after successful database connection
-        app.listen(process.env.PORT, async () => {
+        app.listen(process.env.PORT, () => {
             console.log("Server is running!");
             app.use(passport.initialize());
             app.use(passport.session());
