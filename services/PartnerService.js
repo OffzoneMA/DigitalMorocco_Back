@@ -1,5 +1,6 @@
 const Partner = require("../models/Partner");
 const uploadService = require('./FileService')
+const PartnerReq = require("../models/Requests/Partner");
 
 const getAllPartners = async (args) => {
     const page = args.page || 1;
@@ -86,5 +87,19 @@ const partnerByNameExists = async (name) => {
 }
 
 
+const deletePartner = async (userId) => {
+    const partner = await getPartnerByUserId(userId)
+    if (partner) {
+          return await Partner.findByIdAndDelete(partner._id)
+    }
+    else {
+        await PartnerReq.findOneAndDelete({ user: userId })
+    }
+    await uploadService.deleteFolder('Partners/' + userId + "/documents")
+     await uploadService.deleteFolder('Partners/' + userId)
+     return true
 
-module.exports = { CreatePartner, getPartnerById, partnerByNameExists, createEnterprise, getAllPartners, getPartnerByUserId }
+}
+
+
+module.exports = { deletePartner,CreatePartner, getPartnerById, partnerByNameExists, createEnterprise, getAllPartners, getPartnerByUserId }

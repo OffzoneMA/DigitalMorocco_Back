@@ -5,6 +5,7 @@ const InvestorService = require('../services/InvestorService');
 const requestServive = require('../services/RequestService');
 const FileService = require('../services/FileService');
 const bcrypt = require('bcrypt');
+const UserLog = require('../models/UserLog');
 const salt=10
 
 
@@ -13,7 +14,12 @@ const getUsers = async (args) => {
 }
 
 const deleteUser = async (id) => {
-    return await User.deleteOne({ _id: id })
+    const user=await User.findById(id)
+    if (user?.role == "investor") await InvestorService.deleteInvestor(id)
+    if (user?.role == "member") await MemberService.deleteMember(id)
+    if (user?.role == "partner") await PartnerService.deletePartner(id)
+     await UserLog.deleteMany({ owner: id })
+     return await User.deleteOne({ _id: id })
 }
 
 const updateUser = async (userId,user) => {

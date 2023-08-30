@@ -26,7 +26,7 @@ const addUser = async (req, res) => {
   try { 
     const result = await AuthService.createUser(req.body);
     const log = await UserLogService.createUserLog('Account Initial Signup', result.user._id);
-    res.status(200).json(result);
+    res.status(201).json(result);
   } catch (error) {
     res.status(400).json({ message: error.message }); 
    }
@@ -114,9 +114,9 @@ const rejectUser = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   try {
-    const result = await UserService.deleteUser(req.params.id);
-    const log = await UserLogService.createUserLog('Account Delete', req.params.id);
-    res.status(200).json(result);
+    const result = await UserService.deleteUser(req?.userId);
+    //const log = await UserLogService.createUserLog('Account Delete', req.params.id);
+    res.status(204).json(result);
   } catch (error) {
     res.status(500).json(error);
   }
