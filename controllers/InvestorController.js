@@ -32,7 +32,14 @@ const getContactRequests = async (req, res) => {
     }
 }
 
-
+const getContacts = async (req, res) => {
+    try {
+        const result = await InvestorService.getContacts( req.investorId)
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: "Something went wrong!" });
+    }
+}
 
 const updateContactStatus = async (req, res) => {
     try {
@@ -44,4 +51,4 @@ const updateContactStatus = async (req, res) => {
     }
 };
 
-module.exports = { updateContactStatus,addInvestor, getInvestors, getContactRequests }
+module.exports = { updateContactStatus, addInvestor, getInvestors, getContactRequests, getContacts }

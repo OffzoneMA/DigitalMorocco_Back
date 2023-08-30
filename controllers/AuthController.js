@@ -114,7 +114,6 @@ const AuthenticateInvestor = async (req, res, next) => {
     const investor = await InvestorService.getInvestorByUserId(userInvestor?._id)
 
     if (investor) {
-
       req.investorId = investor._id
       next()
     }

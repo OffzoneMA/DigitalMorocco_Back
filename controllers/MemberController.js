@@ -16,6 +16,15 @@ const getMembers = async (req, res) => {
     }
 };
 
+const getContacts = async (req, res) => {
+    try {
+        const result = await MemberService.getContacts(req.memberId)
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: "Something went wrong!"});
+    }
+}
+
 const createEnterprise = async (req, res) => {
     try {
         let data = isJsonString(req?.body.infos) ? JSON.parse(req?.body.infos) : req?.body.infos
@@ -95,4 +104,4 @@ function isJsonString(str) {
 
 
 
-module.exports = { getMembers, createEnterprise, getByName, subUser, createProject, contactRequest, getContactRequests }
+module.exports = { getContacts,getMembers, createEnterprise, getByName, subUser, createProject, contactRequest, getContactRequests }

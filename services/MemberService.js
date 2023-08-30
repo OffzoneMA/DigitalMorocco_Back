@@ -227,4 +227,15 @@ const checkMemberSubscription = async (memberId) => {
     }
 };
 
-module.exports = { getAllMembers,createProject, checkSubscriptionStatus, CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus }
+
+const getContacts = async (memberId) => {
+    const investors = await Member.findById(memberId).select("investorsRequestsAccepted").populate({
+        path: 'investorsRequestsAccepted', select: '_id  name linkedin_link'
+    });
+    return investors.investorsRequestsAccepted
+}
+
+
+
+
+module.exports = { getContacts,getAllMembers,createProject, checkSubscriptionStatus, CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus }

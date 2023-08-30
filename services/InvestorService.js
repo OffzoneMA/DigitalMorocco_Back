@@ -24,7 +24,7 @@ const getAllInvestors = async (args) => {
 
     const totalCount = await Investor.countDocuments();
     const totalPages = Math.ceil(totalCount / pageSize);
-    const investors = await Investor.find()
+    const investors = await Investor.find().select("_id owner linkedin_link")
         .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } }, })
         .skip(skip)
         .limit(pageSize);
@@ -49,6 +49,14 @@ const investorByNameExists = async (name) => {
 const getInvestorByUserId = async (userId) => {
     return await Investor.findOne({ owner: userId });
 }
+
+const getContacts = async (investorId) => {
+    const members= await Investor.findById(investorId).select("membersRequestsAccepted").populate({
+        path: 'membersRequestsAccepted', select: '_id  country companyType owner logo companyName contactEmail city'
+    });
+    return members.membersRequestsAccepted
+}
+
 
 const updateContactStatus=async(investorId,requestId,response)=>{
     const request = await ContactRequest.findById(requestId)
@@ -114,4 +122,4 @@ const rejectContact= async (investorId, requestId, memberId) => {
 }
 
 
-module.exports = { CreateInvestor, getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, updateContactStatus }
+module.exports = { getContacts, CreateInvestor, getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, updateContactStatus }
