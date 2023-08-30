@@ -19,7 +19,7 @@ const {passport} = require("../config/passport-setup")
  * /users:
  *   post:
  *     summary: Create a new user
- *     description: Create a new user with the provided information
+ *     description: Initial Signup 
  *     tags: [Users]
  *     requestBody:
  *       required: true
@@ -28,18 +28,12 @@ const {passport} = require("../config/passport-setup")
  *           schema:
  *             type: object
  *             properties:
- *               displayName:
- *                 type: string
  *               email:
- *                 type: string
- *               role:
  *                 type: string
  *               password:
  *                 type: string
  *             required:
- *               - displayName
  *               - email
- *               - role
  *               - password
  *     responses:
  *       200:
@@ -81,9 +75,15 @@ router.route("/").post(UserController.addUser).get(UserController.getUsers).put(
  *               rc_ice:
  *                 type: string
  *                 format: binary  
+<<<<<<< HEAD
  *               linkedin:
  *                 type: string   
  *               rc_number:
+=======
+ *               linkedin_link:
+ *                 type: string   
+ *               num_rc:
+>>>>>>> c810a607ad90f974f99a72907c02afce1ab507ae
  *                 type: string    
  *             required:
  *               - role
@@ -93,10 +93,17 @@ router.route("/").post(UserController.addUser).get(UserController.getUsers).put(
  *               rc_ice: 'file-content-here'
  *             investor:
  *               role: investor
+<<<<<<< HEAD
  *               linkedin: 'linkedin-profile-link-here'
  *             partner:
  *               role: partner
  *               rc_number: 'rc-number-here'
+=======
+ *               linkedin_link: 'linkedin-profile-link-here'
+ *             partner:
+ *               role: partner
+ *               num_rc: 'rc-number-here'
+>>>>>>> c810a607ad90f974f99a72907c02afce1ab507ae
  *     responses:
  *       200:
  *         description: User signup completed successfully
@@ -296,6 +303,7 @@ router.route("/Login").post(AuthController.login);
  *         description: Bearer access token
  *         required: true
  *         type: string
+ *         example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Il9pZCI6IjY0YzE4MmMyZTM1MzM5MTJhYjUzOWY1OSIsImVtYWlsIjoiYWRtaW5AZ21haWwuY29tIiwicm9sZSI6IkFkbWluIn0sImlhdCI6MTY5MzM5OTI0Mn0.luTdtvRHoa71NMaOOmXOtnKfl0Q5at9S-C8YjCzvozc
  *     security:
  *       - BearerAuth: []
  *     responses:
@@ -316,8 +324,8 @@ router.route("/Login").post(AuthController.login);
  *       500:
  *         description: Internal server error
  */
-
 router.route("/ApproveUser/:id").get(AuthController.AuthenticateAdmin, UserController.approveUser);
+
 
 
 /**

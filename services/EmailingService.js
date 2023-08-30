@@ -32,7 +32,7 @@ async function sendEmail(userEmail, subject, emailContent, isHTML) {
 //Users
 async function sendVerificationEmail(userId) {
   try {
-    const user = await UserService.getUserByID(userId);
+    const user = await User.findById(userId);
     const title = 'Account Verification';
     const verificationLink = `${process.env.BACKEND_URL}/users/confirm_verification/${userId}?token=${generateVerificationToken(userId)}`;
 
@@ -63,7 +63,7 @@ async function sendVerificationEmail(userId) {
 
 async function sendUnderReviewEmail(userId) {
     try {
-      const user = await UserService.getUserByID(userId);
+      const user = await User.findById(userId);
       const title = 'Acknowledgement of Your Request - Under Review';
   
       const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
@@ -89,7 +89,7 @@ async function sendUnderReviewEmail(userId) {
 
 async function sendAcceptedEmail(userId) {
     try {
-      const user = await UserService.getUserByID(userId);
+      const user = await User.findById(userId);
       const title = 'Your Request Has Been Approved!';
   
       const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
@@ -113,7 +113,7 @@ async function sendAcceptedEmail(userId) {
   
 async function sendRejectedEmail(userId) {
     try {
-      const user = await UserService.getUserByID(userId);
+      const user = await User.findById(userId);
       const title = 'Rejection of Your Request - Reason Provided';
   
       const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
@@ -151,7 +151,7 @@ async function VerifyUser(userId, token) {
 //Investors
 async function sendNewContactRequestEmail(userId, companyName,country) {
   try {
-    const user = await UserService.getUserByID(userId);
+    const user = await User.findById(userId);
     const title = 'New Contact Request Notification';
     const link = `${process.env.FRONTEND_URL}/Dashboard_investor#Contact Requests}`;
 
@@ -175,6 +175,47 @@ async function sendNewContactRequestEmail(userId, companyName,country) {
       body: htmlContent2,
     });
 
+   const messageId = await sendEmail(user.email, title, htmlContent, true);
+    return messageId;
+  } catch (err) {
+    throw err;
+  }
+}
+
+async function sendContactAcceptToMember(userId, InvestorName, linkedin_link, reqDate) {
+  try {
+     const user = await User.findById(userId);
+    const title = 'Your contact request has been accepted! ';
+    const link = `${process.env.FRONTEND_URL}/Dashboard_member#Contact%20Requests}`;
+
+    const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
+    const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
+
+    const contactRequestAcceptedPath = path.join(__dirname, '..', 'templates', 'contactRequestAccepted.ejs');
+    const contactRequestAcceptedContent = fs.readFileSync(contactRequestAcceptedPath, 'utf-8');
+
+    const compiledTemplate = ejs.compile(commonTemplateContent);
+    const compiledTemplate2 = ejs.compile(contactRequestAcceptedContent);
+
+    const htmlContent2 = compiledTemplate2({
+      link,
+      InvestorName: InvestorName ? InvestorName : "No Name Specified",
+      linkedin_link,
+      reqDate: new Date(reqDate).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit'
+      })
+
+    });
+
+    const htmlContent = compiledTemplate({
+      title,
+      body: htmlContent2,
+    });
+
     const messageId = await sendEmail(user.email, title, htmlContent, true);
     return messageId;
   } catch (err) {
@@ -182,6 +223,46 @@ async function sendNewContactRequestEmail(userId, companyName,country) {
   }
 }
 
+async function sendContactRejectToMember(userId, InvestorName, linkedin_link, reqDate) {
+  try {
+     const user = await User.findById(userId);
+    const title = 'Your contact request has been rejected! ';
+    const link = `${process.env.FRONTEND_URL}/Dashboard_member#Contact%20Requests}`;
+
+    const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
+    const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
+
+    const contactRequestRejectedPath = path.join(__dirname, '..', 'templates', 'contactRequestRejected.ejs');
+    const contactRequestRejectedContent = fs.readFileSync(contactRequestRejectedPath, 'utf-8');
+
+    const compiledTemplate = ejs.compile(commonTemplateContent);
+    const compiledTemplate2 = ejs.compile(contactRequestRejectedContent);
+
+    const htmlContent2 = compiledTemplate2({
+      link,
+      InvestorName: InvestorName ? InvestorName : "No Name Specified",
+      linkedin_link,
+      reqDate: new Date(reqDate).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit'
+      })
+
+    });
+
+    const htmlContent = compiledTemplate({
+      title,
+      body: htmlContent2,
+    });
+
+    const messageId = await sendEmail(user.email, title, htmlContent, true);
+    return messageId;
+  } catch (err) {
+    throw err;
+  }
+}
 
 
 
@@ -212,5 +293,5 @@ function isTokenExpired(decoded) {
   }
 }
 
-module.exports = { sendEmail, generateVerificationToken, isTokenExpired, sendNewContactRequestEmail,sendVerificationEmail, VerifyUser, sendRejectedEmail,sendAcceptedEmail,sendUnderReviewEmail }
+module.exports = { sendEmail, generateVerificationToken, isTokenExpired, sendNewContactRequestEmail, sendContactAcceptToMember,sendContactRejectToMember,sendVerificationEmail, VerifyUser, sendRejectedEmail,sendAcceptedEmail,sendUnderReviewEmail }
 

@@ -37,6 +37,7 @@ router.route("/ContactRequest/:investorId").post(AuthController.AuthenticateSubM
 router.route("/ContactRequest").get(AuthController.AuthenticateMember, MemberController.getContactRequests)
 
 router.route("/SubscribeMember/:subid").get(AuthController.AuthenticateMember, MemberController.subUser)
+router.route("/Contacts").get(AuthController.AuthenticateMember, MemberController.getContacts)
 
 
 module.exports = router
