@@ -40,7 +40,7 @@ const createUser = async (u) => {
      const accessToken = await generateAccessToken(user)
      return { accessToken: accessToken, user: user }
 }
-
+ 
 const generateUserInfos = async (user) => {
     const accessToken = await generateAccessToken(user)
     let data
