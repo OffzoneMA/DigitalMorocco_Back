@@ -45,7 +45,7 @@ const {passport} = require("../config/passport-setup")
  *             example:
  *               message: Error message describing the issue
  */
-router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAdmin,UserController.getUsers).put(AuthController.AuthenticateUser, UserController.updateUser)
+router.route("/").post(UserController.addUser).get(UserController.getUsers).put(AuthController.AuthenticateUser, UserController.updateUser)
 /**
  * @swagger
  * /complete_signup/{userid}:
@@ -75,9 +75,15 @@ router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAd
  *               rc_ice:
  *                 type: string
  *                 format: binary  
+<<<<<<< HEAD
+ *               linkedin:
+ *                 type: string   
+ *               rc_number:
+=======
  *               linkedin_link:
  *                 type: string   
  *               num_rc:
+>>>>>>> c810a607ad90f974f99a72907c02afce1ab507ae
  *                 type: string    
  *             required:
  *               - role
@@ -87,10 +93,17 @@ router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAd
  *               rc_ice: 'file-content-here'
  *             investor:
  *               role: investor
+<<<<<<< HEAD
+ *               linkedin: 'linkedin-profile-link-here'
+ *             partner:
+ *               role: partner
+ *               rc_number: 'rc-number-here'
+=======
  *               linkedin_link: 'linkedin-profile-link-here'
  *             partner:
  *               role: partner
  *               num_rc: 'rc-number-here'
+>>>>>>> c810a607ad90f974f99a72907c02afce1ab507ae
  *     responses:
  *       200:
  *         description: User signup completed successfully
@@ -103,6 +116,8 @@ router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAd
  *       500:
  *         description: Internal server error
  */
+
+
 
 router.route("/complete_signup/:userid").post(UserService.checkUserVerification,upload.single('rc_ice'), UserController.complete_signup)
 
@@ -177,7 +192,23 @@ router.route("/sendverify/:userid").get(UserController.sendVerification);
  */
 router.route("/confirm_verification/:userid").get(UserController.confirmVerification);
 
-
+/**
+ * @swagger
+ * /members?page=1:
+ *   get:
+ *     summary: Get user information
+ *     description: Retrieve information about the authenticated user
+ *     tags: [Users]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: User information
+ */
 router.route("/UserInfo").get(AuthController.userInfo)
 /**
  * @swagger
@@ -241,9 +272,13 @@ router.route("/User/:id").delete(UserController.deleteUser)
  */
 router.route("/Login").post(AuthController.login);
 
-
 /**
  * @swagger
+ * securityDefinitions:
+ *   BearerAuth:
+ *     type: apiKey
+ *     name: Authorization
+ *     in: header
  * /ApproveUser/{id}:
  *   get:
  *     summary: Approve a user
@@ -263,6 +298,12 @@ router.route("/Login").post(AuthController.login);
  *         schema:
  *           type: string
  *           enum: [investor, member, partner]
+ *       - name: Authorization
+ *         in: header
+ *         description: Bearer access token
+ *         required: true
+ *         type: string
+ *         example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Il9pZCI6IjY0YzE4MmMyZTM1MzM5MTJhYjUzOWY1OSIsImVtYWlsIjoiYWRtaW5AZ21haWwuY29tIiwicm9sZSI6IkFkbWluIn0sImlhdCI6MTY5MzM5OTI0Mn0.luTdtvRHoa71NMaOOmXOtnKfl0Q5at9S-C8YjCzvozc
  *     security:
  *       - BearerAuth: []
  *     responses:
@@ -283,8 +324,9 @@ router.route("/Login").post(AuthController.login);
  *       500:
  *         description: Internal server error
  */
-
 router.route("/ApproveUser/:id").get(AuthController.AuthenticateAdmin, UserController.approveUser);
+
+
 
 /**
  * @swagger
