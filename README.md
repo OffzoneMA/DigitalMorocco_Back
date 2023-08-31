@@ -19,7 +19,7 @@
 ## Getting Started
 ```bash
 git clone https://github.com/OffzoneMA/DigitalMorocco_Back.git
-cd meeting-planner
+cd DigitalMorocco_Back
 npm install
 npm start
 ```
