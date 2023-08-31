@@ -1,8 +1,11 @@
 const Member = require("../models/Member");
+const SubscriptionLogs = require("../models/SubscriptionLogs");
+const Investor = require("../models/Investor");
 const ProjectSchema = require("../models/Project");
 const SubscriptionService = require("../services/SubscriptionService");
 const SubscriptionLogService = require("../services/SubscriptionLogService");
 const uploadService = require('./FileService')
+const MemberReq = require("../models/Requests/Member");
 
 
 
@@ -107,6 +110,33 @@ const createProject = async (memberId, infos,documents) => {
 
 
 }
+
+
+const deleteMember = async (userId) => {
+    const member = await getMemberByUserId(userId)
+    if (Member) {
+        //Contacts
+        await ContactRequest.deleteMany({ member: member._id })
+        await Investor.updateMany(
+            { $pull: { membersRequestsAccepted: member._id }, $pull: { membersRequestsPending: member._id } })
+       
+        //Subscriptions
+        await SubscriptionLogs.deleteMany({ member: member._id })
+
+        //Project
+        await ProjectSchema.deleteMany({ owner: member._id })
+
+        await Member.findByIdAndDelete(member._id)
+    }
+    else {
+        await MemberReq.findOneAndDelete({ user: userId })
+    }
+    await uploadService.deleteFolder('Members/' + userId +"/documents")
+    await uploadService.deleteFolder('Members/' + userId + "/Project_documents")
+    await uploadService.deleteFolder('Members/' + userId)
+
+}
+
 
 const getMemberById = async (id) => {
     return await Member.findById(id);
@@ -238,4 +268,4 @@ const getContacts = async (memberId) => {
 
 
 
-module.exports = { getContacts,getAllMembers,createProject, checkSubscriptionStatus, CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus }
+module.exports = { deleteMember,getContacts,getAllMembers,createProject, checkSubscriptionStatus, CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus }

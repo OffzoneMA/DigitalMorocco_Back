@@ -1,6 +1,7 @@
 const Investor = require("../models/Investor");
 const Member = require("../models/Member");
 const ContactRequest = require("../models/ContactRequest");
+const InvestorReq = require("../models/Requests/Investor");
 const EmailingService = require("../services/EmailingService");
 const MemberService = require("../services/MemberService");
 const InvestorService = require("../services/InvestorService");
@@ -48,6 +49,20 @@ const investorByNameExists = async (name) => {
 
 const getInvestorByUserId = async (userId) => {
     return await Investor.findOne({ owner: userId });
+}
+
+const deleteInvestor = async (userId) => {
+    const investor = await getInvestorByUserId(userId)
+    if (investor){
+        await ContactRequest.deleteMany({ investor: investor._id })
+        await Member.updateMany(
+            { $pull: { investorsRequestsAccepted: investor._id }, $pull: { investorsRequestsPending: investor._id } })      
+        return await Investor.findByIdAndDelete(investor._id)
+    }
+    else{
+         await InvestorReq.findOneAndDelete({ user: userId })
+    }
+    return true
 }
 
 const getContacts = async (investorId) => {
@@ -122,4 +137,4 @@ const rejectContact= async (investorId, requestId, memberId) => {
 }
 
 
-module.exports = { getContacts, CreateInvestor, getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, updateContactStatus }
+module.exports = { deleteInvestor,getContacts, CreateInvestor, getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, updateContactStatus }

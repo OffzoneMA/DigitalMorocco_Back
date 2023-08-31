@@ -40,7 +40,6 @@ mongoose.connect(process.env.MONGO_URL)
             console.log("Server is running!");
             app.use(passport.initialize());
             app.use(passport.session());
-
             //Checking the subscription expire date (For all members) every 24Hr
             const taskInterval = 24 * 60 * 60 * 1000; 
             setInterval(checkSubscriptionStatus, taskInterval);

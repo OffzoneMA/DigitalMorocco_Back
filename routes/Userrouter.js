@@ -13,7 +13,28 @@ const {passport} = require("../config/passport-setup")
  *   name: Users
  *   description: User management
  */
-
+/**
+ * @swagger
+ * /users:
+ *   delete:
+ *     summary: Delete a user
+ *     description: Delete a user by their ID
+ *     tags: [Users]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: ID of the user to delete
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
 /**
  * @swagger
  * /users:
@@ -45,7 +66,7 @@ const {passport} = require("../config/passport-setup")
  *             example:
  *               message: Error message describing the issue
  */
-router.route("/").post(UserController.addUser).get(UserController.getUsers).put(AuthController.AuthenticateUser, UserController.updateUser)
+router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAdmin,UserController.getUsers).put(AuthController.AuthenticateUser, UserController.updateUser)
 /**
  * @swagger
  * /complete_signup/{userid}:
@@ -210,29 +231,7 @@ router.route("/confirm_verification/:userid").get(UserController.confirmVerifica
  *               message: User information
  */
 router.route("/UserInfo").get(AuthController.userInfo)
-/**
- * @swagger
- * /User/{id}:
- *   delete:
- *     summary: Delete a user
- *     description: Delete a user by their ID
- *     tags: [Users]
- *     parameters:
- *       - name: id
- *         in: path
- *         description: ID of the user to delete
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: User deleted successfully
- *       404:
- *         description: User not found
- *       500:
- *         description: Internal server error
- */
-router.route("/User/:id").delete(UserController.deleteUser)
+
 /**
  * @swagger
  * /Login:
