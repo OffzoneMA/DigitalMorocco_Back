@@ -5,7 +5,7 @@ const UserController = require("../controllers/UserController")
 const UserService = require("../services/UserService")
 const { AuthorizationError } = require('passport-oauth2');
 const upload = require('../middelware/multer');
-const {passport} = require("../config/passport-setup")
+const { passport } = require("../config/passport-setup")
 
 /**
  * @swagger
@@ -13,28 +13,25 @@ const {passport} = require("../config/passport-setup")
  *   name: Users
  *   description: User management
  */
+
 /**
  * @swagger
- * /users:
+ * /users/:
  *   delete:
  *     summary: Delete a user
- *     description: Delete a user by their ID
+ *     description: Delete a user
  *     tags: [Users]
- *     parameters:
- *       - name: id
- *         in: path
- *         description: ID of the user to delete
- *         required: true
- *         schema:
- *           type: string
  *     responses:
- *       200:
+ *       204:
  *         description: User deleted successfully
  *       404:
  *         description: User not found
  *       500:
  *         description: Internal server error
  */
+
+
+
 /**
  * @swagger
  * /users:
@@ -66,7 +63,8 @@ const {passport} = require("../config/passport-setup")
  *             example:
  *               message: Error message describing the issue
  */
-router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAdmin,UserController.getUsers).put(AuthController.AuthenticateUser, UserController.updateUser)
+router.route("/").post(UserController.addUser).get(UserController.getUsers)
+    .put(AuthController.AuthenticateUser, UserController.updateUser).delete(AuthController.AuthenticateUser, UserController.deleteUser)
 /**
  * @swagger
  * /complete_signup/{userid}:
@@ -96,15 +94,9 @@ router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAd
  *               rc_ice:
  *                 type: string
  *                 format: binary  
-<<<<<<< HEAD
  *               linkedin:
  *                 type: string   
  *               rc_number:
-=======
- *               linkedin_link:
- *                 type: string   
- *               num_rc:
->>>>>>> c810a607ad90f974f99a72907c02afce1ab507ae
  *                 type: string    
  *             required:
  *               - role
@@ -114,17 +106,10 @@ router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAd
  *               rc_ice: 'file-content-here'
  *             investor:
  *               role: investor
-<<<<<<< HEAD
  *               linkedin: 'linkedin-profile-link-here'
  *             partner:
  *               role: partner
  *               rc_number: 'rc-number-here'
-=======
- *               linkedin_link: 'linkedin-profile-link-here'
- *             partner:
- *               role: partner
- *               num_rc: 'rc-number-here'
->>>>>>> c810a607ad90f974f99a72907c02afce1ab507ae
  *     responses:
  *       200:
  *         description: User signup completed successfully
@@ -140,14 +125,14 @@ router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAd
 
 
 
-router.route("/complete_signup/:userid").post(UserService.checkUserVerification,upload.single('rc_ice'), UserController.complete_signup)
+router.route("/complete_signup/:userid").post(UserService.checkUserVerification, upload.single('rc_ice'), UserController.complete_signup)
 
 
 router.get('/auth/linkedin', passport.authenticate('linkedin'));
 router.get('/auth/linkedin/callback', (req, res, next) => {
     passport.authenticate('linkedin', (err, user, info) => {
         if (err || info instanceof AuthorizationError || info?.error) {
-            return res.redirect(`${process.env.FRONTEND_URL}/${info?.error != undefined ? 'failure?error=' + info?.error + '' :'failure'}`);
+            return res.redirect(`${process.env.FRONTEND_URL}/${info?.error != undefined ? 'failure?error=' + info?.error + '' : 'failure'}`);
         }
         const auth = user?.auth;
         res.redirect(`${process.env.FRONTEND_URL}/success?auth=${auth}`);
@@ -302,7 +287,7 @@ router.route("/Login").post(AuthController.login);
  *         description: Bearer access token
  *         required: true
  *         type: string
- *         example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Il9pZCI6IjY0YzE4MmMyZTM1MzM5MTJhYjUzOWY1OSIsImVtYWlsIjoiYWRtaW5AZ21haWwuY29tIiwicm9sZSI6IkFkbWluIn0sImlhdCI6MTY5MzM5OTI0Mn0.luTdtvRHoa71NMaOOmXOtnKfl0Q5at9S-C8YjCzvozc
+ *         example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
  *     security:
  *       - BearerAuth: []
  *     responses:
@@ -374,4 +359,4 @@ router.route("/RejectUser/:id").get(AuthController.AuthenticateAdmin, UserContro
 
 
 
-module.exports=router
+module.exports = router
