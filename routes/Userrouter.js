@@ -18,17 +18,10 @@ const { passport } = require("../config/passport-setup")
  * /users:
  *   delete:
  *     summary: Delete a user
- *     description: Delete a user by their ID
+ *     description: Delete a user 
  *     tags: [Users]
- *     parameters:
- *       - name: id
- *         in: path
- *         description: ID of the user to delete
- *         required: true
- *         schema:
- *           type: string
  *     responses:
- *       200:
+ *       204:
  *         description: User deleted successfully
  *       404:
  *         description: User not found
@@ -57,7 +50,7 @@ const { passport } = require("../config/passport-setup")
  *               - email
  *               - password
  *     responses:
- *       200:
+ *       201:
  *         description: User created successfully
  *       400:
  *         description: Bad request
