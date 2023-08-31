@@ -194,7 +194,6 @@ router.route("/confirm_verification/:userid").get(UserController.confirmVerifica
 
 router.route("/UserInfo").get(AuthController.userInfo)
 
-router.route("/User/")
 /**
  * @swagger
  * /Login:
