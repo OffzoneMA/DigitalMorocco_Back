@@ -5,7 +5,7 @@ describe('User Logs', () => {
     let userId;
     let accessToken;
 
-  /*  it('should create a new user', async () => {
+   it('should create a new user', async () => {
         const user = {
             "email": "ouardini14+testingg@gmail.com",
             "password": "password",
@@ -18,7 +18,7 @@ describe('User Logs', () => {
         userId = response.body.user._id;
         accessToken = response.body.accessToken;
 
-    });*/
+    });
 
     it("Sign In user", async () => {
         const user = {
