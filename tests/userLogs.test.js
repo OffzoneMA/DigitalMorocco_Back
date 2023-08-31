@@ -17,7 +17,6 @@ describe('User Logs', () => {
         expect(response.status).toBe(201);
         userId = response.body.user._id;
         accessToken = response.body.accessToken;
-
     });
 
     it("Sign In user", async () => {

@@ -13,13 +13,12 @@ const { passport } = require("../config/passport-setup")
  *   name: Users
  *   description: User management
  */
-
 /**
  * @swagger
- * /users/:
+ * /users:
  *   delete:
  *     summary: Delete a user
- *     description: Delete a user
+ *     description: Delete a user 
  *     tags: [Users]
  *     responses:
  *       204:
@@ -29,9 +28,6 @@ const { passport } = require("../config/passport-setup")
  *       500:
  *         description: Internal server error
  */
-
-
-
 /**
  * @swagger
  * /users:
@@ -54,7 +50,7 @@ const { passport } = require("../config/passport-setup")
  *               - email
  *               - password
  *     responses:
- *       200:
+ *       201:
  *         description: User created successfully
  *       400:
  *         description: Bad request
@@ -63,8 +59,7 @@ const { passport } = require("../config/passport-setup")
  *             example:
  *               message: Error message describing the issue
  */
-router.route("/").post(UserController.addUser).get(UserController.getUsers)
-    .put(AuthController.AuthenticateUser, UserController.updateUser).delete(AuthController.AuthenticateUser, UserController.deleteUser)
+router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAdmin, UserController.getUsers).put(AuthController.AuthenticateUser, UserController.updateUser).delete(AuthController.AuthenticateUser, UserController.deleteUser)
 /**
  * @swagger
  * /complete_signup/{userid}:
@@ -94,9 +89,9 @@ router.route("/").post(UserController.addUser).get(UserController.getUsers)
  *               rc_ice:
  *                 type: string
  *                 format: binary  
- *               linkedin:
+ *               linkedin_link:
  *                 type: string   
- *               rc_number:
+ *               num_rc:
  *                 type: string    
  *             required:
  *               - role
@@ -106,10 +101,10 @@ router.route("/").post(UserController.addUser).get(UserController.getUsers)
  *               rc_ice: 'file-content-here'
  *             investor:
  *               role: investor
- *               linkedin: 'linkedin-profile-link-here'
+ *               linkedin_link: 'linkedin-profile-link-here'
  *             partner:
  *               role: partner
- *               rc_number: 'rc-number-here'
+ *               num_rc: 'rc-number-here'
  *     responses:
  *       200:
  *         description: User signup completed successfully
@@ -122,8 +117,6 @@ router.route("/").post(UserController.addUser).get(UserController.getUsers)
  *       500:
  *         description: Internal server error
  */
-
-
 
 router.route("/complete_signup/:userid").post(UserService.checkUserVerification, upload.single('rc_ice'), UserController.complete_signup)
 
@@ -198,23 +191,7 @@ router.route("/sendverify/:userid").get(UserController.sendVerification);
  */
 router.route("/confirm_verification/:userid").get(UserController.confirmVerification);
 
-/**
- * @swagger
- * /members?page=1:
- *   get:
- *     summary: Get user information
- *     description: Retrieve information about the authenticated user
- *     tags: [Users]
- *     security:
- *       - BearerAuth: []
- *     responses:
- *       200:
- *         description: Successful response
- *         content:
- *           application/json:
- *             example:
- *               message: User information
- */
+
 router.route("/UserInfo").get(AuthController.userInfo)
 
 /**
@@ -256,13 +233,9 @@ router.route("/UserInfo").get(AuthController.userInfo)
  */
 router.route("/Login").post(AuthController.login);
 
+
 /**
  * @swagger
- * securityDefinitions:
- *   BearerAuth:
- *     type: apiKey
- *     name: Authorization
- *     in: header
  * /ApproveUser/{id}:
  *   get:
  *     summary: Approve a user
@@ -282,12 +255,6 @@ router.route("/Login").post(AuthController.login);
  *         schema:
  *           type: string
  *           enum: [investor, member, partner]
- *       - name: Authorization
- *         in: header
- *         description: Bearer access token
- *         required: true
- *         type: string
- *         example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
  *     security:
  *       - BearerAuth: []
  *     responses:
@@ -308,9 +275,8 @@ router.route("/Login").post(AuthController.login);
  *       500:
  *         description: Internal server error
  */
+
 router.route("/ApproveUser/:id").get(AuthController.AuthenticateAdmin, UserController.approveUser);
-
-
 
 /**
  * @swagger
