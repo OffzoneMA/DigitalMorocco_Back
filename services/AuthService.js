@@ -36,6 +36,11 @@ const createUser = async (u) => {
     const password = u.password;
     const hashedPassword = await bcrypt.hash(password, salt)
     u.password = hashedPassword
+
+    //Verify if it's local test
+
+    u.status = process.env.NODE_ENV == 'test' ? 'verified' : 'notVerified'
+
      const user=await User.create(u)
      const accessToken = await generateAccessToken(user)
      return { accessToken: accessToken, user: user }
