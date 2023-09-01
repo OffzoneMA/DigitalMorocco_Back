@@ -83,28 +83,11 @@ const updateContactStatus=async(investorId,requestId,response)=>{
     else{
         throw new Error('Something went wrong !')
       }
-    /*  const memberId = 'your_member_id'; // Replace with the actual member ID
-    const requestId = 'your_request_id'; // Replace with the ID of the request you want to update
-    const newStatus = 'accepted'; // Replace with the new status
-
-    // Define the update object to set the status of the specific request
-    const update = {
-        $set: { 'InvestorsRequests.$[elem].status': newStatus },
-    };
-
-    // Define the array filter to identify the request by its _id
-    const arrayFilters = [{ 'elem._id': requestId }];
-
-    // Use findOneAndUpdate to update the Member document
-    Member.findOneAndUpdate(
-        { _id: memberId },
-        update,
-        { new: true, arrayFilters: arrayFilters })*/
 }
 
 const acceptContact = async (investorId, requestId, memberId) => {
    const request = await ContactRequest.findByIdAndUpdate(requestId, { status: "accepted" })
-    const member = await Member.findByIdAndUpdate(memberId, {
+   const member = await Member.findByIdAndUpdate(memberId, {
         $push: { investorsRequestsAccepted:  investorId  },
         $pull: { investorsRequestsPending: investorId },
     })
@@ -122,7 +105,7 @@ const acceptContact = async (investorId, requestId, memberId) => {
 
 const rejectContact= async (investorId, requestId, memberId) => {
 
-    const request = await ContactRequest.findByIdAndUpdate(requestId, { status:"rejected"})
+     const request = await ContactRequest.findByIdAndUpdate(requestId, { status:"rejected"})
     const member = await Member.findByIdAndUpdate(memberId, {
        // $push: { investorsRequestsRejected: investorId },
         $pull: { investorsRequestsPending: investorId },
@@ -132,7 +115,6 @@ const rejectContact= async (investorId, requestId, memberId) => {
         $pull: { membersRequestsPending: memberId },
     })
    const mail = await EmailingService.sendContactRejectToMember(member.owner, investor?.name, investor?.linkedin_link, request.dateCreated);
-
     return request
 }
 

@@ -153,7 +153,7 @@ async function sendNewContactRequestEmail(userId, companyName,country) {
   try {
     const user = await User.findById(userId);
     const title = 'New Contact Request Notification';
-    const link = `${process.env.FRONTEND_URL}/Dashboard_investor#Contact Requests}`;
+    const link = `${process.env.FRONTEND_URL}/Dashboard_investor#Contact Requests`;
 
     const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
     const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
@@ -186,7 +186,7 @@ async function sendContactAcceptToMember(userId, InvestorName, linkedin_link, re
   try {
      const user = await User.findById(userId);
     const title = 'Your contact request has been accepted! ';
-    const link = `${process.env.FRONTEND_URL}/Dashboard_member#Contact%20Requests}`;
+    const link = `${process.env.FRONTEND_URL}/Dashboard_member#Contacts`;
 
     const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
     const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
@@ -227,7 +227,7 @@ async function sendContactRejectToMember(userId, InvestorName, linkedin_link, re
   try {
      const user = await User.findById(userId);
     const title = 'Your contact request has been rejected! ';
-    const link = `${process.env.FRONTEND_URL}/Dashboard_member#Contact%20Requests}`;
+    const link = `${process.env.FRONTEND_URL}/Dashboard_member#Contact%20Requests`;
 
     const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
     const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
