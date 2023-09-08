@@ -1,4 +1,8 @@
 const InvestorService = require('../services/InvestorService');
+const MemberService = require('../services/MemberService');
+const UserLogService = require('../services/UserLogService');
+
+
 const InvestorContactService = require('../services/InvestorContactService');
 
 
@@ -42,6 +46,7 @@ const getContacts = async (req, res) => {
 }
 
 const updateContactStatus = async (req, res) => {
+
     try {
         const result = await InvestorService.updateContactStatus(req.investorId,req.params.requestId , req.body.response);
         res.status(200).json(req.body.response);

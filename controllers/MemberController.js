@@ -1,4 +1,5 @@
 const MemberService = require('../services/MemberService');
+const InvestorService = require('../services/InvestorService');
 const InvestorContactService = require('../services/InvestorContactService');
 const UserLogService = require('../services/UserLogService');
 const UserService = require('../services/UserService');
@@ -54,8 +55,11 @@ const createProject= async (req, res) => {
 const contactRequest = async (req, res) => {
     try {
         const result = await InvestorContactService.CreateInvestorContactReq(req.memberId,req.params.investorId)
-       // const member = await MemberService.getMemberById(req.memberId);
-       // const log = await UserLogService.createUserLog('Project Creation', member.owner);
+        const member = await MemberService.getMemberById(req.memberId);
+        const messageLog ='Request ID :'+result._id+' from member : '+req.memberId+' to investor : '+req.params.investorId;
+        const log = await UserLogService.createUserLog(messageLog, member.owner);
+        const investor =  await InvestorService.getInvestorById(req.params.investorId);
+        const logInvestor = await UserLogService.createUserLog(messageLog, investor.owner);
         res.status(200).json(result);
     } catch (error) {
         res.status(500).json({ message: error.message });

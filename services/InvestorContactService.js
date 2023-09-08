@@ -63,7 +63,7 @@ const CreateInvestorContactReq = async (memberId, investorId) => {
     await EmailingService.sendNewContactRequestEmail(investor.owner, member?.companyName, member?.country);
 
 
-    return "contact"
+    return contact
 }
 
 const getAllContactRequest = async (args, role, id) => {
