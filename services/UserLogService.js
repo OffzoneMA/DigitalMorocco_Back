@@ -14,7 +14,7 @@ const createUserLog = async (type,owner) => {
 const getAllUsersLogs = async (args) => {
         return await UserLog.find({
                 $or: [
-                        { envStatus: 'prod' },
+                        { envStatus: process.env.NODE_ENV === 'development' ? 'dev' : 'prod' },
                         { envStatus: null }
                 ]
         }).sort({ dateCreated: 'desc' }).populate({ path: 'owner', select: '_id email role' }).skip(args.start ? args.start : null).limit(args.qt ? args.qt : 8);
@@ -22,7 +22,7 @@ const getAllUsersLogs = async (args) => {
 
 const getAllUsersLogsByUser = async (userId,args) => {
         return await UserLog.find({ owner: userId, $or: [
-                        { envStatus: 'prod' },
+                        { envStatus:  process.env.NODE_ENV === 'development' ? 'dev' : 'prod' },
                         { envStatus: null }
                 ] }).sort({ dateCreated: 'desc' }).populate({ path: 'owner', select: '_id email role' }).skip(args.start ? args.start : null).limit(args.qt ? args.qt : 8);
 }

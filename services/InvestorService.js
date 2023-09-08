@@ -3,8 +3,9 @@ const Member = require("../models/Member");
 const ContactRequest = require("../models/ContactRequest");
 const InvestorReq = require("../models/Requests/Investor");
 const EmailingService = require("../services/EmailingService");
-const MemberService = require("../services/MemberService");
-const InvestorService = require("../services/InvestorService");
+const UserLogService = require('../services/UserLogService');
+
+
 
 
 const getAllInvestors = async (args) => {
@@ -95,6 +96,11 @@ const acceptContact = async (investorId, requestId, memberId) => {
         $push: { membersRequestsAccepted: memberId },
         $pull: { membersRequestsPending: memberId },
     })
+    
+        const logMessage ='Contact request with ID '+request._id+' is accepted';
+            
+        const log = await UserLogService.createUserLog(logMessage, investor.owner);
+        const logMember = await UserLogService.createUserLog(logMessage, member.owner);
     const mail = await EmailingService.sendContactAcceptToMember(member.owner, investor?.name, investor?.linkedin_link, request.dateCreated);
 
     return request
@@ -114,7 +120,11 @@ const rejectContact= async (investorId, requestId, memberId) => {
         //$push: { membersRequestsRejected: memberId },
         $pull: { membersRequestsPending: memberId },
     })
-   const mail = await EmailingService.sendContactRejectToMember(member.owner, investor?.name, investor?.linkedin_link, request.dateCreated);
+     const logMessage = 'Contact request with ID '+request._id+' is rejected';
+     const log = await UserLogService.createUserLog(logMessage, investor.owner);
+     const logMember = await UserLogService.createUserLog(logMessage, member.owner);
+
+     const mail = await EmailingService.sendContactRejectToMember(member.owner, investor?.name, investor?.linkedin_link, request.dateCreated);
     return request
 }
 

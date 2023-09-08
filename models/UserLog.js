@@ -4,8 +4,7 @@ const UserLogSchema = new mongoose.Schema({
     type:
     {
         type: String,
-        enum: ['Account Initial Signup', 'Account Signin', 'Account Under Review', 'Enterprise Edited', 'Project Creation', 
-            'Account Subscribed','Account Renew Subscription','Approved','Rejected','Verified','Account Signout','Account Update','Account Delete'],
+        
     },
     dateCreated: { type: Date, default: Date.now },
     owner: {
