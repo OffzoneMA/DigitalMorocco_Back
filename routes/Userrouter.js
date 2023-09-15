@@ -201,6 +201,8 @@ router.route("/UserInfo").get(AuthController.userInfo)
  *     summary: User login
  *     description: Authenticate a user and generate an authentication token
  *     tags: [Authentication]
+ *     security:
+ *       - jwtToken : []
  *     requestBody:
  *       required: true
  *       content:

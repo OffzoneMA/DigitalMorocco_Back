@@ -75,19 +75,20 @@ const getContacts = async (investorId) => {
 
 
 const updateContactStatus=async(investorId,requestId,response)=>{
-    const request = await ContactRequest.findById(requestId)
-    if (!request) {
-        throw new Error('Request doesn t exist')
+        const request = await ContactRequest.findById(requestId)
+        console.log('Response received:', response);
+        if (!request) {
+            throw new Error('Request doesn t exist')
+        }
+        if (response == "accepted") return await acceptContact(investorId, requestId, request.member);
+        if (response == "rejected") return await rejectContact(investorId, requestId, request.member);
+
     }
-    if (response == "accepted") return await acceptContact(investorId, requestId, request.member)
-    if (response == "rejected") return await rejectContact(investorId, requestId, request.member)
-    else{
-        throw new Error('Something went wrong !')
-      }
-}
+
+
 
 const acceptContact = async (investorId, requestId, memberId) => {
-   const request = await ContactRequest.findByIdAndUpdate(requestId, { status: "accepted" })
+   const request = await ContactRequest.findByIdAndUpdate(requestId, { status:"accepted" })
    const member = await Member.findByIdAndUpdate(memberId, {
         $push: { investorsRequestsAccepted:  investorId  },
         $pull: { investorsRequestsPending: investorId },
