@@ -1,5 +1,6 @@
 const Partner = require("../models/Partner");
-const uploadService = require('./FileService')
+const uploadService = require('./FileService');
+const Project = require("../models/Project");
 const PartnerReq = require("../models/Requests/Partner");
 
 const getAllPartners = async (args) => {
@@ -85,7 +86,16 @@ const getPartnerById = async (id) => {
 const partnerByNameExists = async (name) => {
     return await Partner.exists({ name: name })
 }
+const getProjects = async () => {
 
+    const projects = await Project.find({})
+                        .populate({
+                            path: 'owner',
+                            select: '_id country companyType owner logo companyName contactEmail city website', // Select the fields you want from the member (enterprise)
+                        })
+                        .select('_id name funding currency details milestoneProgress');
+    return projects;
+}
 
 const deletePartner = async (userId) => {
     const partner = await getPartnerByUserId(userId)
@@ -102,4 +112,4 @@ const deletePartner = async (userId) => {
 }
 
 
-module.exports = { deletePartner,CreatePartner, getPartnerById, partnerByNameExists, createEnterprise, getAllPartners, getPartnerByUserId }
+module.exports = { deletePartner,CreatePartner, getPartnerById, partnerByNameExists, createEnterprise, getAllPartners,getProjects, getPartnerByUserId }

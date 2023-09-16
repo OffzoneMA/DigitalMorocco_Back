@@ -64,4 +64,33 @@ const upload = require("../middelware/multer")
 router.route("/").get(PartnerController.getpartners).post(AuthController.AuthenticatePartner, upload.fields([{ name: 'logo', maxCount: 1 }, { name: 'files', maxCount: 5 }]) ,PartnerController.createEnterprise)
 
 
+/**
+ * @swagger
+ * /partners/Projects:
+ *   get:
+ *     summary: Get all member's projects 
+ *     description: list of all member's projects 
+ *     tags: [Partners]
+ *     security:
+ *       - jwtToken: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Error message describing the issue
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden (user not authorized)
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+router.route("/Projects").get(AuthController.AuthenticatePartner, PartnerController.getProjects)
+
 module.exports = router
