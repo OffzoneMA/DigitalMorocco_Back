@@ -1,5 +1,6 @@
 const Investor = require("../models/Investor");
 const Member = require("../models/Member");
+const Project = require("../models/Project");
 const ContactRequest = require("../models/ContactRequest");
 const InvestorReq = require("../models/Requests/Investor");
 const EmailingService = require("../services/EmailingService");
@@ -68,11 +69,21 @@ const deleteInvestor = async (userId) => {
 
 const getContacts = async (investorId) => {
     const members= await Investor.findById(investorId).select("membersRequestsAccepted").populate({
-        path: 'membersRequestsAccepted', select: '_id  country companyType owner logo companyName contactEmail city'
+        path: 'membersRequestsAccepted', select: '_id  country companyType owner logo companyName contactEmail city website'
     });
     return members.membersRequestsAccepted
 }
 
+const getProjects = async () => {
+
+    const projects = await Project.find({})
+                        .populate({
+                            path: 'owner',
+                            select: '_id country companyType owner logo companyName contactEmail city website', // Select the fields you want from the member (enterprise)
+                        })
+                        .select('_id name funding currency details milestoneProgress');
+    return projects;
+}
 
 const updateContactStatus=async(investorId,requestId,response)=>{
         const request = await ContactRequest.findById(requestId)
@@ -130,4 +141,4 @@ const rejectContact= async (investorId, requestId, memberId) => {
 }
 
 
-module.exports = { deleteInvestor,getContacts, CreateInvestor, getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, updateContactStatus }
+module.exports = { deleteInvestor,getContacts, getProjects, CreateInvestor, getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, updateContactStatus }
