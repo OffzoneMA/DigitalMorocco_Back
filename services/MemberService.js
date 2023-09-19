@@ -81,7 +81,7 @@ const createEnterprise = async (memberId, infos, documents, logo) => {
     }
 }
 
-const createProject = async (memberId, infos,documents) => {
+const createProject = async (memberId,infos,documents) => {
     const member = await Member.findById(memberId)
     if (!member) {
         throw new Error('Member doesn t exist !')
@@ -105,7 +105,8 @@ const createProject = async (memberId, infos,documents) => {
 
     }
     catch (err) {
-        throw new Error('Something went wrong !')
+        console.error('Error creating project:', err);
+        throw new Error('Something went wrong!');
     }
 
 
@@ -264,7 +265,6 @@ const getContacts = async (memberId) => {
     });
     return investors.investorsRequestsAccepted
 }
-
 
 
 
