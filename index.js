@@ -26,11 +26,16 @@ const specs = swaggerJsdoc(swaggerOptions);
 
 const app = express();
 
-
+const corsOptions = {
+    origin: 'https://digitalmorocco-dev.netlify.app', // Replace with your Netlify frontend URL
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, // Enable cookies or authentication headers
+    optionsSuccessStatus: 204, // Successful preflight status code
+  };
+app.use(cors(corsOptions));
 
 
 app.use(express.json());
-app.use(cors());
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URL)

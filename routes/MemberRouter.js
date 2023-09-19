@@ -86,11 +86,11 @@ router.route("/name/:name").get(MemberController.getByName)
  * @swagger
  * /members/project:
  *   post:
- *     summary: Create project for member
- *     description: create the project for the start-up by entering all the infos about the project
+ *     summary: Create a project for a member
+ *     description: Create a project for a member by providing project details and documents.
  *     tags: [Members]
  *     security:
- *       - jwtToken: []
+ *       - jwtToken: []  # Define the security scheme here if needed
  *     requestBody:
  *       required: true
  *       content:
@@ -104,47 +104,65 @@ router.route("/name/:name").get(MemberController.getByName)
  *               - listMembers
  *               - details
  *               - milestoneProgress
- *               - documents 
+ *               - documents
  *             properties:
- *               name: 
+ *               name:
  *                 type: string
+ *                 description: The name of the project.
  *               funding:
  *                 type: number
- *               currency: 
+ *                 description: The funding amount for the project.
+ *               currency:
  *                 type: string
- *                 enum: [MAD, €, $] 
+ *                 enum: [MAD, €, $]
+ *                 description: The currency of the funding amount.
  *               listMembers:
  *                 type: array
+ *                 description: List of team members working on the project.
  *                 items:
  *                   type: object
  *                   properties:
  *                     firstName:
  *                       type: string
+ *                       description: First name of the team member.
  *                     lastName:
  *                       type: string
+ *                       description: Last name of the team member.
  *                     role:
  *                       type: string
+ *                       description: Role of the team member.
  *                 required:
  *                   - firstName
  *                   - lastName
  *                   - role
- *               details: 
+ *               details:
  *                 type: string
+ *                 description: Details about the project.
  *               milestoneProgress:
- *                 type: string 
- *               documents:
+ *                 type: string
+ *                 description: Progress status of the project milestones.
+ *               files:
  *                 type: array
+ *                 description: List of project documents.
  *                 items:
  *                   type: object
  *                   properties:
  *                     name:
  *                       type: string
- *                     link: 
+ *                       description: Name of the document.
+ *                     link:
  *                       type: string
  *                       format: binary
+ *                       description: Document file (PDF, DOCX, etc.).
+ *                     type:
+ *                       type: string
+ *                       description: type of the document.
+ *                     date:
+ *                       type: string
+ *                       description: date of the document.
  *           example:
  *             name: "ProjectName"
- *             funding: 10000
+ *             funding: 10000.0
  *             currency: "€"
  *             listMembers:
  *               - firstName: "John"
@@ -155,6 +173,80 @@ router.route("/name/:name").get(MemberController.getByName)
  *     responses:
  *       200:
  *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                 owner:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 funding:
+ *                   type: number
+ *                 currency:
+ *                   type: string
+ *                 listMembers:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       firstName:
+ *                         type: string
+ *                       lastName:
+ *                         type: string
+ *                       role:
+ *                         type: string
+ *                 details:
+ *                   type: string
+ *                 milestoneProgress:
+ *                   type: string
+ *                 documents:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       name:
+ *                         type: string
+ *                       link:
+ *                         type: string
+ *                       type:
+ *                         type: string
+ *                       date:
+ *                         type: string
+ *               example:
+ *                 _id: "6506416714210c86698c9a0b"
+ *                 owner: "64fa0ba0292541eeda787241"
+ *                 name: "StartUP"
+ *                 funding: 7777777777.0
+ *                 currency: "€"
+ *                 listMembers:
+ *                   - firstName: "jjjjjjjjj"
+ *                     lastName: "jjjjjjjjjjj"
+ *                     role: "hhhhhhhh"
+ *                 details: "jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj"
+ *                 milestoneProgress: "jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj"
+ *                 documents:
+ *                   - name: "pitchDeck"
+ *                     link: "https://firebasestorage.googleapis.com/v0/b/digital-morocco-806c5.appspot.com/o/Members%2F64f9fa59bd2bd153bc8ff828%2FProject_documents%2FpitchDeck?alt=media&token=91fe9f36-0c85-4b6b-a296-6f556c200a6f"
+ *                     type: "application/pdf"
+ *                     date: "1694908775993"
+ *                   - name: "businessPlan"
+ *                     link: "https://firebasestorage.googleapis.com/v0/b/digital-morocco-806c5.appspot.com/o/Members%2F64f9fa59bd2bd153bc8ff828%2FProject_documents%2FbusinessPlan?alt=media&token=68f9c963-f922-413d-a44d-643e86728e36"
+ *                     type: "application/pdf"
+ *                     date: "1694908775994"
+ *                   - name: "financialProjection"
+ *                     link: "https://firebasestorage.googleapis.com/v0/b/digital-morocco-806c5.appspot.com/o/Members%2F64f9fa59bd2bd153bc8ff828%2FProject_documents%2FfinancialProjection?alt=media&token=177086e9-a568-4aa1-bfe8-b7da90acc37e"
+ *                     type: "application/pdf"
+ *                     date: "1694908775996"
+ *       400:
+ *         description: Bad Request - Invalid input data
+ *       401:
+ *         description: Unauthorized - JWT token is missing or invalid
+ *       500:
+ *         description: Internal Server Error
  */
 router.route("/project").post(AuthController.AuthenticateMember, upload.fields([{ name: 'files', maxCount: 8 }]), MemberController.createProject)
 
