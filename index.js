@@ -68,7 +68,10 @@ app.use("/logs", UserLogRouter);
 app.use("/Sublogs", SubscriptionLogRouter);
 
 //Swagger route
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+const options = {
+    customCss: '.swagger-ui .topbar { display: none }'
+}
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs,options));
 
 
 module.exports = app;
