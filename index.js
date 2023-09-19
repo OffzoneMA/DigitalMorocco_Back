@@ -26,13 +26,8 @@ const specs = swaggerJsdoc(swaggerOptions);
 
 const app = express();
 
-const corsOptions = {
-    origin: 'https://digitalmorocco-dev.netlify.app', // Replace with your Netlify frontend URL
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true, // Enable cookies or authentication headers
-    optionsSuccessStatus: 204, // Successful preflight status code
-  };
-app.use(cors(corsOptions));
+
+app.use(cors());
 
 
 app.use(express.json());
