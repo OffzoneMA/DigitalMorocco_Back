@@ -18,7 +18,9 @@ module.exports = {
               },
             },
           },
-       
+        servers:{
+            url: 'https://digitalmorocco-dev.vercel.app',
+        },
         },
     
     apis: ['./routes/*.js'],
