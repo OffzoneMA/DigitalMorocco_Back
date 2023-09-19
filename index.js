@@ -54,6 +54,7 @@ app.use(
         saveUninitialized: true,
     })
 );
+app.use('/swagger-ui', express.static('node_modules/swagger-ui-dist'));
 
 // Routes
 app.use("/users", Userouter);
