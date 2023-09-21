@@ -54,7 +54,6 @@ app.use(
         saveUninitialized: true,
     })
 );
-app.use('/swagger-ui', express.static('node_modules/swagger-ui-dist'));
 
 // Routes
 app.use("/users", Userouter);
@@ -68,10 +67,8 @@ app.use("/logs", UserLogRouter);
 app.use("/Sublogs", SubscriptionLogRouter);
 
 //Swagger route
-const options = {
-    customCss: '.swagger-ui .topbar { display: none }'
-}
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs,options));
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 
 module.exports = app;
