@@ -67,11 +67,10 @@ app.use("/subscriptions", SubscriptionRouter);
 app.use("/logs", UserLogRouter);
 app.use("/Sublogs", SubscriptionLogRouter);
 
-//Swagger route
-const options = {
-    customCss: '.swagger-ui .topbar { display: none }'
-}
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs,options));
+const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css";
+
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, { customCssUrl: CSS_URL }));
 
 
 module.exports = app;
