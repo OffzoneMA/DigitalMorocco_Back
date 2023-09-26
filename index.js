@@ -54,7 +54,6 @@ app.use(
         saveUninitialized: true,
     })
 );
-app.use('/swagger-ui', express.static('node_modules/swagger-ui-dist'));
 
 // Routes
 app.use("/users", Userouter);
@@ -67,10 +66,12 @@ app.use("/subscriptions", SubscriptionRouter);
 app.use("/logs", UserLogRouter);
 app.use("/Sublogs", SubscriptionLogRouter);
 
+
 const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css";
 
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, { customCssUrl: CSS_URL }));
+
 
 
 module.exports = app;
