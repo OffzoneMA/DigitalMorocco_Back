@@ -81,7 +81,7 @@ const getProjects = async () => {
                             path: 'owner',
                             select: '_id country companyType owner logo companyName contactEmail city website', // Select the fields you want from the member (enterprise)
                         })
-                        .select('_id name funding currency details milestoneProgress');
+                        .select('_id name funding currency details milestoneProgress documents');
     return projects;
 }
 
