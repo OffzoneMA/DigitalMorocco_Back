@@ -7,34 +7,44 @@ const SubscriptionLogService = require("../services/SubscriptionLogService");
 const uploadService = require('./FileService')
 const MemberReq = require("../models/Requests/Member");
 
-
-
 const getAllMembers = async (args) => {
-    const page = args.page || 1; 
+  try {
+    const page = args.page || 1;
     const pageSize = args.pageSize || 10;
     const skip = (page - 1) * pageSize;
 
-    const countries = args.countries ? args.countries.split(',') : [];
-    const sectors = args.sectors ? args.sectors.split(',') : [];
-    const stages = args.stages ? args.stages.split(',') : [];
+    const query = {
+      companyName: { $exists: true },
+      visibility: 'public',
+    };
 
-    const query = {};
-    query.companyName = { $exists: true }
-    query.visbility = 'public'
-    if(countries.length > 0)  query.country = { $in: countries };
-    if (sectors.length > 0) query.sector = { $in: sectors };
-    if (stages.length > 0) query.stage = { $in: stages };
+    if (args.countries && args.countries.length > 0) {
+      query.country = { $in: args.countries.split(',') };
+    }
+
+    if (args.sectors && args.sectors.length > 0) {
+      query.companyType = { $in: args.sectors.split(',') };
+    }
+
+    if (args.stages && args.stages.length > 0) {
+      query.stage = { $in: args.stages.split(',') };
+    }
 
     const totalCount = await Member.countDocuments(query);
     const totalPages = Math.ceil(totalCount / pageSize);
-    const members =await Member.find(query)
-                        .select("_id companyName website logo desc")
-                         .skip(skip)
-                         .limit(pageSize);
-    return { members, totalPages }
+    const members = await Member.find(query)
+      .select('_id companyName website logo desc companyType')
+      .skip(skip)
+      .limit(pageSize);
 
+    return { members, totalPages };
+  } catch (error) {
+    console.error('Error fetching members:', error);
+    throw new Error('Something went wrong');
+  }
+};
 
-}
+  
 
 const CreateMember = async (member) => {
     return await Member.create(member);
@@ -56,6 +66,7 @@ const createEnterprise = async (memberId, infos, documents, logo) => {
             city: infos.city,
             state: infos?.state,
             companyType: infos.companyType,
+            stage: infos.stage,
             taxNbr: infos.tin,
             corporateNbr: infos.cin,
             listEmployee: infos.listEmployees,

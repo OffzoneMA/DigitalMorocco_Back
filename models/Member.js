@@ -16,6 +16,8 @@ const MemberSchema = new mongoose.Schema({
     address: String,
     country: String,
     city: String,
+    companyType: String,
+    stage: String,
     state: String,
     companyType: String,
     taxNbr: String,
