@@ -91,6 +91,16 @@ const subUser = async (req, res) => {
         const result = await MemberService.SubscribeMember(req.memberId, req.params.subid);
         const member = await MemberService.getMemberById(req.memberId);
         const log = await UserLogService.createUserLog('Account Subscribed', member.owner);
+        const creditsAdded = member.credits;
+
+        // Create a log for "Credits added" with the number of credits
+        const creditsLog = await UserLogService.createUserLog(`Credits added: +${creditsAdded}`, member.owner);
+
+        // Calculate and format the expiry date
+        const expiry_date = member.expireDate;
+        // Create a log for "Expiry date: ..."
+        const expiryDateLog = await UserLogService.createUserLog(`Expiry date: ${expiry_date}`, member.owner);
+
         res.status(200).json(result);
     } catch (error) {
         res.status(500).json({ message: error.message }); 
