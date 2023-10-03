@@ -15,7 +15,7 @@ const getAllMembers = async (args) => {
 
     const query = {
       companyName: { $exists: true },
-      visibility: 'public',
+      visbility: 'public',
     };
 
     if (args.countries && args.countries.length > 0) {
