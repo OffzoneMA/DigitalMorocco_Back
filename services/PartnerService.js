@@ -88,7 +88,7 @@ const partnerByNameExists = async (name) => {
 }
 const getProjects = async () => {
 
-    const projects = await Project.find({})
+    const projects = await Project.find({ visbility : 'public' })
                         .populate({
                             path: 'owner',
                             select: '_id country companyType owner logo companyName contactEmail city website', // Select the fields you want from the member (enterprise)
