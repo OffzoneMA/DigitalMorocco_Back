@@ -1,7 +1,7 @@
 const Member = require("../models/Member");
 const SubscriptionLogs = require("../models/SubscriptionLogs");
 const Investor = require("../models/Investor");
-const ProjectSchema = require("../models/Project");
+const Project = require("../models/Project");
 const SubscriptionService = require("../services/SubscriptionService");
 const SubscriptionLogService = require("../services/SubscriptionLogService");
 const uploadService = require('./FileService')
@@ -92,36 +92,57 @@ const createEnterprise = async (memberId, infos, documents, logo) => {
     }
 }
 
-const createProject = async (memberId,infos,documents) => {
-    const member = await Member.findById(memberId)
+const createProject = async (memberId, infos, documents) => {
+    const member = await Member.findById(memberId);
     if (!member) {
-        throw new Error('Member doesn t exist !')
-    }
-    if (!member?.companyName) {
-        throw new Error('You must create an Entreprise !')
+        throw new Error('Member doesn\'t exist!');
     }
 
-    try {
-        let Docs = []
-        let project = {...infos}
+    // Check if the project already exists
+    let project = await Project.findOne({ owner: memberId });
 
+    if (!project) {
+        // If project doesn't exist, create a new one
+        project = new Project({
+            owner: memberId,
+            name: infos.name,
+            funding: infos.fundingAmount,
+            currency: infos.currency,
+            details: infos.details,
+            milestoneProgress: infos.milestoneProgress,
+            listMember: infos.listMembers,
+            visbility: infos.visbility,
+        });
+
+        // Save the project
+        await project.save();
+    } else {
+        // If project exists, update its fields
+        project.name = infos.name;
+        project.funding = infos.fundingAmount;
+        project.currency = infos.currency;
+        project.details = infos.details;
+        project.milestoneProgress = infos.milestoneProgress;
+        project.listMember = infos.listMembers;
+        project.visbility = infos.visbility;
+
+        // Check if there are documents to update
         if (documents?.files) {
-            for (const doc of documents?.files) {
-                let fileLink = await uploadService.uploadFile(doc, "Members/" + member.owner + "/Project_documents", doc.originalname)
-                Docs.push({ name: doc.originalname, link: fileLink, type: doc.mimetype })
+            let Docs = [];
+            for (const doc of documents.files) {
+                let fileLink = await uploadService.uploadFile(doc, "Members/" + member.owner + "/Project_documents", doc.originalname);
+                Docs.push({ name: doc.originalname, link: fileLink, type: doc.mimetype });
             }
-            project.documents = Docs
+            project.documents = Docs;
         }
-        return  await ProjectSchema.create({...project,owner:member._id})
 
-    }
-    catch (err) {
-        console.error('Error creating project:', err);
-        throw new Error('Something went wrong!');
+        // Save the updated project
+        await project.save();
     }
 
+    return project;
+};
 
-}
 
 
 const deleteMember = async (userId) => {

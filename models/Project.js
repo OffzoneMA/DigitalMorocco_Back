@@ -13,7 +13,7 @@ const ProjectSchema = new mongoose.Schema({
         type: String,
         enum: ['MAD','€','$'],
     },
-    listMembers: [{
+    listMember: [{
         firstName: { type: String },
         lastName: { type: String },
         role: { type: String },
