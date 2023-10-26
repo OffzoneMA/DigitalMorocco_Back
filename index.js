@@ -22,21 +22,36 @@ const swaggerOptions = require('./config/swagger_config');
 
 const specs = swaggerJsdoc(swaggerOptions);
 
-
-
 const app = express();
-
-
 app.use(cors());
-
-
 app.use(express.json());
 
+const httpServer = require("http").createServer(app);
+const io = require("socket.io")(httpServer);
+
+
+
+// Socket.IO logic for chat
+io.on("connection", (socket) => {
+    console.log("A user connected");
+  
+    // Handle chat messages
+    socket.on("chat message", (message) => {
+      // Broadcast the message to all connected clients, including the sender
+      io.emit("chat message", message);
+    });
+  
+    // Handle user disconnect
+    socket.on("disconnect", () => {
+      console.log("A user disconnected");
+    });
+  });
+  
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URL)
     .then(result => {
         // Start the server after successful database connection
-        app.listen(process.env.PORT, () => {
+        httpServer.listen(process.env.PORT, () => {
             console.log("Server is running!");
             app.use(passport.initialize());
             app.use(passport.session());

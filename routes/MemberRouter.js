@@ -349,4 +349,9 @@ router.route("/SubscribeMember/:subid").get(AuthController.AuthenticateMember, M
 router.route("/Contacts").get(AuthController.AuthenticateMember, MemberController.getContacts)
 
 
+router.route("/Chat/:investorId").post(AuthController.AuthenticateMember, MemberController.createChatRoomWithInvestor);
+router.route("/Chat/:conversationId").get(AuthController.AuthenticateMember, MemberController.getChatMessagesInRoom);
+router.route("/Chat/:conversationId").post(AuthController.AuthenticateMember, MemberController.sendChatMessageInRoom);
+router.route('/Conversations/:memberId').get(AuthController.AuthenticateMember, MemberController.getMemberConversations);
+
 module.exports = router

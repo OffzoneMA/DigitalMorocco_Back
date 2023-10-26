@@ -115,7 +115,72 @@ function isJsonString(str) {
     }
     return true;
 }
+const createChatRoomWithInvestor = async (req, res) => {
+    try {
+        
+        
+        const investorId = req.params.investorId;
+             
+        const memberId = req.memberId;
+        console.log('Creating chat room with Member ID:', memberId, 'and Investor ID:', investorId);
 
 
+      const conversation = await MemberService.createChatRoomWithInvestor(memberId, investorId);
+  
+      if (conversation) {
+        return res.status(200).json({ conversationId: conversation._id });
+      } else {
+        return res.status(400).json({ message: 'Failed to create a chat room.' });
+      }
+    } catch (error) {
 
-module.exports = { getContacts,getMembers, createEnterprise, getByName, subUser, createProject, contactRequest, getContactRequests }
+console.error('Error creating chat room:', error); // Log the specific error for debugging
+    return res.status(500).json({ message: 'Internal server error. Please check your request.' });    }
+  }
+  
+  
+  async function getChatMessagesInRoom(req, res) {
+    try {
+        const member = await MemberService.getMemberById(req.memberId);
+      const roomId = req.params.roomId;
+  
+      const messages = await MemberService.getChatMessagesInRoom(member, roomId);
+  
+      if (messages) {
+        return res.status(200).json(messages);
+      } else {
+        return res.status(400).json({ message: 'Failed to get chat messages.' });
+      }
+    } catch (error) {
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+  
+  async function sendChatMessageInRoom(req, res) {
+    try {
+      const memberId = req.user.id; // Assuming you have the authenticated member's ID in req.user.id
+      const roomId = req.params.roomId;
+      const text = req.body.text;
+  
+      const message = await MemberService.sendChatMessageInRoom(memberId, roomId, text);
+  
+      if (message) {
+        return res.status(200).json(message);
+      } else {
+        return res.status(400).json({ message: 'Failed to send chat message.' });
+      }
+    } catch (error) {
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+  async function getMemberConversations(req, res) {
+    const memberId = req.params.memberId;
+  
+    try {
+      const conversations = await MemberService.getMemberConversations(memberId);
+      return res.json(conversations);
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+module.exports = { getContacts,getMembers, createEnterprise, getByName, subUser, createProject, contactRequest, getContactRequests, createChatRoomWithInvestor, getChatMessagesInRoom, sendChatMessageInRoom, getMemberConversations }

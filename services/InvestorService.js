@@ -1,5 +1,7 @@
 const Investor = require("../models/Investor");
 const Member = require("../models/Member");
+const Conversation = require("../models/Conversation");
+const Message = require("../models/Message");
 const Project = require("../models/Project");
 const ContactRequest = require("../models/ContactRequest");
 const InvestorReq = require("../models/Requests/Investor");
@@ -140,5 +142,91 @@ const rejectContact= async (investorId, requestId, memberId) => {
     return request
 }
 
-
-module.exports = { deleteInvestor,getContacts, getProjects, CreateInvestor, getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, updateContactStatus }
+async function createChatRoomWithMember(investorId, memberId) {
+    try {
+      // Check if a conversation already exists between the investor and member
+      const existingConversation = await Conversation.findOne({
+        participants: [investorId, memberId],
+      });
+  
+      if (existingConversation) {
+        return existingConversation; // Conversation already exists, return it
+      }
+  
+      // Create a new conversation
+      const conversation = new Conversation({
+        participants: [investorId, memberId],
+      });
+  
+      await conversation.save();
+      return conversation;
+    } catch (error) {
+      throw error;
+    }
+  }
+  
+  async function getChatMessagesInRoom(investorId, roomId) {
+    try {
+      const conversation = await Conversation.findById(roomId);
+      if (!conversation) {
+        return null;
+      }
+  
+      if (!conversation.participants.includes(investorId)) {
+        return null;
+      }
+  
+      const messages = await Message.find({ _id: { $in: conversation.messages } });
+  
+      return messages;
+    } catch (error) {
+      throw error;
+    }
+  }
+  
+  async function sendChatMessageInRoom(investorId, roomId, text) {
+    try {
+      const conversation = await Conversation.findById(roomId);
+      if (!conversation) {
+        return null;
+      }
+  
+      if (!conversation.participants.includes(investorId)) {
+        return null;
+      }
+  
+      const message = new Message({
+        sender: investorId,
+        text,
+      });
+  
+      await message.save();
+      conversation.messages.push(message);
+      await conversation.save();
+  
+      return message;
+    } catch (error) {
+      throw error;
+    }
+  }
+  
+  async function getInvestorConversations(investorId) {
+    try {
+      // Find the member by memberId
+      const investor = await Member.findById(investorId);
+  
+      if (!investor) {
+        throw new Error('Investor not found'); // Handle this error as needed
+      }
+  
+      // Find conversations where the member is a participant
+      const conversations = await Conversation.find({
+        participants: investorId, // Assuming participants is an array of member/user IDs in Conversation model
+      });
+  
+      return conversations;
+    } catch (error) {
+      throw new Error('Error fetching investor conversations: ' + error.message);
+    }
+  }
+module.exports = { deleteInvestor,getContacts, getProjects, CreateInvestor, getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, updateContactStatus, createChatRoomWithMember, getChatMessagesInRoom, sendChatMessageInRoom, getInvestorConversations}

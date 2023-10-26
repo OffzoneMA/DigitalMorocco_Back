@@ -35,7 +35,12 @@ const InvestorSchema = new mongoose.Schema({
             ref: "Member"
         }
     ],*/
-
+    conversations: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Conversation",
+        },
+    ],
 
 
     dateCreated: { type: Date, default: Date.now },

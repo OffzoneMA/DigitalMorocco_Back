@@ -15,12 +15,17 @@ const UserSchema = new mongoose.Schema({
     password: String,
     dateCreated: { type: Date, default: Date.now },
     lastLogin: Date,
-    status:
-    {
+    status:{
         type: String,
         enum: ['accepted', 'pending', 'rejected', 'notVerified', 'verified'],
         default: 'notVerified'
     },
+    conversations: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Conversation",
+        },
+    ],
 
 })
 

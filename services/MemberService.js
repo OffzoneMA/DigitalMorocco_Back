@@ -1,4 +1,6 @@
 const Member = require("../models/Member");
+const Conversation = require("../models/Conversation");
+const Message = require("../models/Message");
 const SubscriptionLogs = require("../models/SubscriptionLogs");
 const Investor = require("../models/Investor");
 const Project = require("../models/Project");
@@ -299,5 +301,96 @@ const getContacts = async (memberId) => {
 }
 
 
+const createChatRoomWithInvestor = async (memberId, investorId) => {
+    try {
+        const member = await MemberService.getMemberById(memberId)
+        const investor = await InvestorService.getInvestorById(investorId)
+      // Check if a conversation already exists between the member and the investor
+      let conversation = await Conversation.findOne({
+        participants: { $all: [member._id, investor._id] },
+      });
+  
+      if (!conversation) {
+        // Create a new conversation if it doesn't exist
+        conversation = new Conversation({
+          participants: [member._id, investor._id],
+          messages: [],
+        });
+  
+        await conversation.save();
+      }
+  
+      return conversation;
+    } catch (error) {
+      throw error;
+    }
+  }
+  
+  async function getChatMessagesInRoom(memberId, conversationId) {
+    try {
+      const conversation = await Conversation.findById(conversationId).populate('messages');
+  
+      if (!conversation) {
+        return null;
+      }
+  
+      if (!conversation.participants.includes(memberId)) {
+        // Ensure that the member is a participant in the conversation
+        return null;
+      }
+  
+      return conversation.messages;
+    } catch (error) {
+      throw error;
+    }
+  }
+  
+  async function sendChatMessageInRoom(memberId, conversationId, text) {
+    try {
+      const conversation = await Conversation.findById(conversationId);
+  
+      if (!conversation) {
+        return null;
+      }
+  
+      if (!conversation.participants.includes(memberId)) {
+        // Ensure that the member is a participant in the conversation
+        return null;
+      }
+  
+      const message = new Message({
+        sender: memberId,
+        text,
+      });
+  
+      await message.save();
+      conversation.messages.push(message);
+      await conversation.save();
+  
+      return message;
+    } catch (error) {
+      throw error;
+    }
+  }
 
-module.exports = { deleteMember,getContacts,getAllMembers,createProject, checkSubscriptionStatus, CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus }
+  
+async function getMemberConversations(memberId) {
+    try {
+      // Find the member by memberId
+      const member = await Member.findById(memberId);
+  
+      if (!member) {
+        throw new Error('Member not found'); // Handle this error as needed
+      }
+  
+      // Find conversations where the member is a participant
+      const conversations = await Conversation.find({
+        participants: memberId, // Assuming participants is an array of member/user IDs in Conversation model
+      });
+  
+      return conversations;
+    } catch (error) {
+      throw new Error('Error fetching member conversations: ' + error.message);
+    }
+  }
+module.exports = { deleteMember,getContacts,getAllMembers,createProject, checkSubscriptionStatus, CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus,createChatRoomWithInvestor, getChatMessagesInRoom, sendChatMessageInRoom, getMemberConversations }

@@ -166,4 +166,10 @@ router.route("/Contacts").get(AuthController.AuthenticateInvestor, InvestorContr
  */
 router.route("/Projects").get(AuthController.AuthenticateInvestor, InvestorController.getProjects)
 
+router.route("/chat/:memberId").post(AuthController.AuthenticateInvestor, InvestorController.createChatRoomWithMember);
+
+router.route("/chat/:conversationId/messages").get(AuthController.AuthenticateInvestor, InvestorController.getChatMessagesInRoom);
+router.route("/chat/:conversationId/messages").post(AuthController.AuthenticateInvestor, InvestorController.sendChatMessageInRoom);
+router.route('/conversations/:investorId').get(AuthController.AuthenticateInvestor, InvestorController.getInvestorConversations);
+
 module.exports = router
