@@ -20,12 +20,7 @@ const UserSchema = new mongoose.Schema({
         enum: ['accepted', 'pending', 'rejected', 'notVerified', 'verified'],
         default: 'notVerified'
     },
-    conversations: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Conversation",
-        },
-    ],
+    
 
 })
 

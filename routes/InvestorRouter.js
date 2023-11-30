@@ -1,6 +1,7 @@
 const express = require("express")
 const router = express.Router()
 const InvestorController = require("../controllers/InvestorController")
+const MessageController = require("../controllers/MessageController")
 const AuthController = require("../controllers/AuthController")
 const upload = require("../middelware/multer")
 
@@ -166,10 +167,6 @@ router.route("/Contacts").get(AuthController.AuthenticateInvestor, InvestorContr
  */
 router.route("/Projects").get(AuthController.AuthenticateInvestor, InvestorController.getProjects)
 
-router.route("/chat/:memberId").post(AuthController.AuthenticateInvestor, InvestorController.createChatRoomWithMember);
-
-router.route("/chat/:conversationId/messages").get(AuthController.AuthenticateInvestor, InvestorController.getChatMessagesInRoom);
-router.route("/chat/:conversationId/messages").post(AuthController.AuthenticateInvestor, InvestorController.sendChatMessageInRoom);
-router.route('/conversations/:investorId').get(AuthController.AuthenticateInvestor, InvestorController.getInvestorConversations);
+// Add routes for send
 
 module.exports = router

@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken")
 const salt = 10
 const MemberService = require('../services/MemberService');
 const PartnerService = require('../services/PartnerService');
+const InvestorService = require('../services/InvestorService');
 const ProjectService = require('../services/ProjectService');
 
 
@@ -55,6 +56,10 @@ const generateUserInfos = async (user) => {
     if (user?.role == "partner") {
         let partner = await PartnerService.getPartnerByUserId(user._id)
         data = partner?._doc ? partner?._doc : partner
+    }
+    if (user?.role == "investor") {
+        let investor = await InvestorService.getInvestorByUserId(user._id)
+        data = investor?._doc ? investor?._doc : investor
     }
     const result = user?._doc ? { ...user._doc, [user?.role]: data } : { ...user, [user?.role]: data }
     return { accessToken: accessToken, user: result }

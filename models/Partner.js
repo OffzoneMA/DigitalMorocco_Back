@@ -39,12 +39,7 @@ const PartnerSchema = new mongoose.Schema({
         ref: "Subscription"
     }],*/
     num_rc: String,
-    conversations: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Conversation",
-        },
-    ],
+
     dateCreated: { type: Date, default: Date.now },
 
 })

@@ -56,12 +56,7 @@ const MemberSchema = new mongoose.Schema({
             ref: "Investor"
         }
     ],*/
-    conversations: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Conversation",
-        },
-    ],
+
 
     //Current subscription infos
     subscriptionId: {
