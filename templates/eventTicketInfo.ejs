@@ -1,0 +1,20 @@
+<p>Dear <%= AttendeeName %>,</p>
+
+<p>Welcome to our platform! We're excited to have you on board.</p>
+<p>You have successfully registered for the following event:</p>
+
+<p>Event Title: <%= eventTitle %></p>
+<p><strong>Date</strong></p>
+<p><%= eventDate %>&emsp;<%= eventTime %></p>
+
+<div class="cta-button">
+  <a href="<%= eventZoomLink %>">Join Event on Zoom.</a>
+</div>
+
+<p class="copy-link">If the button above doesn't work, you can also copy and paste the following Zoom link into your browser:</p>
+<a class="formatted-link" href="<%= eventZoomLink %>"><%= eventZoomLink %></a>
+
+<p>Please note that the Zoom meeting ID is: <%= eventZoomId %></p>
+<p>Password: <%= eventZoomPassword %></p>
+
+<p>If you have any questions or need further assistance, please don't hesitate to contact our support team.</p>

@@ -6,6 +6,7 @@ const ejs = require('ejs');
 const fs = require('fs');
 const path = require('path');
 const nodemailer = require('nodemailer');
+const Event = require('../models/Event');
 
 async function sendEmail(userEmail, subject, emailContent, isHTML) {
   const transporter = nodemailer.createTransport({
@@ -59,6 +60,38 @@ async function sendVerificationEmail(userId) {
   } catch (err) {
     throw err;
   }
+}
+
+async function sendForgotPasswordEmail(userId) {
+    try {
+      const user = await User.findById(userId);
+      const title = 'Reset Password';
+      const resetPasswordLink = `${process.env.FRONTEND_URL}/ResetPassword?token=${generateVerificationToken(userId)}`;
+      const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
+      const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
+
+      const resetPasswordPath = path.join(__dirname, '..', 'templates', 'resetPassword.ejs');
+      const accountVerificationContent = fs.readFileSync(resetPasswordPath, 'utf-8');
+
+      const compiledTemplate = ejs.compile(commonTemplateContent);
+      const compiledTemplate2 = ejs.compile(accountVerificationContent);
+
+      const htmlContent2 = compiledTemplate2({
+        resetPasswordLink,
+      });
+
+      const htmlContent = compiledTemplate({
+        title,
+        body: htmlContent2,
+      });
+
+      const messageId = await sendEmail(user.email, title, htmlContent, true);
+      return messageId;
+
+    } catch (error) {
+      throw error;
+    }
+
 }
 
 async function sendUnderReviewEmail(userId) {
@@ -146,6 +179,17 @@ async function VerifyUser(userId, token) {
   }
 }
 
+async function verifyResetToken(token) {
+  try {
+      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+      if(decoded.userId) {
+        return await User.findById(decoded.userId);
+      }
+  } catch (error) {
+      throw new Error('Invalid token');
+  }
+}
+
 
 
 //Investors
@@ -182,7 +226,7 @@ async function sendNewContactRequestEmail(userId, companyName,country) {
   }
 }
 
-async function sendContactAcceptToMember(userId, InvestorName, linkedin_link, reqDate) {
+async function sendContactAcceptToMember(userId, InvestorName, linkedin_link, eventDate) {
   try {
      const user = await User.findById(userId);
     const title = 'Your contact request has been accepted! ';
@@ -201,7 +245,7 @@ async function sendContactAcceptToMember(userId, InvestorName, linkedin_link, re
       link,
       InvestorName: InvestorName ? InvestorName : "No Name Specified",
       linkedin_link,
-      reqDate: new Date(reqDate).toLocaleDateString('en-US', {
+      eventDate: new Date(eventDate).toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
@@ -223,7 +267,7 @@ async function sendContactAcceptToMember(userId, InvestorName, linkedin_link, re
   }
 }
 
-async function sendContactRejectToMember(userId, InvestorName, linkedin_link, reqDate) {
+async function sendContactRejectToMember(userId, InvestorName, linkedin_link, eventDate) {
   try {
      const user = await User.findById(userId);
     const title = 'Your contact request has been rejected! ';
@@ -242,7 +286,7 @@ async function sendContactRejectToMember(userId, InvestorName, linkedin_link, re
       link,
       InvestorName: InvestorName ? InvestorName : "No Name Specified",
       linkedin_link,
-      reqDate: new Date(reqDate).toLocaleDateString('en-US', {
+      eventDate: new Date(eventDate).toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
@@ -264,13 +308,65 @@ async function sendContactRejectToMember(userId, InvestorName, linkedin_link, re
   }
 }
 
+//Events
+async function sendTicketToUser(billingData, eventId){
+  try {
+    const event = await Event.findById(eventId);
+    const title = 'Get Ready - Your Exclusive Event Ticket Details';
 
+    const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
+    const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
 
+    const eventTicketInfoPath = path.join(__dirname, '..', 'templates', 'eventTicketInfo.ejs');
+    const eventTicketInfoContent = fs.readFileSync(eventTicketInfoPath, 'utf-8');
 
+    const compiledTemplate = ejs.compile(commonTemplateContent);
+    const compiledTemplate2 = ejs.compile(eventTicketInfoContent);
 
+    const htmlContent2 = compiledTemplate2({
+      AttendeeName: `${billingData?.firstName} ${billingData?.lastName}`,
+      eventDate: new Date(eventDate).toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      }),
+      eventTitle : event.title,
+      eventTime: `${formatTime(event.startTime)} - ${formatTime(event.endTime)} ${getTimezoneOffset(event.startTime)}`,
+      eventZoomLink: event.zoomLink,
+      eventZoomId: event.zoomMeetingID,
+      eventZoomPassword: event.zoomPasscode,
+    });
 
+    const htmlContent = compiledTemplate({
+      title,
+      body: htmlContent2,
+    });
 
+    const messageId = await sendEmail(billingData.email, title, htmlContent, true);
+    return messageId;
 
+  } catch (error) {
+    throw error;
+  }
+}
+
+function formatTime(time) {
+  const formattedTime = new Date(`2000-01-01T${time}`).toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: true,
+  });
+
+  return formattedTime;
+}
+
+function getTimezoneOffset(time) {
+  const eventDate = new Date(`2000-01-01T${time}`);
+  const offset = eventDate.getTimezoneOffset();
+  
+  return offset === -60 ? '+01' : ''; // If offset is -60 minutes, it's GMT+1
+}
 
 
 function generateVerificationToken(userId) {
@@ -293,5 +389,8 @@ function isTokenExpired(decoded) {
   }
 }
 
-module.exports = { sendEmail, generateVerificationToken, isTokenExpired, sendNewContactRequestEmail, sendContactAcceptToMember,sendContactRejectToMember,sendVerificationEmail, VerifyUser, sendRejectedEmail,sendAcceptedEmail,sendUnderReviewEmail }
+module.exports = { sendEmail, generateVerificationToken, isTokenExpired, 
+  sendNewContactRequestEmail, sendContactAcceptToMember,sendContactRejectToMember,
+  sendVerificationEmail, VerifyUser, sendRejectedEmail,sendAcceptedEmail,
+  sendUnderReviewEmail,sendForgotPasswordEmail,verifyResetToken , sendTicketToUser}
 

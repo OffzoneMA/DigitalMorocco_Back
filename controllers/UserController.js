@@ -68,6 +68,34 @@ const sendVerification = async (req, res) => {
   }
 };
 
+const sendForgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await UserService.getUserByEmail(email);
+
+    if (!user) {
+        return res.status(404).json({ message: 'User not found.' });
+    }
+    const result = await EmailingService.sendForgotPasswordEmail(user._id);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
+
+const resetPassword = async (req , res) => {
+  try {
+    const { token, password, confirmPassword } = req.body;
+    console.log(password);
+
+    const result = await UserService.resetPassword(token, password , confirmPassword);
+    res.status(200).json(result);
+
+  } catch (error) {
+    res.status(500).json(error);
+  }
+}
+
 const confirmVerification = async (req, res) => {
   try {
     const result = await EmailingService.VerifyUser(req.params.userid,req.query.token);
@@ -132,4 +160,4 @@ function isJsonString(str) {
   return true;
 }
 
-module.exports = { updateUser,addUser, approveUser, rejectUser, deleteUser, getUsers, complete_signup, sendVerification, confirmVerification }
+module.exports = { updateUser,addUser, approveUser, rejectUser, deleteUser, getUsers, complete_signup, sendVerification, confirmVerification , sendForgotPassword , resetPassword}

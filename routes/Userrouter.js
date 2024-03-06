@@ -62,7 +62,7 @@ const { passport } = require("../config/passport-setup")
 router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAdmin, UserController.getUsers).put(AuthController.AuthenticateUser, UserController.updateUser).delete(AuthController.AuthenticateUser, UserController.deleteUser)
 /**
  * @swagger
- * /complete_signup/{userid}:
+ * /users/complete_signup/{userid}:
  *   post:
  *     summary: Complete user signup
  *     description: Complete user signup process by providing necessary information
@@ -120,6 +120,24 @@ router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAd
 
 router.route("/complete_signup/:userid").post(UserService.checkUserVerification, upload.single('rc_ice'), UserController.complete_signup)
 
+/**
+ * @swagger
+ *   /users/AllUsers:
+ *     get:
+ *       summary: Get all users
+ *       description: Retrieve a list of users
+ *       tags: [Users]
+ *       responses:
+ *         200:
+ *           description: Successful response
+ *           content:
+ *              application/json:
+ *                  example: { users: [ ] }
+ *         500:
+ *           description: Internal server error
+ */
+router.route("/AllUsers").get(AuthController.AllUsers)
+
 
 router.get('/auth/linkedin', passport.authenticate('linkedin'));
 router.get('/auth/linkedin/callback', (req, res, next) => {
@@ -143,9 +161,20 @@ router.get('/auth/google/callback', (req, res, next) => {
     })(req, res, next);
 });
 
+router.get('/auth/facebook', passport.authenticate('facebook'));
+router.get('/auth/facebook/callback', (req, res, next) => {
+    passport.authenticate('facebook', (err, user, info) => {
+        if (err || info instanceof AuthorizationError || info?.error) {
+            return res.redirect(`${process.env.FRONTEND_URL}/${info?.error != undefined ? 'failure?error=' + info?.error + '' : 'failure'}`);
+        }
+        const auth = user?.auth;
+        res.redirect(`${process.env.FRONTEND_URL}/success?auth=${auth}`);
+    })(req, res, next);
+});
+
 /**
  * @swagger
- * /sendverify/{userid}:
+ * /users/sendverify/{userid}:
  *   get:
  *     summary: Send email verification
  *     description: Send email verification link to a user by their ID
@@ -169,7 +198,63 @@ router.route("/sendverify/:userid").get(UserController.sendVerification);
 
 /**
  * @swagger
- * /confirm_verification/{userid}:
+ * /users/forgot-password:
+ *   post:
+ *     summary: Request to send forgot password email
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Email sent successfully
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal Server Error
+ */
+router.route("/forgot-password").post(UserController.sendForgotPassword);
+
+
+/**
+ * @swagger
+ * /users/reset-password:
+ *   post:
+ *     summary: Reset user password
+ *     tags: [Users]
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               token:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *               confirmPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *       400:
+ *         description: Bad Request - Passwords do not match
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal Server Error
+ */
+router.route("/reset-password").post(UserController.resetPassword);
+
+/**
+ * @swagger
+ * /users/confirm_verification/{userid}:
  *   get:
  *     summary: Confirm email verification
  *     description: Confirm email verification for a user by their ID
@@ -196,7 +281,7 @@ router.route("/UserInfo").get(AuthController.userInfo)
 
 /**
  * @swagger
- * /Login:
+ * /users/Login:
  *   post:
  *     summary: User login
  *     description: Authenticate a user and generate an authentication token
@@ -238,7 +323,7 @@ router.route("/Login").post(AuthController.login);
 
 /**
  * @swagger
- * /ApproveUser/{id}:
+ * /users/ApproveUser/{id}:
  *   get:
  *     summary: Approve a user
  *     description: Approve a user by their ID (Admin only)
@@ -277,12 +362,11 @@ router.route("/Login").post(AuthController.login);
  *       500:
  *         description: Internal server error
  */
-
 router.route("/ApproveUser/:id").get(AuthController.AuthenticateAdmin, UserController.approveUser);
 
 /**
  * @swagger
- * /RejectUser/{id}:
+ * /users/RejectUser/{id}:
  *   get:
  *     summary: Reject a user
  *     description: Reject a user by their ID (Admin only)

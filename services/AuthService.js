@@ -40,6 +40,15 @@ const createUser = async (u) => {
      const accessToken = await generateAccessToken(user)
      return { accessToken: accessToken, user: user }
 }
+
+const getAllUsers= async()=> {
+    try {
+      const users = await User.find();
+      return users;
+    } catch (error) {
+      throw new Error(`Error getting list of users : ${error.message}`);
+    }
+  }
  
 const generateUserInfos = async (user) => {
     const accessToken = await generateAccessToken(user)
@@ -68,4 +77,4 @@ const generateUserInfos = async (user) => {
 }
 
 
-module.exports = { signInUser, createUser, generateAccessToken, generateUserInfos }
+module.exports = { signInUser, createUser, generateAccessToken, generateUserInfos , getAllUsers}

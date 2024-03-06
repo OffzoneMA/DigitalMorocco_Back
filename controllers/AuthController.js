@@ -20,6 +20,15 @@ const login=async(req,res)=>{
 
 }
 
+const AllUsers=async(req,res)=>{
+  try{ 
+      const user=await AuthService.getAllUsers()
+      res.status(200).json(user)
+  }catch(error){
+    res.status(500).json(error.message)
+  }
+}
+
 const userInfo=async(req,res)=>{
   try{
     const authHeader = req.headers['authorization']
@@ -208,6 +217,6 @@ const AuthenticateSubMemberOrAdmin = async (req, res, next) => {
 }
 
 module.exports = {
-  AuthenticateUserOrAdmin,
+  AuthenticateUserOrAdmin, AllUsers,
   AuthenticateInvestor, AuthenticateSubMemberOrAdmin, AuthenticateSubMember, login, authenticateToken, userInfo, AuthenticateAdmin, AuthenticateMember, AuthenticateUser, AuthenticatePartner
 }

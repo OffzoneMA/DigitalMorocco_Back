@@ -36,6 +36,10 @@ const getUserByID = async (id) => {
     return await User.findById(id);
 }
 
+const getUserByEmail = async (email) => {
+    return await User.findOne({ email });
+}
+
 
 const approveUser = async (id,role) => {
     if (!(await User.findById(id))) {
@@ -82,5 +86,28 @@ async function checkUserVerification(req, res, next) {
     }
 }
 
+const resetPassword = async (token, newPassword, confirmPassword) => {
+    try {
+      const user = await EmailingService.verifyResetToken(token);
+  
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+  
+      if (newPassword !== confirmPassword) {
+        return res.status(400).json({ error: 'Passwords do not match' });
+      }
+  
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
+      user.password = hashedPassword;
 
-module.exports = {  getUserByID, deleteUser, approveUser, rejectUser, getUsers, checkUserVerification, updateUser }
+      return await User.findByIdAndUpdate(user._id, user)
+  
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  }
+  
+
+
+module.exports = {  getUserByID, deleteUser, approveUser, rejectUser, getUsers, checkUserVerification, updateUser , resetPassword , getUserByEmail}
