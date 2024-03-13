@@ -2,24 +2,25 @@ const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
     displayName: String,
+    googleId: String,
+    linkedinId: String,
     email: {
         type: String,
         unique: true
     },
-    role:{
+    role: {
         type: String,
-        enum: ['Admin', 'Partner','Investor','Member'],
-       
+        enum: ['Admin', 'partner', 'investor', 'member']
     },
     password: String,
-    dateCreated:Date,
-    lastLogin:Date,
-    approved:
-            {
+    dateCreated: { type: Date, default: Date.now },
+    lastLogin: Date,
+    status:
+    {
         type: String,
-        enum: ['accepted', 'pending','rejected'],
-        default: 'pending'
-    }
+        enum: ['accepted', 'pending', 'rejected', 'notVerified', 'verified'],
+        default: 'notVerified'
+    },
 
 })
 

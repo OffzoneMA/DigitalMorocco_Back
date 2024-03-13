@@ -7,20 +7,73 @@ const MemberSchema = new mongoose.Schema({
         unique: true,
         required: true
     },
-
-    name: {
+    //Entrepise Infos
+    companyName: String,
+    legalName: String,
+    website: String,
+    contactEmail: String,
+    desc:String,
+    address: String,
+    country: String,
+    city: String,
+    stage: String,
+    state: String,
+    companyType: String,
+    taxNbr: String,
+    corporateNbr: String,
+    logo: String,
+    listEmployee: [{
+        firstName: { type: String },
+        lastName: { type: String },
+    }],
+    legalDocument: [{
+        name: {type:String},
+        link: {type:String},
+        date: { type: Date, default: Date.now },
+        type: {type:String},
+    }],
+    visbility: {
         type: String,
-        unique: true,
-        required: true
+        enum: ['public', 'private'],
     },
+    rc_ice: String,
+    dateCreated: { type: Date, default: Date.now },
 
-    description: String,
-    image: String,
-    document: [{
-        name: String,
-        link: String,
-    }]
+    //Investors
+    investorsRequestsAccepted: [
+           { type: mongoose.Types.ObjectId,
+            ref: "Investor" }
+    ],
+    investorsRequestsPending: [
+        {
+            type: mongoose.Types.ObjectId,
+            ref: "Investor"
+        }
+    ],
+    /*investorsRequestsRejected: [
+        {
+            type: mongoose.Types.ObjectId,
+            ref: "Investor"
+        }
+    ],*/
 
+
+    //Current subscription infos
+    subscriptionId: {
+        type: mongoose.Types.ObjectId,
+        ref: "Subscription",
+    },
+    credits:{
+        type:Number,
+        default:0
+    },
+    subStatus:
+    {
+        type: String,
+        enum: ['notActive', 'active'],
+        default: 'notActive'
+    },
+    expireDate:Date,
 })
 
 

@@ -7,25 +7,38 @@ const InvestorSchema = new mongoose.Schema({
         unique: true,
         required: true
     },
-
-    invested_startups: {
-        type: mongoose.Types.ObjectId,
-        ref: "Member"
-        
-    },
-
-    name: {
-        type: String,
-        unique: true,
-        required: true
-    },
-
+    name:  String,
     description: String,
     image: String,
+    linkedin_link: String,
     document: [{
         name: String,
         link: String,
-    }]
+    }],
+
+    //Members Requests
+    membersRequestsAccepted: [
+        {
+            type: mongoose.Types.ObjectId,
+            ref: "Member"
+        }
+    ],
+    membersRequestsPending: [
+        {
+            type: mongoose.Types.ObjectId,
+            ref: "Member"
+        }
+    ],
+    /*membersRequestsRejected: [
+        {
+            type: mongoose.Types.ObjectId,
+            ref: "Member"
+        }
+    ],*/
+
+
+
+    dateCreated: { type: Date, default: Date.now },
 
 })
 
