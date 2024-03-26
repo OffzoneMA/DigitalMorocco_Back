@@ -62,6 +62,37 @@ async function sendVerificationEmail(userId) {
   }
 }
 
+async function sendVerificationOtpEmail(userId , otpCode) {
+  try {
+    const user = await User.findById(userId);
+    const title = 'Account Verification';
+
+    const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
+    const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
+
+    const accountVerificationPath = path.join(__dirname, '..', 'templates', 'accountVerificationOtp.ejs');
+    const accountVerificationContent = fs.readFileSync(accountVerificationPath, 'utf-8');
+
+    const compiledTemplate = ejs.compile(commonTemplateContent);
+    const compiledTemplate2 = ejs.compile(accountVerificationContent);
+
+    const htmlContent2 = compiledTemplate2({
+      otpCode,
+    });
+
+    const htmlContent = compiledTemplate({
+      title,
+      body: htmlContent2,
+    });
+
+    const messageId = await sendEmail(user.email, title, htmlContent, true);
+    return messageId;
+  } catch (err) {
+    throw err;
+  }
+}
+
+
 async function sendForgotPasswordEmail(userId) {
     try {
       const user = await User.findById(userId);
@@ -391,6 +422,6 @@ function isTokenExpired(decoded) {
 
 module.exports = { sendEmail, generateVerificationToken, isTokenExpired, 
   sendNewContactRequestEmail, sendContactAcceptToMember,sendContactRejectToMember,
-  sendVerificationEmail, VerifyUser, sendRejectedEmail,sendAcceptedEmail,
+  sendVerificationEmail, sendVerificationOtpEmail, VerifyUser, sendRejectedEmail,sendAcceptedEmail,
   sendUnderReviewEmail,sendForgotPasswordEmail,verifyResetToken , sendTicketToUser}
 

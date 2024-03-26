@@ -44,12 +44,13 @@ const getAllMembers = async (args) => {
   }
 };
 
-  
-
-const CreateMember = async (member) => {
-    return await Member.create(member);
+async function getTestAllMembers() {
+    return await Member.find();
 }
 
+const CreateMember = async (userId, member) => {
+    return await Member.create({ ...member, owner: userId });
+};
 
 const createEnterprise = async (memberId, infos, documents, logo) => {
     try {
@@ -89,6 +90,66 @@ const createEnterprise = async (memberId, infos, documents, logo) => {
     }
     catch (err) {
         throw new Error('Something went wrong !')
+    }
+}
+
+const createCompany = async (memberId, companyData, logoFile) => {
+    try {
+        const member = await getMemberById(memberId);
+
+        let updatedCompanyData = { ...companyData };
+
+        if (logoFile) {
+            const logoURL = await uploadService.uploadFile(logoFile, 'Members/', + member.owner + "", 'logo');
+            updatedCompanyData.logo = logoURL;
+            console.log(logoURL)
+        }
+
+        const updatedMember = await Member.findByIdAndUpdate(memberId, updatedCompanyData);
+
+        return updatedMember;
+    } catch (error) {
+        console.log(error);
+        throw new Error('Error creating company', error);
+    }
+};
+
+const createEmployee = async (memberId, employeeData , photo)=> {
+    try {
+        const member = await getMemberById(memberId)
+        if (!member) {
+            throw new Error('Member not found');
+        }
+        if (photo) {
+            const logoURL = await uploadService.uploadFile(photo, 'Members/', + member.owner + "/employees", photo.originalname);
+            employeeData.image = logoURL;
+        }
+        member.listEmployee.push(employeeData);
+        const savedEmployee = await member.save();
+        return savedEmployee.listEmployee[savedEmployee.listEmployee.length - 1];
+    } catch (error) {
+        console.log(error);
+        throw new Error('Error creating employee' , error);
+    }
+}
+
+const createLegalDocument = async (memberId, documentData , docFile)=> {
+    try {
+        const member = await getMemberById(memberId)
+        if (!member) {
+            throw new Error('Member not found');
+        }
+        if (docFile) {
+            const docURL = await uploadService.uploadFile(docFile, 'Members/', + member.owner + "/documents", docFile.originalname);
+            documentData.link = docURL;
+            documentData.type = docFile.mimetype;
+            documentData.name = docFile.originalname;
+        }
+        member.legalDocument.push(documentData);
+        const savedDocument = await member.save();
+        return savedDocument.legalDocument[savedDocument.legalDocument.length - 1];
+    } catch (error) {
+        throw new Error('Error creating legal document');
     }
 }
 
@@ -143,7 +204,28 @@ const createProject = async (memberId, infos, documents) => {
     return project;
 };
 
+async function createTestProject(ownerId, projectData , documentsFiles) {
+    try {
+      const member = await Member.findById(ownerId);
+      if (!member) {
+        throw new Error("Member not found");
+    }
+      const project = new Project({ owner: ownerId, ...projectData });
 
+      if (documentsFiles) {
+        let Docs = [];
+        for (const doc of documentsFiles) {
+            let fileLink = await uploadService.uploadFile(doc, "Members/" + member.owner + "/Project_documents", doc.originalname);
+            Docs.push({ name: doc.originalname, link: fileLink, type: doc.mimetype });
+        }
+        project.documents = Docs;
+    }
+      const savedProject = await project.save();
+      return savedProject;
+    } catch (error) {
+      throw error;
+    }
+  }
 
 const deleteMember = async (userId) => {
     const member = await getMemberByUserId(userId)
@@ -300,4 +382,7 @@ const getContacts = async (memberId) => {
 
 
 
-module.exports = { deleteMember,getContacts,getAllMembers,createProject, checkSubscriptionStatus, CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus }
+module.exports = { deleteMember,getContacts,getAllMembers,createProject, checkSubscriptionStatus, 
+    CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, 
+    SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus ,
+    createCompany , createEmployee, createLegalDocument , getTestAllMembers , createTestProject} 

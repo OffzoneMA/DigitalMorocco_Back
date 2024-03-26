@@ -1,9 +1,11 @@
 const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
+    fullName: String,
     displayName: String,
     googleId: String,
     linkedinId: String,
+    facebookId: String,
     email: {
         type: String,
         unique: true

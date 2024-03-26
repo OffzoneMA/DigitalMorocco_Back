@@ -146,7 +146,7 @@ router.get('/auth/linkedin/callback', (req, res, next) => {
             return res.redirect(`${process.env.FRONTEND_URL}/${info?.error != undefined ? 'failure?error=' + info?.error + '' : 'failure'}`);
         }
         const auth = user?.auth;
-        res.redirect(`${process.env.FRONTEND_URL}/success?auth=${auth}`);
+        res.redirect(`${process.env.FRONTEND_URL}/SocialSignUp?auth=${auth}`);
     })(req, res, next);
 });
 
@@ -157,7 +157,7 @@ router.get('/auth/google/callback', (req, res, next) => {
             return res.redirect(`${process.env.FRONTEND_URL}/${info?.error != undefined ? 'failure?error=' + info?.error + '' : 'failure'}`);
         }
         const auth = user?.auth;
-        res.redirect(`${process.env.FRONTEND_URL}/success?auth=${auth}`);
+        res.redirect(`${process.env.FRONTEND_URL}/SocialSignUp?auth=${auth}`);
     })(req, res, next);
 });
 
@@ -168,7 +168,7 @@ router.get('/auth/facebook/callback', (req, res, next) => {
             return res.redirect(`${process.env.FRONTEND_URL}/${info?.error != undefined ? 'failure?error=' + info?.error + '' : 'failure'}`);
         }
         const auth = user?.auth;
-        res.redirect(`${process.env.FRONTEND_URL}/success?auth=${auth}`);
+        res.redirect(`${process.env.FRONTEND_URL}/SocialSignUp?auth=${auth}`);
     })(req, res, next);
 });
 

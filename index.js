@@ -11,6 +11,9 @@ const Requestouter = require("./routes/Requestrouter");
 const SubscriptionRouter = require("./routes/SubscriptionRouter");
 const UserLogRouter = require("./routes/UserLogRouter");
 const SubscriptionLogRouter = require("./routes/SubscriptionLogRouter");
+const EventRouter = require("./routes/EventRouter")
+const BlogRouter = require("./routes/BlogRouter")
+const OtpRouter = require("./routes/Otprouter")
 const session = require('express-session');
 const { passport } = require("./config/passport-setup");
 const { checkSubscriptionStatus } = require("./services/MemberService");
@@ -33,7 +36,7 @@ app.use(cors());
 app.use(express.json());
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URL)
+mongoose.connect(process.env.MONGO_URL ,{ useNewUrlParser: true, useUnifiedTopology: true })
     .then(result => {
         // Start the server after successful database connection
         app.listen(process.env.PORT, () => {
@@ -65,7 +68,9 @@ app.use("/requests", Requestouter);
 app.use("/subscriptions", SubscriptionRouter);
 app.use("/logs", UserLogRouter);
 app.use("/Sublogs", SubscriptionLogRouter);
-
+app.use("/events", EventRouter);
+app.use("/blogs", BlogRouter);
+app.use("/users/otp", OtpRouter);
 
 const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css";
 

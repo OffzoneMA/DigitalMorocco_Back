@@ -35,7 +35,7 @@ const createEnterprise = async (req, res) => {
 
 const getProjects = async (req, res) => {
     try {
-        const result = await PartnerService.getProjects( req.partnerId)
+        const result = await PartnerService.getProjects()
         res.status(200).json(result);
     } catch (error) {
         res.status(500).json({ message: "Something went wrong!" });

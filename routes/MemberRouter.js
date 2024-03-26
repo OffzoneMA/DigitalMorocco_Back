@@ -348,5 +348,258 @@ router.route("/SubscribeMember/:subid").get(AuthController.AuthenticateMember, M
  */
 router.route("/Contacts").get(AuthController.AuthenticateMember, MemberController.getContacts)
 
+/**
+ * @swagger
+ * /members/{memberId}/company:
+ *   post:
+ *     summary: Create a company for a member
+ *     tags: [Members]
+ *     consumes:
+ *       - multipart/form-data
+ *     parameters:
+ *       - in: path
+ *         name: memberId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the member
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               companyName:
+ *                 type: string
+ *               legalName:
+ *                 type: string
+ *               website:
+ *                 type: string
+ *               contactEmail:
+ *                 type: string
+ *               desc:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               country:
+ *                 type: string
+ *               city:
+ *                 type: string
+ *               stage:
+ *                 type: string
+ *               state:
+ *                 type: string
+ *               companyType:
+ *                 type: string
+ *               taxNbr:
+ *                 type: string
+ *               corporateNbr:
+ *                 type: string
+ *               logo:
+ *                 type: string
+ *                 format: binary
+ *       produces:
+ *          - multipart/form-data
+ *     responses:
+ *       200:
+ *         description: Company created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Member'
+ *       400:
+ *         description: Bad request, check the request body
+ */
+router.post("/:memberId/company",upload.single('logo'), MemberController.createCompany);
+
+
+/**
+ * @swagger
+ * /members/{memberId}/employee:
+ *   post:
+ *     summary: Create an employee for a member
+ *     tags: [Members]
+ *     consumes:
+ *       - multipart/form-data
+ *     parameters:
+ *       - in: path
+ *         name: memberId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the member
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fullName:
+ *                 type: string
+ *                 description: The full name of the employee
+ *               workEmail:
+ *                 type: string
+ *                 format: email
+ *                 description: The work email of the employee
+ *               address:
+ *                 type: string
+ *                 description: The address of the employee
+ *               country:
+ *                 type: string
+ *                 description: The country of the employee
+ *               department:
+ *                 type: string
+ *                 description: The department of the employee
+ *               cityState:
+ *                 type: string
+ *                 description: The city and state of the employee
+ *               startDate:
+ *                 type: string
+ *                 format: date
+ *                 description: The start date of the employee
+ *               jobTitle:
+ *                 type: string
+ *                 description: The job title of the employee
+ *               typeEmp:
+ *                 type: string
+ *                 description: The type of the employee
+ *               personalTaxIdentifierNumber:
+ *                 type: string
+ *                 description: The personal tax identifier number of the employee
+ *               level:
+ *                 type: string
+ *                 description: The level of the employee
+ *               status:
+ *                 type: string
+ *                 default: Active
+ *               photo:
+ *                 type: string
+ *                 format: binary
+ *                 description: The photo of the employee
+ *     responses:
+ *       200:
+ *         description: Employee created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Member'
+ *       400:
+ *         description: Bad request, check the request body
+ */
+router.post("/:memberId/employee",upload.single("photo"), MemberController.createEmployee);
+
+/**
+ * @swagger
+ * /members/{memberId}/legal-document:
+ *   post:
+ *     summary: Create a legal document for a member
+ *     tags: [Members]
+ *     consumes:
+ *       - multipart/form-data
+ *     parameters:
+ *       - in: path
+ *         name: memberId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the member
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The name of the legal document
+ *               link:
+ *                 type: string
+ *                 description: The link to the legal document
+ *               description:
+ *                 type: string
+ *                 description: Additional description of the legal document
+ *               cityState:
+ *                 type: string
+ *                 description: The city and state related to the legal document
+ *               date:
+ *                 type: string
+ *                 format: date
+ *                 description: The date of the legal document
+ *               type:
+ *                 type: string
+ *                 description: The type of the legal document
+ *               document:
+ *                 type: string
+ *                 format: binary
+ *                 description: The file of the legal document
+ *     responses:
+ *       200:
+ *         description: Legal document created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Member'
+ *       400:
+ *         description: Bad request, check the request body
+ */
+router.post("/:memberId/legal-document",upload.single("document"), MemberController.createLegalDocument);
+
+/**
+ * @swagger
+ * /members/{userId}:
+ *   post:
+ *     summary: Create a member
+ *     tags: [Members]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the user who owns the member
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               visbility:
+ *                 type: string
+ *               credits:
+ *                 type: number
+ *               
+ *     responses:
+ *       201:
+ *         description: Member created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Member'
+ *       400:
+ *         description: Bad request, check the request body
+ */
+router.post("/:userId", MemberController.createMember);
+
+/**
+ * @swagger
+ * /members/testAll:
+ *   get:
+ *     summary: Get a list of all members
+ *     tags: [Members]
+ *     responses:
+ *       200:
+ *         description: A list of members
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Member'
+ */
+router.get("/testAll", MemberController.getTestAllMembers);
 
 module.exports = router

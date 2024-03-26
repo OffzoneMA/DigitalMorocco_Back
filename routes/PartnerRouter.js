@@ -91,6 +91,6 @@ router.route("/").get(PartnerController.getpartners).post(AuthController.Authent
  *       500:
  *         description: Internal server error
  */
-router.route("/Projects").get(AuthController.AuthenticatePartner, PartnerController.getProjects)
+router.route("/Projects").get(/*AuthController.AuthenticatePartner, */PartnerController.getProjects)
 
 module.exports = router

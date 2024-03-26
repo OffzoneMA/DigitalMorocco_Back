@@ -16,7 +16,15 @@ const ProjectByNameExists = async (name) => {
     return await Project.exists({ name: name })
 }
 
+const getProjects = async(args)=> {
+    try {
+        const projects = await Project.find().skip(args.start ? args.start : null).limit(args.qt ? args.qt : null);;
+        return projects;
+    } catch (error) {
+        throw error;
+    }
+}
 
 
 
-module.exports = { CreateProject, getProjectById, ProjectByNameExists, getProjectByMemberId }
+module.exports = { getProjects , CreateProject, getProjectById, ProjectByNameExists, getProjectByMemberId }

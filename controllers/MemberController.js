@@ -6,8 +6,6 @@ const UserService = require('../services/UserService');
 const EmailingService = require('../services/EmailingService');
 
 
-
-
 const getMembers = async (req, res) => {
     try {
         const result = await MemberService.getAllMembers(req.query);
@@ -23,6 +21,55 @@ const getContacts = async (req, res) => {
         res.status(200).json(result);
     } catch (error) {
         res.status(500).json({ message: "Something went wrong!"});
+    }
+}
+
+async function createMember(req, res) {
+    try {
+        const userId = req.params.userId;
+        const memberData = req.body;
+        const result = await MemberService.CreateMember(userId, memberData);
+        res.status(201).json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+const createCompany = async (req, res)=> {
+    try {
+        const memberId = req.params.memberId;
+        const companyData = req.body;
+        const logo = req.file;
+        //console.log("data" ,companyData);
+        //console.log("logo" , logo)
+        const result = await MemberService.createCompany(memberId ,companyData , logo);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+const createEmployee = async (req, res)=> {
+    try {
+        const memberId = req.params.memberId;
+        const employeeData = req.body;
+        const photoFile = req.file;
+        const result = await MemberService.createEmployee(memberId, employeeData ,photoFile);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+const createLegalDocument = async (req, res)=> {
+    try {
+        const memberId = req.params.memberId;
+        const documentData = req.body;
+        const docFile = req.file;
+        const result = await MemberService.createLegalDocument(memberId, documentData , docFile);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 }
 
@@ -75,8 +122,6 @@ const getContactRequests = async (req, res) => {
     }
 }
 
-
-
 const getByName = async (req, res) => {
     try {
         const result = await MemberService.getMemberByName(req.params.name);
@@ -116,6 +161,17 @@ function isJsonString(str) {
     return true;
 }
 
+async function getTestAllMembers(req, res) {
+    try {
+        const members = await MemberService.getTestAllMembers();
+        res.json(members);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
 
 
-module.exports = { getContacts,getMembers, createEnterprise, getByName, subUser, createProject, contactRequest, getContactRequests }
+
+module.exports = { getContacts,getMembers, createEnterprise, getByName, subUser, createProject, 
+    contactRequest, getContactRequests , createCompany , createEmployee , createLegalDocument ,createMember ,
+getTestAllMembers}

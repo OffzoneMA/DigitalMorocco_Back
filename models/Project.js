@@ -4,7 +4,7 @@ const ProjectSchema = new mongoose.Schema({
     owner: {
         type: mongoose.Types.ObjectId,
         ref: "Member",
-        unique: true,
+        //unique: true,
         required: true
     },
     name: String,
@@ -17,9 +17,18 @@ const ProjectSchema = new mongoose.Schema({
         firstName: { type: String },
         lastName: { type: String },
         role: { type: String },
+        image: String
     }],
     details: String,
-    milestoneProgress: String,
+    milestones: [
+        {
+          name: { type: String },
+          description: { type: String },
+          dueDate: { type: Date },
+          completed: { type: Boolean, default: false }
+        }
+    ],
+    //milestoneProgress: String,
     documents: [{
         name: { type: String },
         link: { type: String },
@@ -32,6 +41,8 @@ const ProjectSchema = new mongoose.Schema({
         default:'public'
     },
     dateCreated: { type: Date, default: Date.now },
+    status: String,
+    stage: String
 })
 
 
