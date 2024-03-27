@@ -17,7 +17,7 @@ const getAllBlogs = async () => {
     }
 };
 
-async function getAllBlogsByUser(userId) {
+ const  getAllBlogsByUser = async (userId) => {
     try {
       const blogs = await Blog.find({ creator: userId });
       return blogs;
@@ -50,7 +50,7 @@ const deleteBlog = async (blogId) => {
     }
 };
 
-async function getLatestBlogs(limit) {
+const  getLatestBlogs = async (limit) => {
     try {
       const blogs = await Blog.find().sort({ date: -1 }).limit(limit);
       return blogs;

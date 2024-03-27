@@ -99,8 +99,8 @@ passport.use(
 
 passport.use(
     new FacebookStrategy({
-        clientID: process.env.FACEBOOK_APP_ID,
-        clientSecret: process.env.FACEBOOK_APP_SECRET,
+        clientID: process.env.FACEBOOK_CLIENT_ID,
+        clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
         callbackURL: '/users/auth/facebook/callback',
         scope: ['profile', 'email'],
       },
