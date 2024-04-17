@@ -344,15 +344,17 @@ router.route("/UserInfo").get(AuthController.userInfo)
  */
 router.route("/Login").post(AuthController.login);
 
+
+
 /**
  * @swagger
- * /users/ApproveUser/{id}:
- *   get:
+ * /users/ApproveUser/{userId}:
+ *   put:
  *     summary: Approve a user
  *     description: Approve a user by their ID (Admin only)
  *     tags: [Users]
  *     parameters:
- *       - name: id
+ *       - name: userId
  *         in: path
  *         description: ID of the user to approve
  *         required: true
@@ -385,17 +387,17 @@ router.route("/Login").post(AuthController.login);
  *       500:
  *         description: Internal server error
  */
-router.route("/ApproveUser/:id").get(AuthController.AuthenticateAdmin, UserController.approveUser);
+router.route("/ApproveUser/:userId").put(AuthController.AuthenticateAdmin, UserController.approveUser);
 
 /**
  * @swagger
- * /users/RejectUser/{id}:
+ * /users/RejectUser/{userId}:
  *   get:
  *     summary: Reject a user
  *     description: Reject a user by their ID (Admin only)
  *     tags: [Users]
  *     parameters:
- *       - name: id
+ *       - name: userId
  *         in: path
  *         description: ID of the user to reject
  *         required: true
@@ -428,8 +430,7 @@ router.route("/ApproveUser/:id").get(AuthController.AuthenticateAdmin, UserContr
  *       500:
  *         description: Internal server error
  */
-router.route("/RejectUser/:id").get(AuthController.AuthenticateAdmin, UserController.rejectUser);
-
+router.route("/RejectUser/:userId").put(AuthController.AuthenticateAdmin, UserController.rejectUser);
 /**
  * @swagger
  * /users/update:
