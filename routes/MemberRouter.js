@@ -492,6 +492,92 @@ router.post("/:memberId/employee",upload.single("photo"), MemberController.creat
 
 /**
  * @swagger
+ * /members/{memberId}/{employeeId}/employee:
+ *   put:
+ *     summary: Mettre à jour un employé.
+ *     parameters:
+ *       - in: path
+ *         name: memberId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: employeeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fullName:
+ *                 type: string
+ *               workEmail:
+ *                 type: string
+ *               personalEmail:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               country:
+ *                 type: string
+ *               department:
+ *                 type: string
+ *               cityState:
+ *                 type: string
+ *               startDate:
+ *                 type: string
+ *                 format: date
+ *               jobTitle:
+ *                 type: string
+ *               typeEmp:
+ *                 type: string
+ *               personalTaxIdentifierNumber:
+ *                 type: string
+ *               level:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *               photo:
+ *                 type: string
+ *                 format: binary
+ *                 description: The photo of the employee
+ *     responses:
+ *       '200':
+ *         description: Employé mis à jour avec succès.
+ *       '400':
+ *         description: Erreur lors de la mise à jour de l'employé.
+ */
+router.put('/:memberId/:employeeId:employee',upload.single('photo'), MemberController.updateEmployee);
+
+/**
+ * @swagger
+ * /members/{memberId}/{employeeId}/employee:
+ *   delete:
+ *     summary: Supprimer un employé.
+ *     parameters:
+ *       - in: path
+ *         name: memberId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: employeeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Employé supprimé avec succès.
+ *       '400':
+ *         description: Erreur lors de la suppression de l'employé.
+ */
+router.delete('/:memberId/:employeeId/employee', MemberController.deleteEmployee);
+
+/**
+ * @swagger
  * /members/{memberId}/legal-document:
  *   post:
  *     summary: Create a legal document for a member
@@ -546,6 +632,83 @@ router.post("/:memberId/employee",upload.single("photo"), MemberController.creat
  *         description: Bad request, check the request body
  */
 router.post("/:memberId/legal-document",upload.single("document"), MemberController.createLegalDocument);
+/**
+ * @swagger
+ * /members/{memberId}/{documentId}/legal-document:
+ *   put:
+ *     summary: Mettre à jour un document légal.
+ *     parameters:
+ *       - in: path
+ *         name: memberId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: documentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The name of the legal document
+ *               link:
+ *                 type: string
+ *                 description: The link to the legal document
+ *               description:
+ *                 type: string
+ *                 description: Additional description of the legal document
+ *               cityState:
+ *                 type: string
+ *                 description: The city and state related to the legal document
+ *               date:
+ *                 type: string
+ *                 format: date
+ *                 description: The date of the legal document
+ *               type:
+ *                 type: string
+ *                 description: The type of the legal document
+ *               document:
+ *                 type: string
+ *                 format: binary
+ *                 description: The file of the legal document
+ *     responses:
+ *       '200':
+ *         description: Document légal mis à jour avec succès.
+ *       '400':
+ *         description: Erreur lors de la mise à jour du document légal.
+ */
+router.put('/:memberId/:documentId/legal-document',upload.single("document"), MemberController.updateLegalDocument);
+
+/**
+ * @swagger
+ * /members/{memberId}/{documentId}/legal-document:
+ *   delete:
+ *     summary: Supprimer un document légal.
+ *     parameters:
+ *       - in: path
+ *         name: memberId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: documentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Document légal supprimé avec succès.
+ *       '400':
+ *         description: Erreur lors de la suppression du document légal.
+ */
+router.delete('/:memberId/:documentId/legal-document', MemberController.deleteLegalDocument);
 
 /**
  * @swagger
@@ -601,5 +764,23 @@ router.post("/:userId", MemberController.createMember);
  *                 $ref: '#/components/schemas/Member'
  */
 router.get("/testAll", MemberController.getTestAllMembers);
+
+/**
+ * @swagger
+ * /members/{memberId}/contact-requests:
+ *   get:
+ *     summary: Get all contact requests for a member
+ *     parameters:
+ *       - in: path
+ *         name: memberId
+ *         required: true
+ *         description: ID of the member
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Successful operation
+ */
+router.get('/members/:memberId/contact-requests', MemberController.getContactRequestsForMember);
 
 module.exports = router

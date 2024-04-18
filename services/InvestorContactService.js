@@ -88,6 +88,15 @@ const getAllContactRequest = async (args, role, id) => {
 
 }
 
+async function getAllContactRequests() {
+    try {
+        const contactRequests = await ContactRequest.find();
+        return contactRequests;
+    } catch (error) {
+        throw new Error('Error getting all contact requests: ' + error.message);
+    }
+}
+
 
 const DiffDate = async (req_date) => {
     const currentDate = new Date();
@@ -99,6 +108,25 @@ const DiffDate = async (req_date) => {
 
 }
 
+async function getContactRequestsForInvestor(investorId) {
+    try {
+        const contactRequests = await ContactRequest.find({ investor: investorId });
+        return contactRequests;
+    } catch (error) {
+        throw new Error('Error getting contact requests for investor: ' + error.message);
+    }
+}
+
+async function getContactRequestsForMember(memberId) {
+    try {
+        const contactRequests = await ContactRequest.find({ member: memberId });
+        return contactRequests;
+    } catch (error) {
+        throw new Error('Error getting contact requests for member: ' + error.message);
+    }
+}
 
 
-module.exports = { CreateInvestorContactReq, getAllContactRequest }
+module.exports = { CreateInvestorContactReq, getAllContactRequest ,getAllContactRequest,
+    getContactRequestsForInvestor , getContactRequestsForMember , getAllContactRequest
+ }

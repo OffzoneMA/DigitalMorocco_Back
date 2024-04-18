@@ -164,6 +164,25 @@ router.route("/Contacts").get(AuthController.AuthenticateInvestor, InvestorContr
  *       500:
  *         description: Internal server error
  */
+
+/**
+ * @swagger
+ * /investors/{investorId}/contact-requests:
+ *   get:
+ *     summary: Get all contact requests for an investor
+ *     parameters:
+ *       - in: path
+ *         name: investorId
+ *         required: true
+ *         description: ID of the investor
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Successful operation
+ */
+router.get('/investors/:investorId/contact-requests', InvestorController.getContactRequestsForInvestor);
+
 router.route("/Projects").get(AuthController.AuthenticateInvestor, InvestorController.getProjects)
 
 module.exports = router

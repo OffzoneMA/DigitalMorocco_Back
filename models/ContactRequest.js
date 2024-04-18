@@ -9,10 +9,19 @@ const ContactRequestSchema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: "Investor",
     },
+    project : {
+        type: mongoose.Types.ObjectId,
+        ref: "Project",
+    },
     cost:Number,
+    requestLetter: String,
+    document: {},
+    date: String,
+    communicationStatus: String,
+    notes: String,
     status: {
         type: String,
-        enum: ['pending', 'accepted', 'rejected'],
+        enum: ['Pending', 'Accepted', 'Rejected' ,'In Progress'],
         default: 'pending'
     },
 

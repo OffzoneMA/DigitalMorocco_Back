@@ -65,4 +65,16 @@ const updateContactStatus = async (req, res) => {
     }
 };
 
-module.exports = { updateContactStatus, addInvestor, getInvestors, getContactRequests, getContacts, getProjects}
+async function getContactRequestsForInvestor(req, res) {
+    const investorId = req.params.investorId;
+
+    try {
+        const contactRequests = await InvestorContactService.getContactRequestsForInvestor(investorId);
+        res.json({ success: true, contactRequests });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+module.exports = { updateContactStatus, addInvestor, getInvestors, 
+    getContactRequests, getContacts, getProjects , getContactRequestsForInvestor}

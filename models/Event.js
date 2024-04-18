@@ -31,6 +31,8 @@ const eventSchema = new mongoose.Schema({
         enum: ['online', 'physical'],
         required: true,
     },
+    eventType: String,
+    industry: String,
     physicalLocation: String,
     coordinates: {
         latitude:Number,
@@ -90,10 +92,22 @@ const eventSchema = new mongoose.Schema({
             companyName: String,
             country: String
         }
+    ],
+    Organizeby: {
+        logo: String,
+        name: String,
+    },
+    status:
+    {
+        type: String,
+        enum: ['past', 'upcoming',],
+        default: 'upcoming'
+    },
+    sponsors: [
+        {
+            
+        }
     ]
-    // companyInfo: {
-        
-    // }
 })
 
 const Event = mongoose.model('Event', eventSchema);

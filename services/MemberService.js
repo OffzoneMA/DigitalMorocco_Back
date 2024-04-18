@@ -1,11 +1,23 @@
 const Member = require("../models/Member");
 const SubscriptionLogs = require("../models/SubscriptionLogs");
+const Subscription = require("../models/Subscription");
 const Investor = require("../models/Investor");
 const Project = require("../models/Project");
 const SubscriptionService = require("../services/SubscriptionService");
+const SubscriptionPlanService = require("../services/SubscriptionPlanService");
 const SubscriptionLogService = require("../services/SubscriptionLogService");
 const uploadService = require('./FileService')
 const MemberReq = require("../models/Requests/Member");
+const ContactRequest = require("../models/ContactRequest");
+const { v4: uuidv4 } = require('uuid');
+
+function generateLegalDocumentId() {
+    return "DOC"+uuidv4();
+}
+
+function generateEmployeeId() {
+    return "EMP"+uuidv4();
+}
 
 const getAllMembers = async (args) => {
   try {
@@ -100,7 +112,7 @@ const createCompany = async (memberId, companyData, logoFile) => {
         let updatedCompanyData = { ...companyData };
 
         if (logoFile) {
-            const logoURL = await uploadService.uploadFile(logoFile, 'Members/', + member.owner + "", 'logo');
+            const logoURL = await uploadService.uploadFile(logoFile, 'Members/' + member.owner + "", 'logo');
             updatedCompanyData.logo = logoURL;
             console.log(logoURL)
         }
@@ -121,7 +133,7 @@ const createEmployee = async (memberId, employeeData , photo)=> {
             throw new Error('Member not found');
         }
         if (photo) {
-            const logoURL = await uploadService.uploadFile(photo, 'Members/', + member.owner + "/employees", photo.originalname);
+            const logoURL = await uploadService.uploadFile(photo, 'Members/' + member._id + "/employees/" +generateEmployeeId(), photo.originalname);
             employeeData.image = logoURL;
         }
         member.listEmployee.push(employeeData);
@@ -133,6 +145,52 @@ const createEmployee = async (memberId, employeeData , photo)=> {
     }
 }
 
+async function updateEmployee(memberId, employeeId, updatedEmployeeData, photo) {
+    try {
+        const member = await getMemberById(memberId);
+        if (!member) {
+            throw new Error('Member not found');
+        }
+        
+        const employeeIndex = member.listEmployee.findIndex(emp => emp._id === employeeId);
+        if (employeeIndex === -1) {
+            throw new Error('Employee not found');
+        }
+        
+        member.listEmployee[employeeIndex] = { ...member.listEmployee[employeeIndex], ...updatedEmployeeData };
+
+        if (photo) {
+            const photoURL = await uploadService.uploadFile(photo, 'Members/' + member._id + "/employees/" +generateEmployeeId(), photo.originalname);
+            member.listEmployee[employeeIndex].image = photoURL;
+        }
+
+        const savedMember = await member.save();
+        return savedMember.listEmployee[employeeIndex];
+    } catch (error) {
+        throw new Error('Error updating employee: ' + error.message);
+    }
+}
+
+async function deleteEmployee(memberId, employeeId) {
+    try {
+        const member = await getMemberById(memberId);
+        if (!member) {
+            throw new Error('Member not found');
+        }
+
+        const employeeIndex = member.listEmployee.findIndex(emp => emp._id === employeeId);
+        if (employeeIndex === -1) {
+            throw new Error('Employee not found');
+        }
+
+        const deletedEmployee = member.listEmployee.splice(employeeIndex, 1);
+        await member.save();
+        return deletedEmployee;
+    } catch (error) {
+        throw new Error('Error deleting employee: ' + error.message);
+    }
+}
+
 const createLegalDocument = async (memberId, documentData , docFile)=> {
     try {
         const member = await getMemberById(memberId)
@@ -140,7 +198,7 @@ const createLegalDocument = async (memberId, documentData , docFile)=> {
             throw new Error('Member not found');
         }
         if (docFile) {
-            const docURL = await uploadService.uploadFile(docFile, 'Members/', + member.owner + "/documents", docFile.originalname);
+            const docURL = await uploadService.uploadFile(docFile, 'Members/' + member._id + "/documents/"+generateLegalDocumentId(), docFile.originalname);
             documentData.link = docURL;
             documentData.type = docFile.mimetype;
             documentData.name = docFile.originalname;
@@ -150,6 +208,53 @@ const createLegalDocument = async (memberId, documentData , docFile)=> {
         return savedDocument.legalDocument[savedDocument.legalDocument.length - 1];
     } catch (error) {
         throw new Error('Error creating legal document');
+    }
+}
+
+async function updateLegalDocument(memberId, documentId, updatedDocumentData, docFile) {
+    try {
+        const member = await getMemberById(memberId);
+        if (!member) {
+            throw new Error('Member not found');
+        }
+
+        const documentIndex = member.legalDocument.findIndex(doc => doc._id === documentId);
+        if (documentIndex === -1) {
+            throw new Error('Document not found');
+        }
+
+        if (docFile) {
+            const docURL = await uploadService.uploadFile(docFile, `Members/${member._id}/documents/${generateLegalDocumentId()}`, docFile.originalname);
+            updatedDocumentData.link = docURL;
+            updatedDocumentData.type = docFile.mimetype;
+            updatedDocumentData.name = docFile.originalname;
+        }
+
+        member.legalDocument[documentIndex] = { ...member.legalDocument[documentIndex], ...updatedDocumentData };
+        await member.save();
+        return member.legalDocument[documentIndex];
+    } catch (error) {
+        throw new Error('Error updating legal document: ' + error.message);
+    }
+}
+
+async function deleteLegalDocument(memberId, documentId) {
+    try {
+        const member = await getMemberById(memberId);
+        if (!member) {
+            throw new Error('Member not found');
+        }
+
+        const documentIndex = member.legalDocument.findIndex(doc => doc.documentId === documentId);
+        if (documentIndex === -1) {
+            throw new Error('Document not found');
+        }
+
+        const deletedDocument = member.legalDocument.splice(documentIndex, 1);
+        await member.save();
+        return deletedDocument;
+    } catch (error) {
+        throw new Error('Error deleting legal document: ' + error.message);
     }
 }
 
@@ -252,7 +357,6 @@ const deleteMember = async (userId) => {
 
 }
 
-
 const getMemberById = async (id) => {
     return await Member.findById(id);
 }
@@ -264,71 +368,257 @@ const getMemberByName = async (name) => {
     return await Member.find({ name: name })
 }
 
-
 const memberByNameExists = async (name) => {
     return await Member.exists({ name: name })
 }
 
-const SubscribeMember = async (memberId, subid) => {
-    const subscription = await SubscriptionService.getSubscriptionById(subid)
-    if (!subscription) {
-        throw new Error('Subscription doesn t exist !')
+// const SubscribeMember = async (memberId, subid) => {
+//     const subscription = await SubscriptionService.getSubscriptionById(subid)
+//     if (!subscription) {
+//         throw new Error('Subscription doesn t exist !')
+//     }
+
+
+//     //Payement Logic ...(Stripe ...)
+
+
+//     const member = await getMemberById(memberId)
+//     if (member?.subStatus == "active") {
+//         return await RenewSubscription(member, subscription)
+//     }
+//     else {
+//         //Expire Date calculation
+//         const expiry_date = new Date();
+//         expiry_date.setDate(expiry_date.getDate() + subscription?.duration);
+
+//         await SubscriptionLogService.createSubscriptionLog({
+//             subscriptionId: subscription._id,
+//             member: memberId,
+//             credits: subscription.credits,
+//             totalCredits: subscription.credits + (member?.credits || 0),
+//             subscriptionExpireDate: expiry_date
+//         })
+//         return await Member.findByIdAndUpdate(memberId, {
+//             subscriptionId: subscription._id,
+//             subStatus: "active",
+//             expireDate: expiry_date,
+//             $inc: { 'credits': subscription.credits }
+//         })
+//     }
+
+// }
+
+const SubscribeMember = async (memberId, planId) => {
+    try {
+        const subscriptionPlan = await SubscriptionPlanService.getSubscriptionPlanById(planId);
+        if (!subscriptionPlan) {
+            throw new Error('Subscription plan not found!');
+        }
+
+        const newSubscription = new Subscription({
+            plan: planId,
+            billing: 'month', 
+            dateCreated: new Date(),
+            subscriptionStatus: 'active', 
+            dateExpired: null, 
+        });
+        if (subscriptionPlan.duration) {
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + subscriptionPlan.duration);
+            newSubscription.dateExpired = expiryDate;
+        }
+
+        const savedSubscription = await newSubscription.save();
+
+        const updatedMember = await Member.findByIdAndUpdate(memberId, {
+            subscriptionId: savedSubscription._id,
+            subStatus: 'active', 
+            expireDate: savedSubscription.dateExpires, 
+            $inc: { 'credits': subscriptionPlan.credits }, 
+        });
+
+        await SubscriptionLogService.createSubscriptionLog({
+            subscriptionId: savedSubscription._id,
+            member: memberId,
+            credits: subscriptionPlan.credits,
+            totalCredits: updatedMember.credits,
+            subscriptionExpireDate: savedSubscription.dateExpired,
+        });
+
+        return updatedMember;
+    } catch (error) {
+        throw new Error('Error subscribing member: ' + error.message);
     }
+}
 
+async function cancelSubscriptionForMember(memberId) {
+    try {
+        const member = await Member.findById(memberId);
+        if (!member) {
+            throw new Error('Member not found');
+        }
 
-    //Payement Logic ...(Stripe ...)
+        if (!member.subscriptionId) {
+            throw new Error('Member does not have an active subscription');
+        }
 
+        const subscription = await Subscription.findById(member.subscriptionId);
+        if (!subscription) {
+            throw new Error('Subscription not found');
+        }
 
-    const member = await getMemberById(memberId)
-    if (member?.subStatus == "active") {
-        return await RenewSubscription(member, subscription)
+        const updatedSubscription = await SubscriptionService.cancelSubscription(subscription._id);
+
+        await SubscriptionLogService.createSubscriptionLog({
+            subscriptionId: updatedSubscription._id,
+            member: member?._id,
+            credits: updatedSubscription.plan.credits,
+            totalCredits: updatedSubscription.plan.credits + (member?.credits || 0),
+            subscriptionExpireDate: updatedSubscription.dateExpired,
+            type: 'Cancel'
+        })
+
+        const updatedMember = await Member.findByIdAndUpdate(
+            memberId, 
+            { subStatus: 'notActive' ,
+            $inc: { 'credits': -subscription.credits }
+        });
+
+        return { member: updatedMember, subscription: updatedSubscription };
+    } catch (error) {
+        throw new Error('Error cancelling subscription for member: ' + error.message);
     }
-    else {
-        //Expire Date calculation
-        const expiry_date = new Date();
-        expiry_date.setDate(expiry_date.getDate() + subscription?.duration);
+}
+
+async function upgradePlan(memberId, newPlanId) {
+    try {
+        const member = await Member.findById(memberId);
+        if (!member) {
+            throw new Error('Member not found');
+        }
+
+        const newPlan = await SubscriptionPlanService.getSubscriptionPlanById(newPlanId);
+        if (!newPlan) {
+            throw new Error('New subscription plan not found');
+        }
+
+        if (!member.subscriptionId) {
+            throw new Error('Member does not have an active subscription');
+        }
+
+        const currentSubscription = await Subscription.findById(member.subscriptionId);
+        if (!currentSubscription) {
+            throw new Error('Current subscription not found');
+        }
+
+        const newExpirationDate = new Date();
+        newExpirationDate.setDate(newExpirationDate.getDate() + newPlan.duration);
+
+        const updatedSubscription = await Subscription.findByIdAndUpdate(currentSubscription._id, {
+            plan: newPlanId,
+            dateExpired: newExpirationDate,
+            subscriptionStatus: 'active',
+
+        });
+
+        await SubscriptionLogService.createSubscriptionLog({
+            subscriptionId: updatedSubscription._id,
+            member: member?._id,
+            credits: updatedSubscription.credits,
+            totalCredits: updatedSubscription.credits + (member?.credits || 0),
+            subscriptionExpireDate: newExpirationDate,
+            type: 'Upgrade'
+        })
+
+        const creditsDifference = newPlan.credits - currentSubscription.plan.credits;
+        if (creditsDifference > 0) {
+            await Member.findByIdAndUpdate(
+                memberId, 
+                { $inc: { 'credits': creditsDifference } ,
+                subStatus: 'Active',
+                expireDate: newExpirationDate
+            });
+        }
+
+        return updatedSubscription;
+    } catch (error) {
+        throw new Error('Error upgrading plan: ' + error.message);
+    }
+}
+
+// const RenewSubscription = async (member, subscription) => {
+
+//     //Expire Date calculation
+//     const expiry_date = new Date(member.expireDate);
+//     expiry_date.setDate(expiry_date.getDate() + subscription?.duration);
+
+//     await SubscriptionLogService.createSubscriptionLog({
+//         subscriptionId: subscription._id,
+//         member: member?._id,
+//         credits: subscription.credits,
+//         totalCredits: subscription.credits + (member?.credits || 0),
+//         subscriptionExpireDate: expiry_date,
+//         type: 'Renew'
+//     })
+
+//     return await Member.findByIdAndUpdate(member?._id, {
+//         subscriptionId: subscription._id,
+//         subStatus: "active",
+//         expireDate: expiry_date,
+//         $inc: { 'credits': subscription.credits }
+//     })
+// }
+
+async function renewSubscription(memberId) {
+    try {
+        const member = await Member.findById(memberId);
+        if (!member) {
+            throw new Error('Member not found');
+        }
+
+        if (!member.subscriptionId) {
+            throw new Error('Member does not have an active subscription');
+        }
+
+        const subscription = await Subscription.findById(member.subscriptionId);
+        if (!subscription) {
+            throw new Error('Subscription not found');
+        }
+
+        const plan = await SubscriptionPlan.findById(subscription.plan);
+        if (!plan) {
+            throw new Error('Subscription plan not found');
+        }
+
+        const newExpirationDate = new Date();
+        newExpirationDate.setDate(newExpirationDate.getDate() + plan.duration);
+
+        const updatedSubscription = await Subscription.findByIdAndUpdate(subscription._id, {
+            dateExpires: newExpirationDate,
+            subscriptionStatus: 'active', 
+            dateStopped: undefined, 
+        });
+
+        const updatedMember = await Member.findByIdAndUpdate(memberId, {
+            subStatus: 'active', 
+            expireDate: newExpirationDate, 
+            $inc: { 'credits': updatedSubscription.plan.credits }
+        });
 
         await SubscriptionLogService.createSubscriptionLog({
             subscriptionId: subscription._id,
-            member: memberId,
-            credits: subscription.credits,
-            totalCredits: subscription.credits + (member?.credits || 0),
-            subscriptionExpireDate: expiry_date
+            member: member?._id,
+            credits: subscription.plan.credits,
+            totalCredits: subscription.plan.credits + (member?.credits || 0),
+            subscriptionExpireDate: newExpirationDate,
+            type: 'Renew'
         })
-        return await Member.findByIdAndUpdate(memberId, {
-            subscriptionId: subscription._id,
-            subStatus: "active",
-            expireDate: expiry_date,
-            $inc: { 'credits': subscription.credits }
-        })
+
+        return { updatedMember, updatedSubscription };
+    } catch (error) {
+        throw new Error('Error renewing subscription: ' + error.message);
     }
-
 }
-
-
-const RenewSubscription = async (member, subscription) => {
-
-    //Expire Date calculation
-    const expiry_date = new Date(member.expireDate);
-    expiry_date.setDate(expiry_date.getDate() + subscription?.duration);
-
-    await SubscriptionLogService.createSubscriptionLog({
-        subscriptionId: subscription._id,
-        member: member?._id,
-        credits: subscription.credits,
-        totalCredits: subscription.credits + (member?.credits || 0),
-        subscriptionExpireDate: expiry_date,
-        type: 'Renew'
-    })
-
-    return await Member.findByIdAndUpdate(member?._id, {
-        subscriptionId: subscription._id,
-        subStatus: "active",
-        expireDate: expiry_date,
-        $inc: { 'credits': subscription.credits }
-    })
-}
-
 
 const checkSubscriptionStatus = async () => {
     try {
@@ -351,7 +641,6 @@ const checkSubscriptionStatus = async () => {
     }
 };
 
-
 const checkMemberSubscription = async (memberId) => {
     try {
         const current_date = new Date();
@@ -372,6 +661,26 @@ const checkMemberSubscription = async (memberId) => {
     }
 };
 
+const getInvestorsForMember = async (memberId) => {
+    try {
+        const member = await Member.findById(memberId);
+
+        if (!member) {
+            throw new Error('Member not found');
+        }
+
+        const investorIdsSet = new Set(member.investorsRequestsAccepted);
+
+        const uniqueInvestorIds = Array.from(investorIdsSet);
+
+        const investors = await Investor.find({ _id: { $in: uniqueInvestorIds } });
+
+        return investors;
+    } catch (error) {
+        throw new Error('Error retrieving investors for member: ' + error.message);
+    }
+}
+
 
 const getContacts = async (memberId) => {
     const investors = await Member.findById(memberId).select("investorsRequestsAccepted").populate({
@@ -380,9 +689,37 @@ const getContacts = async (memberId) => {
     return investors.investorsRequestsAccepted
 }
 
+async function addAssociatedUserToMember(memberId, userId) {
+    try {
+        const member = await Member.findById(memberId);
+        if (!member) {
+            throw new Error('Member not found');
+        }
+        member.associatedUsers.push(userId);
+        await member.save();
+        return member;
+    } catch (error) {
+        throw new Error('Error adding associated user to member: ' + error.message);
+    }
+}
 
+async function removeAssociatedUserFromMember(memberId, userId) {
+    try {
+        const member = await Member.findById(memberId);
+        if (!member) {
+            throw new Error('Member not found');
+        }
+        member.associatedUsers.pull(userId);
+        await member.save();
+        return member;
+    } catch (error) {
+        throw new Error('Error removing associated user from member: ' + error.message);
+    }
+}
 
 module.exports = { deleteMember,getContacts,getAllMembers,createProject, checkSubscriptionStatus, 
     CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, 
     SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus ,
-    createCompany , createEmployee, createLegalDocument , getTestAllMembers , createTestProject} 
+    createCompany , createEmployee, createLegalDocument , getTestAllMembers , createTestProject , 
+    getInvestorsForMember ,cancelSubscriptionForMember,renewSubscription, upgradePlan ,
+    updateEmployee , deleteEmployee, updateLegalDocument,deleteLegalDocument} 

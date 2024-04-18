@@ -1,14 +1,24 @@
 const mongoose = require("mongoose");
 
 const SubscriptionSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        unique: true,
-        required: true
+    plan: { type: mongoose.Types.ObjectId,
+        ref: 'SubscriptionPlan', 
+        required: true 
     },
-    price: Number,
-    duration:Number,
-    credits:Number
+    billing: { type: String, default: 'month' },
+    paymentMethodType: 
+    {   type: String, 
+        default: 'Card' 
+    },
+    paymentMethod: { type: String },
+    cardLastFourDigits: { type: Number },
+    cardexpiration: { type: String },
+    subscriptionStatus: { type: String, enum: ['active', 'cancelled', 'paused'], default: 'active' } ,
+    dateCreated: { type: Date, default: Date.now },
+    dateExpired: { type: Date },
+    dateStopped: { type: Date },
+    discountCode: { type: String },
+    metadata: { },
 })
 
 

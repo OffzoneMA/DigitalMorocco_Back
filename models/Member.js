@@ -55,6 +55,11 @@ const MemberSchema = new mongoose.Schema({
     rc_ice: String,
     dateCreated: { type: Date, default: Date.now },
 
+    // associatedUsers: [{
+    //     type: mongoose.Types.ObjectId,
+    //     ref: "User"
+    // }],
+
     //Investors
     investorsRequestsAccepted: [
            { type: mongoose.Types.ObjectId,

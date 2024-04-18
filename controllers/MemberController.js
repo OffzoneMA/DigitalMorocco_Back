@@ -61,6 +61,28 @@ const createEmployee = async (req, res)=> {
     }
 }
 
+async function updateEmployee(req, res) {
+    try {
+        const { memberId, employeeId } = req.params;
+        const updatedEmployeeData = req.body;
+        const photo = req.file;
+        const updatedEmployee = await MemberService.updateEmployee(memberId, employeeId, updatedEmployeeData, photo);
+        res.status(200).json(updatedEmployee);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+async function deleteEmployee(req, res) {
+    try {
+        const { memberId, employeeId } = req.params;
+        const deletedEmployee = await MemberService.deleteEmployee(memberId, employeeId);
+        res.status(200).json(deletedEmployee);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
 const createLegalDocument = async (req, res)=> {
     try {
         const memberId = req.params.memberId;
@@ -70,6 +92,28 @@ const createLegalDocument = async (req, res)=> {
         res.json(result);
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+}
+
+async function updateLegalDocument(req, res) {
+    try {
+        const { memberId, documentId } = req.params;
+        const updatedDocumentData = req.body;
+        const docFile = req.file;
+        const updatedDocument = await MemberService.updateLegalDocument(memberId, documentId, updatedDocumentData, docFile);
+        res.status(200).json(updatedDocument);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+async function deleteLegalDocument(req, res) {
+    try {
+        const { memberId, documentId } = req.params;
+        const deletedDocument = await MemberService.deleteLegalDocument(memberId, documentId);
+        res.status(200).json(deletedDocument);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
     }
 }
 
@@ -170,8 +214,31 @@ async function getTestAllMembers(req, res) {
     }
 }
 
+async function getInvestorsForMember(req, res) {
+    const memberId = req.params.memberId;
+
+    try {
+        const investors = await MemberService.getInvestorsForMember(memberId);
+        res.json({ success: true, investors });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+async function getContactRequestsForMember(req, res) {
+    const memberId = req.params.memberId;
+
+    try {
+        const contactRequests = await InvestorContactService.getContactRequestsForMember(memberId);
+        res.json({ success: true, contactRequests });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
 
 
 module.exports = { getContacts,getMembers, createEnterprise, getByName, subUser, createProject, 
     contactRequest, getContactRequests , createCompany , createEmployee , createLegalDocument ,createMember ,
-getTestAllMembers}
+getTestAllMembers , getInvestorsForMember , getContactRequestsForMember ,updateEmployee ,
+deleteEmployee ,updateLegalDocument, deleteLegalDocument}

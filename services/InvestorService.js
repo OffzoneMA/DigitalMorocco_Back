@@ -7,8 +7,6 @@ const EmailingService = require("../services/EmailingService");
 const UserLogService = require('../services/UserLogService');
 
 
-
-
 const getAllInvestors = async (args) => {
     const page = args.page || 1;
     const pageSize = args.pageSize || 10;
@@ -141,4 +139,6 @@ const rejectContact= async (investorId, requestId, memberId) => {
 }
 
 
-module.exports = { deleteInvestor,getContacts, getProjects, CreateInvestor, getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, updateContactStatus }
+module.exports = { deleteInvestor,getContacts, getProjects, CreateInvestor, 
+    getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, 
+    updateContactStatus ,}
