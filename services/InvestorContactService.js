@@ -5,6 +5,7 @@ const ContactRequest = require("../models/ContactRequest");
 const MemberService = require("./MemberService");
 const InvestorService = require("./InvestorService");
 const UserService = require("./UserService");
+const ActivityHistoryService = require('../services/ActivityHistoryService');
 
 const User = require("../models/User");
 
@@ -57,7 +58,22 @@ const CreateInvestorContactReq = async (memberId, investorId) => {
     };
 
     const updatedInvestor = await Investor.findByIdAndUpdate(investorId, updateInvestor)
-    const updatedMemeber = await Member.findByIdAndUpdate(memberId, updateMember)
+    const updatedMember = await Member.findByIdAndUpdate(memberId, updateMember)
+
+    const historyData = {
+        member: updatedMember._id,
+        eventType: 'contact_request_sent',
+        eventDetails: 'Send Contact Request to',
+        timestamp: new Date(),
+        user: updatedMember.owner,
+        actionTargetType: 'Subscribe',
+        targetUser: {
+            usertype: 'Investor',
+            userId: updatedInvestor._id
+        }    
+    };
+
+    await ActivityHistoryService.createActivityHistory(historyData);
 
     //Send Email Notification to the investor
     await EmailingService.sendNewContactRequestEmail(investor.owner, member?.companyName, member?.country);

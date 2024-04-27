@@ -10,6 +10,7 @@ const uploadService = require('./FileService')
 const MemberReq = require("../models/Requests/Member");
 const ContactRequest = require("../models/ContactRequest");
 const { v4: uuidv4 } = require('uuid');
+const ActivityHistoryService = require('../services/ActivityHistoryService');
 
 function generateLegalDocumentId() {
     return "DOC"+uuidv4();
@@ -133,7 +134,7 @@ const createEmployee = async (memberId, employeeData , photo)=> {
             throw new Error('Member not found');
         }
         if (photo) {
-            const logoURL = await uploadService.uploadFile(photo, 'Members/' + member._id + "/employees/" +generateEmployeeId(), photo.originalname);
+            const logoURL = await uploadService.uploadFile(photo, 'Members/' + member.owner + "/employees/" +generateEmployeeId(), photo.originalname);
             employeeData.image = logoURL;
         }
         member.listEmployee.push(employeeData);
@@ -160,7 +161,7 @@ async function updateEmployee(memberId, employeeId, updatedEmployeeData, photo) 
         member.listEmployee[employeeIndex] = { ...member.listEmployee[employeeIndex], ...updatedEmployeeData };
 
         if (photo) {
-            const photoURL = await uploadService.uploadFile(photo, 'Members/' + member._id + "/employees/" +generateEmployeeId(), photo.originalname);
+            const photoURL = await uploadService.uploadFile(photo, 'Members/' + member.owner + "/employees/" +generateEmployeeId(), photo.originalname);
             member.listEmployee[employeeIndex].image = photoURL;
         }
 
@@ -198,13 +199,28 @@ const createLegalDocument = async (memberId, documentData , docFile)=> {
             throw new Error('Member not found');
         }
         if (docFile) {
-            const docURL = await uploadService.uploadFile(docFile, 'Members/' + member._id + "/documents/"+generateLegalDocumentId(), docFile.originalname);
+            const docURL = await uploadService.uploadFile(docFile, 'Members/' + member.owner + "/documents/"+generateLegalDocumentId(), docFile.originalname);
             documentData.link = docURL;
             documentData.type = docFile.mimetype;
             documentData.name = docFile.originalname;
         }
         member.legalDocument.push(documentData);
         const savedDocument = await member.save();
+
+        // Récupération de l'ID du dernier document ajouté
+        const documentId = savedDocument.legalDocument[savedDocument.legalDocument.length - 1]._id;
+
+        // Enregistrement de l'action dans l'historique
+        const historyData = {
+            eventType: 'legal_document_uploaded',
+            timestamp: new Date(),
+            user: member.owner,
+            actionTargetType: 'Legal document',
+            actionTarget: documentId,
+        };
+
+        await ActivityHistoryService.createActivityHistory(historyData);
+
         return savedDocument.legalDocument[savedDocument.legalDocument.length - 1];
     } catch (error) {
         throw new Error('Error creating legal document');
@@ -258,7 +274,7 @@ async function deleteLegalDocument(memberId, documentId) {
     }
 }
 
-const createProject = async (memberId, infos, documents) => {
+const createTestProject = async (memberId, infos, documents) => {
     const member = await Member.findById(memberId);
     if (!member) {
         throw new Error('Member doesn\'t exist!');
@@ -309,28 +325,165 @@ const createProject = async (memberId, infos, documents) => {
     return project;
 };
 
-async function createTestProject(ownerId, projectData , documentsFiles) {
+async function createProject(ownerId, projectData , pitchDeck, businessPlan , financialProjection, documentsFiles) {
     try {
+
       const member = await Member.findById(ownerId);
       if (!member) {
         throw new Error("Member not found");
     }
       const project = new Project({ owner: ownerId, ...projectData });
 
-      if (documentsFiles) {
-        let Docs = [];
+    let Docs = [];
+
+    if (documentsFiles) {
         for (const doc of documentsFiles) {
             let fileLink = await uploadService.uploadFile(doc, "Members/" + member.owner + "/Project_documents", doc.originalname);
-            Docs.push({ name: doc.originalname, link: fileLink, type: doc.mimetype });
+            Docs.push({ name: doc.originalname, link: fileLink, type: doc.mimetype  , documentType:"other"});
         }
-        project.documents = Docs;
     }
+    if (pitchDeck) {
+        let pitchDeckLink = await uploadService.uploadFile(pitchDeck, "Members/" + member.owner + "/Project_documents", pitchDeck.originalname);
+        Docs.push({ name: pitchDeck.originalname, link: pitchDeckLink, type: pitchDeck.mimetype , documentType:"pitchDeck" });
+    }
+
+    if (businessPlan) {
+        let businessPlanLink = await uploadService.uploadFile(businessPlan, "Members/" + member.owner + "/Project_documents", businessPlan.originalname);
+        Docs.push({ name: businessPlan.originalname, link: businessPlanLink, type: businessPlan.mimetype , documentType:"businessPlan" });
+    }
+
+    if (financialProjection) {
+        let financialProjectionLink = await uploadService.uploadFile(financialProjection, "Members/" + member.owner + "/Project_documents", financialProjection.originalname);
+        Docs.push({ name: financialProjection.originalname, link: financialProjectionLink, type: financialProjection.mimetype , documentType:"financialProjection"});
+    }
+
+    project.documents = Docs;
+
       const savedProject = await project.save();
+
+      // Enregistrement de l'action dans l'historique
+      const historyData = {
+        eventType: 'project_created',
+        eventDetails: 'Created Project',
+        timestamp: new Date(),
+        user: member.owner,
+        finalDetails: 'and save as Draft',
+        actionTarget: savedProject._id,
+    };
+
+    await ActivityHistoryService.createActivityHistory(historyData);
       return savedProject;
     } catch (error) {
       throw error;
     }
-  }
+}
+
+async function updateProject(projectId, newData, pitchDeck, businessPlan, financialProjection , documentsFiles) {
+    try {
+        const project = await Project.findById(projectId);
+        if (!project) {
+            throw new Error("Project not found");
+        }
+        
+        project.name = newData.name;
+        project.funding = newData.funding;
+        project.currency = newData.currency;
+        project.details = newData.details;
+
+        if (newData.milestones) {
+            const existingMilestoneNames = project.milestones.map(milestone => milestone.name);
+            newData.milestones.forEach(newMilestone => {
+              if (!existingMilestoneNames.includes(newMilestone.name)) {
+                project.milestones.push(newMilestone);
+              }
+            });
+        }
+        if (newData.stages) {
+            for (const stage of newData.stages) {
+                const isStageExists = project.stages.includes(stage);
+                
+                if (!isStageExists) {
+                    project.stages.push(stage);
+                }
+            }
+        }
+        if (newData.listMember) {
+            for (const member of newData.listMember) {
+                const isMemberExists = project.listMember.some(existingMember => 
+                    existingMember.firstName === member.firstName && existingMember.lastName === member.lastName
+                );
+
+                if (!isMemberExists) {
+                    project.listMember.push(member);
+                }
+            }
+        }
+
+
+        if (pitchDeck) {
+            const pitchDeckLink = await uploadService.uploadFile(pitchDeck, "Members/" + project.owner + "/Project_documents", pitchDeck.originalname);
+            const existingPitchDeckIndex = project.documents.findIndex(doc => doc.documentType === "pitchDeck");
+            if (existingPitchDeckIndex !== -1) {
+                project.documents[existingPitchDeckIndex].link = pitchDeckLink;
+                project.documents[existingPitchDeckIndex].name = pitchDeck.originalname;
+                project.documents[existingPitchDeckIndex].type = pitchDeck.mimetype;
+            } else {
+                project.documents.push({ name: pitchDeck.originalname, link: pitchDeckLink, type: pitchDeck.mimetype, documentType: "pitchDeck" });
+            }
+        }
+
+        if (businessPlan) {
+            const businessPlanLink = await uploadService.uploadFile(businessPlan, "Members/" + project.owner + "/Project_documents", businessPlan.originalname);
+            const existingBusinessPlanIndex = project.documents.findIndex(doc => doc.documentType === "pitchDeck");
+            if (existingBusinessPlanIndex !== -1) {
+                project.documents[existingBusinessPlanIndex].link = businessPlanLink;
+                project.documents[existingBusinessPlanIndex].name = businessPlan.originalname;
+                project.documents[existingBusinessPlanIndex].type = businessPlan.mimetype;
+            } else {
+                project.documents.push({ name: businessPlan.originalname, link: businessPlanLink, type: businessPlan.mimetype, documentType: "businessPlan" });
+            }        
+        }
+
+        if (financialProjection) {
+            const financialProjectionLink = await uploadService.uploadFile(financialProjection, "Members/" + project.owner + "/Project_documents", financialProjection.originalname);
+            const existingFinancialProjectionIndex = project.documents.findIndex(doc => doc.documentType === "pitchDeck");
+            if (existingPitchDeckIndex !== -1) {
+                project.documents[existingFinancialProjectionIndex].link = financialProjectionLink;
+                project.documents[existingFinancialProjectionIndex].name = financialProjection.originalname;
+                project.documents[existingFinancialProjectionIndex].type = financialProjection.mimetype;
+            } else {
+                project.documents.push({ name: financialProjection.originalname, link: financialProjectionLink, type: financialProjection.mimetype, documentType: "financialProjection" });
+            }        
+        }
+
+        if (documentsFiles) {
+            for (const doc of documentsFiles) {
+              const isFileExists = project.documents.some(document => document.name === doc.originalname);
+              
+              if (!isFileExists) {
+                const fileLink = await uploadService.uploadFile(doc, "Members/" + project.owner + "/Project_documents", doc.originalname);
+                project.documents.push({ name: doc.originalname, link: fileLink, type: doc.mimetype, documentType: "other" });
+              } 
+            }
+          }
+          
+
+        const updatedProject = await project.save();
+        return updatedProject;
+    } catch (error) {
+        throw new Error('Error updating project');
+    }
+}
+
+async function getAllProjectsForMember(memberId) {
+    try {
+        const projects = await Project.find({ owner: memberId });
+        return projects;
+    } catch (error) {
+        throw new Error('Error fetching projects for member');
+    }
+}
+
 
 const deleteMember = async (userId) => {
     const member = await getMemberByUserId(userId)
@@ -444,6 +597,17 @@ const SubscribeMember = async (memberId, planId) => {
             totalCredits: updatedMember.credits,
             subscriptionExpireDate: savedSubscription.dateExpired,
         });
+
+        const historyData = {
+            eventType: 'Subscribe_to_plan',
+            eventDetails: 'Subscribe to ',
+            timestamp: new Date(),
+            user: updatedMember.owner,
+            actionTargetType: 'Subscribe',
+            actionTarget: subscriptionPlan._id,
+        };
+
+        await ActivityHistoryService.createActivityHistory(historyData);
 
         return updatedMember;
     } catch (error) {
@@ -722,4 +886,5 @@ module.exports = { deleteMember,getContacts,getAllMembers,createProject, checkSu
     SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus ,
     createCompany , createEmployee, createLegalDocument , getTestAllMembers , createTestProject , 
     getInvestorsForMember ,cancelSubscriptionForMember,renewSubscription, upgradePlan ,
-    updateEmployee , deleteEmployee, updateLegalDocument,deleteLegalDocument} 
+    updateEmployee , deleteEmployee, updateLegalDocument,deleteLegalDocument , getAllProjectsForMember ,
+    updateProject} 

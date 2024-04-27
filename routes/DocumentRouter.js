@@ -5,9 +5,16 @@ const upload = require("../middelware/multer")
 
 /**
  * @swagger
+ * tags:
+ *   name: Documents
+ *   description: API for Documents operations
+ */
+/**
+ * @swagger
  * /documents/{memberId}/{userId}:
  *   post:
  *     summary: Créer un document pour un membre avec un utilisateur donné.
+ *     tags: [Documents]
  *     parameters:
  *       - in: path
  *         name: memberId
@@ -44,6 +51,7 @@ router.post('/:memberId/:userId', upload.single('docFile'), DocumentController.c
  * /documents/{documentId}:
  *   put:
  *     summary: Mettre à jour un document.
+ *     tags: [Documents]
  *     parameters:
  *       - in: path
  *         name: documentId
@@ -69,6 +77,7 @@ router.put('/:documentId',upload.single('docFile'), DocumentController.updateDoc
  * /documents/{documentId}:
  *   delete:
  *     summary: Supprimer un document.
+ *     tags: [Documents]
  *     parameters:
  *       - in: path
  *         name: documentId
@@ -88,6 +97,7 @@ router.delete('/:documentId', DocumentController.deleteDocument);
  * /documents/{documentId}:
  *   get:
  *     summary: Récupérer un document par ID.
+ *     tags: [Documents]
  *     parameters:
  *       - in: path
  *         name: documentId
@@ -107,6 +117,7 @@ router.get('/:documentId', DocumentController.getDocumentById);
  * /documents/{memberId}:
  *   get:
  *     summary: Récupérer la liste des documents pour un membre donné.
+ *     tags: [Documents]
  *     parameters:
  *       - in: path
  *         name: memberId
@@ -126,6 +137,7 @@ router.get('/member/:memberId', DocumentController.getDocumentsForMember);
  * /documents/uploader/{userId}:
  *   get:
  *     summary: Récupérer la liste des documents téléchargés par un utilisateur donné.
+ *     tags: [Documents]
  *     parameters:
  *       - in: path
  *         name: userId

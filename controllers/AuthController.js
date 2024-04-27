@@ -216,7 +216,10 @@ const AuthenticateSubMemberOrAdmin = async (req, res, next) => {
   })
 }
 
+
 module.exports = {
   AuthenticateUserOrAdmin, AllUsers,
-  AuthenticateInvestor, AuthenticateSubMemberOrAdmin, AuthenticateSubMember, login, authenticateToken, userInfo, AuthenticateAdmin, AuthenticateMember, AuthenticateUser, AuthenticatePartner
+  AuthenticateInvestor, AuthenticateSubMemberOrAdmin, AuthenticateSubMember, 
+  login, authenticateToken, userInfo, AuthenticateAdmin, AuthenticateMember, 
+  AuthenticateUser, AuthenticatePartner, 
 }

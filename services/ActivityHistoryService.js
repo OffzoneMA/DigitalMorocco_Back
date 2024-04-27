@@ -46,14 +46,16 @@ async function createActivityHistory(data) {
                 }
                 break;
             case 'document_uploaded':
+            case 'legal_document_uploaded':
                 eventDetails = 'Uploaded Document';
                 break;
             default:
                 eventDetails = 'Other Event';
         }
 
-
-        data.eventDetails = eventDetails;
+        if (!data.eventDetails || data.eventDetails.trim() === '') {
+            data.eventDetails = eventDetails;
+        }        
 
         const activityHistory = await ActivityHistory.create(data);
         return activityHistory;
@@ -110,5 +112,54 @@ async function getAllActivityHistories() {
     }
 }
 
+const getAllActivityHistoriesByUser = async (userId) => {
+    try {
+        const activityHistories = await ActivityHistory.find({ user: userId });
+        const populatedActivityHistories = await Promise.all(activityHistories.map(async (history) => {
+            let actionTargetDetails = null;
+            let targetUserDetails = null;
 
-module.exports = {createActivityHistory ,getAllActivityHistories }
+            if (history.actionTarget) {
+                switch (history.eventType) {
+                    case 'document_shared':
+                    case 'document_uploaded':
+                        actionTargetDetails = await Document.findById(history.actionTarget);
+                        break;
+                    case 'project_created':
+                        actionTargetDetails = await Project.findById(history.actionTarget);
+                        break;
+                    case 'event_registered':
+                    case 'event_attended':
+                        actionTargetDetails = await Event.findById(history.actionTarget);
+                        break;
+                    default:
+                        actionTargetDetails = null;
+                }
+            }
+
+            if (history.targetUser && history.targetUser.usertype === 'Investor') {
+                targetUserDetails = await Investor.findById(history.targetUser.userId);
+            } 
+            else if (history.targetUser && history.targetUser.usertype === 'Member') {
+                targetUserDetails = await Member.findById(history.targetUser.userId);
+            }else if (history.targetUser && history.targetUser.usertype === 'Partner') {
+                targetUserDetails = await Partner.findById(history.targetUser.userId);
+            }else if (history.targetUser) {
+                targetUserDetails = await User.findById(history.targetUser.userId);
+            }
+
+            return {
+                ...history.toObject(),
+                actionTargetDetails,
+                targetUserDetails,
+            };
+        }));
+        return populatedActivityHistories;
+    } catch (error) {
+        throw new Error('Error getting activity histories by member: ' + error.message);
+    }
+};
+
+
+
+module.exports = {createActivityHistory ,getAllActivityHistories ,  getAllActivityHistoriesByUser }

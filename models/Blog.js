@@ -5,10 +5,13 @@ const blogSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    resume: {
+        type: String,
+        require: true
+    },
     creator: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        //required: true
     },
     details: {
         type: String,

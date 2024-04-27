@@ -1,56 +1,65 @@
 const express = require("express")
 const router = express.Router()
 const SubscriptionPlanController = require("../controllers/SubscriptionPlanController")
+const AuthController = require("../controllers/AuthController")
+
+/**
+ * @swagger
+ * tags:
+ *   name: Subscription Plan
+ *   description: API for Subscription Plan operations
+ */
 
 /**
  * @swagger
  * components:
- * schemas:
- *  SubscriptionPlan:
- *    type: object
- *    properties:
- *      name:
- *        type: string
- *      creator:
- *        type: string
- *      description:
- *        type: string
- *      dateCreated:
- *        type: string
- *        format: date-time
- *      isAvailable:
- *        type: boolean
- *      featureDescriptions:
- *        type: array
- *        items:
- *          type: string
- *      price:
- *        type: number
- *      duration:
- *        type: number
- *      planType:
- *        type: string
- *        enum: [Basic, Pro, Enterprise]
- *      credits:
- *        type: number
- *      hasTrial:
- *        type: boolean
- *      trialDays:
- *        type: number
- *      trialEndDate:
- *        type: string
- *        format: date-time
- *     required:
- *      - name
- *      - creator
- *      - planType
-
+ *   schemas:
+ *     SubscriptionPlan:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *         creator:
+ *           type: string
+ *         description:
+ *           type: string
+ *         dateCreated:
+ *           type: string
+ *           format: date-time
+ *         isAvailable:
+ *           type: boolean
+ *         featureDescriptions:
+ *           type: array
+ *           items:
+ *             type: string
+ *         price:
+ *           type: number
+ *         duration:
+ *           type: number
+ *         planType:
+ *           type: string
+ *           enum: [Basic, Pro, Enterprise]
+ *         credits:
+ *           type: number
+ *         hasTrial:
+ *           type: boolean
+ *         trialDays:
+ *           type: number
+ *         trialEndDate:
+ *           type: string
+ *           format: date-time
+ *       required:
+ *         - name
+ *         - creator
+ *         - planType
  */
+
 /**
  * @swagger
- * /subscription-plans/{userId}:
+ * /subscription-plans/:
  *   post:
  *     summary: Create a new subscription plan
+ *     tags: [Subscription Plan]
  *     parameters:
  *       - in: path
  *         name: userId
@@ -76,7 +85,7 @@ const SubscriptionPlanController = require("../controllers/SubscriptionPlanContr
  *       '500':
  *         description: Internal server error
  */
-router.post('/:userId', SubscriptionPlanController.createSubscriptionPlan);
+router.post('/',AuthController.AuthenticateAdmin ,  SubscriptionPlanController.createSubscriptionPlan);
 
 
 /**
@@ -84,6 +93,7 @@ router.post('/:userId', SubscriptionPlanController.createSubscriptionPlan);
  * /subscription-plans:
  *   get:
  *     summary: Get all subscription plans
+ *     tags: [Subscription Plan]
  *     responses:
  *       '200':
  *         description: Success
@@ -103,6 +113,7 @@ router.get('/', SubscriptionPlanController.getAllSubscriptionPlans);
  * /subscription-plans/{planId}:
  *   get:
  *     summary: Get subscription plan by ID
+ *     tags: [Subscription Plan]
  *     parameters:
  *       - in: path
  *         name: planId
@@ -127,6 +138,7 @@ router.get('/:planId', SubscriptionPlanController.getSubscriptionPlanById);
  * /subscription-plans/{planId}:
  *   put:
  *     summary: Update subscription plan by ID
+ *     tags: [Subscription Plan]
  *     parameters:
  *       - in: path
  *         name: planId
@@ -157,6 +169,7 @@ router.put('/:planId', SubscriptionPlanController.updateSubscriptionPlan);
  * /subscription-plans/{planId}:
  *   delete:
  *     summary: Delete subscription plan by ID
+ *     tags: [Subscription Plan]
  *     parameters:
  *       - in: path
  *         name: planId

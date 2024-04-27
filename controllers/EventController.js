@@ -3,7 +3,10 @@ const EventService =require('../services/EventService');
 const createEvent=async(req,res)=>{
     try {
         const eventData = req.body;
-        const newEvent = await EventService.createEvent(eventData);
+        const imageData = req.files['image'];
+        const headerImage = req.files['headerImage'];
+        const organizerLogo = req.files['organizerLogo'];
+        const newEvent = await EventService.createEvent(req.userId ,eventData, imageData?.[0], headerImage?.[0] , organizerLogo?.[0]);
         res.status(201).json(newEvent);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -40,17 +43,29 @@ async function getAllEventsByUser(req, res) {
     }
   }
   
-
-const updateEvent=async(req,res)=>{
+  function isJsonString(str) {
     try {
-        const eventId = req.params.id;
-        const eventData = req.body;
-        const updatedEvent = await EventService.updateEvent(eventId, eventData);
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+
+  const updateEvent = async (req, res) => {
+    try {
+        const { eventId } = req.params; 
+        let data =  req?.body 
+        const imageData = req.files['image']; 
+        const headerImage = req.files['headerImage']; 
+        const organizerLogo = req.files['organizerLogo']; 
+
+        const updatedEvent = await EventService.updateEvent(eventId, data, imageData?.[0], headerImage?.[0], organizerLogo?.[0]);
         res.status(200).json(updatedEvent);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
-}
+};
 
 async function addAttendeeToEvent(req, res) {
     const { eventId } = req.params;

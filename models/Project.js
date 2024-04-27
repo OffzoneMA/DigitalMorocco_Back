@@ -11,7 +11,8 @@ const ProjectSchema = new mongoose.Schema({
     funding: Number,
     currency: {
         type: String,
-        enum: ['MAD','€','$'],
+        enum: ['MAD','€','$', "USD"],
+        default: "USD"
     },
     listMember: [{
         firstName: { type: String },
@@ -28,12 +29,12 @@ const ProjectSchema = new mongoose.Schema({
           completed: { type: Boolean, default: false }
         }
     ],
-    //milestoneProgress: String,
     documents: [{
         name: { type: String },
         link: { type: String },
         date: { type: Date, default: Date.now },
         type: { type: String },
+        documentType: String,
     }],
     visbility:{
         type: String,
@@ -41,8 +42,12 @@ const ProjectSchema = new mongoose.Schema({
         default:'public'
     },
     dateCreated: { type: Date, default: Date.now },
-    status: String,
-    stage: String
+    status: {
+        type: String,
+        enum:["In Progress", "Active" , "Stand by"],
+        default :"In Progress"
+    },
+    stages: [String]
 })
 
 

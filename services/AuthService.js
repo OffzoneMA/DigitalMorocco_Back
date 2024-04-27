@@ -56,10 +56,10 @@ const generateUserInfos = async (user) => {
     if (user?.role == "member"){
         let member = await MemberService.getMemberByUserId(user._id)
         data = member?._doc ? member?._doc : member
-        if(member?.companyName) {
-        let project= await ProjectService.getProjectByMemberId(member._id)  
-            if (project) data = { ...data, "project": project }
-        }
+        // if(member?.companyName) {
+        // let project= await ProjectService.getProjectByMemberId(member._id)  
+        //     if (project) data = { ...data, "project": project }
+        // }
     }
     if (user?.role == "partner") {
         let partner = await PartnerService.getPartnerByUserId(user._id)

@@ -14,34 +14,37 @@ const eventSchema = new mongoose.Schema({
         required: true
     },
     promoCode: String,
-    date: {
+    startDate: {
         type: Date,
-        required: true
+    },
+    endDate: {
+        type: Date
     },
     startTime: {
         type: String,
-        required: true
     },
     endTime: {
         type: String,
-        required: true
     },
     locationType: {
         type: String,
         enum: ['online', 'physical'],
         required: true,
     },
-    eventType: String,
+    category: {
+        type: String,
+        enum: ['Workshop', 'Seminar', 'Conference', 'Other']
+    },
     industry: String,
     physicalLocation: String,
-    coordinates: {
-        latitude:Number,
-        longitude:Number,
-    },
+    latitude:Number,
+    longitude:Number,
     creator: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        //required: true
+    },
+    headerImage: {
+        type: String
     },
     image: {
         type: String
@@ -63,15 +66,12 @@ const eventSchema = new mongoose.Schema({
     zoomPasscode: {
         type: String
     },
-    ticketInfo: {
-        price: {
-            type: Number,
-            required: true
-        },
-        
-        salesEndDate:Date,
-        availableQuantity:Number,
+    price: {
+        type: Number,
     },
+    
+    salesEndDate:Date,
+    availableQuantity: Number,
     attendees: [
         {
             firstName: {
@@ -93,10 +93,8 @@ const eventSchema = new mongoose.Schema({
             country: String
         }
     ],
-    Organizeby: {
-        logo: String,
-        name: String,
-    },
+    organizerLogo: String,
+    organizername: String,
     status:
     {
         type: String,
@@ -105,7 +103,8 @@ const eventSchema = new mongoose.Schema({
     },
     sponsors: [
         {
-            
+            logo: String,
+            name: String
         }
     ]
 })

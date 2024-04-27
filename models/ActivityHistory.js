@@ -4,7 +4,8 @@ const ActivityHistorySchema  = new mongoose.Schema({
     eventType: {
         type: String,
         enum: ['document_shared', 'contact_request_sent', 'event_registered', 
-        'project_created', 'event_attended', 'document_uploaded', 'project_completed', 'other'],
+        'project_created', 'event_attended', 'document_uploaded', 'project_completed', 
+        'legal_document_uploaded', 'other'],
         required: true
     },
     eventDetails: {

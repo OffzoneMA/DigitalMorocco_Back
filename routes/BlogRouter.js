@@ -1,6 +1,9 @@
-const express = require("express")
-const router = express.Router()
-const BlogController = require("../controllers/BlogController")
+const express = require("express");
+const router = express.Router();
+const BlogController = require("../controllers/BlogController");
+const AuthController = require("../controllers/AuthController");
+const upload = require("../middelware/multer");
+
 
 /**
  * @swagger
@@ -16,7 +19,12 @@ const BlogController = require("../controllers/BlogController")
  *     Blog:
  *       type: object
  *       properties:
+ *         _id:
+ *           type: string
+ *           description: The ID of the blog post
  *         title:
+ *           type: string
+ *         resume:
  *           type: string
  *         content:
  *           type: string
@@ -37,26 +45,54 @@ const BlogController = require("../controllers/BlogController")
  * @swagger
  * /blogs/createBlog:
  *   post:
- *     summary: Create a new blog
- *     description: Create a new blog with the provided details
+ *     summary: Create a new blog post
  *     tags: [Blogs]
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/Blog'
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: The image file for the blog post (optional)
+ *               title:
+ *                 type: string
+ *                 description: The title of the blog post
+ *               resume:
+ *                 type: string
+ *                 description: A brief summary of the blog post
+ *               details:
+ *                 type: string
+ *                 description: Additional details about the blog post
+ *               content:
+ *                 type: string
+ *                 description: The content of the blog post
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: List of tags associated with the blog post
  *     responses:
- *       201:
- *         description: Blog created successfully
+ *       '201':
+ *         description: Created
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Blog'
- *       400:
+ *       '400':
  *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
  */
-router.post('/createBlog', BlogController.createBlog);
+router.post('/createBlog',AuthController.AuthenticateUser,upload.single("image"), BlogController.createBlog);
 
 /**
  * @swagger
@@ -150,9 +186,31 @@ router.get('/:id', BlogController.getBlogById);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/Blog'
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: The image file for the blog post (optional)
+ *               title:
+ *                 type: string
+ *                 description: The title of the blog post
+ *               resume:
+ *                 type: string
+ *                 description: A brief summary of the blog post
+ *               details:
+ *                 type: string
+ *                 description: Additional details about the blog post
+ *               content:
+ *                 type: string
+ *                 description: The content of the blog post
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: List of tags associated with the blog post
  *     responses:
  *       200:
  *         description: Blog updated successfully
@@ -163,7 +221,7 @@ router.get('/:id', BlogController.getBlogById);
  *       404:
  *         description: Blog not found
  */
-router.put('/update/:id', BlogController.updateBlog);
+router.put('/update/:id', upload.single('image'),  BlogController.updateBlog);
 
 /**
  * @swagger

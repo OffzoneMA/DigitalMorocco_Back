@@ -91,4 +91,34 @@ router.post('/', ActivityHistoryController.createActivityHistoryController);
  */
 router.get('/', ActivityHistoryController.getAllActivityHistoriesController);
 
+/**
+ * @swagger
+ * /activity-history/{memberId}/member:
+ *   get:
+ *     summary: Get all activity histories for a member
+ *     tags: [Activity History]
+ *     parameters:
+ *       - in: path
+ *         name: memberId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the member
+ *     responses:
+ *       '200':
+ *         description: Successful operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/ActivityHistory'
+ *       '400':
+ *         description: Invalid request
+ *       '500':
+ *         description: Internal server error
+ */
+router.get('/:memberId/member', ActivityHistoryController.getAllActivityHistoriesByUser);
+
+
 module.exports = router;

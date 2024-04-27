@@ -20,4 +20,16 @@ async function getAllActivityHistoriesController(req, res) {
     }
 }
 
-module.exports = { createActivityHistoryController, getAllActivityHistoriesController };
+const getAllActivityHistoriesByUser = async (req, res) => {
+    try {
+        const memberId = req.params.memberId;
+        const activityHistories = await ActivityHistoryService.getAllActivityHistoriesByUser(memberId);
+        res.status(200).json(activityHistories);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+
+module.exports = { createActivityHistoryController, getAllActivityHistoriesController ,
+getAllActivityHistoriesByUser };

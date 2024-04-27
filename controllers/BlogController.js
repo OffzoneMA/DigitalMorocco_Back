@@ -2,7 +2,10 @@ const BlogService = require('../services/BlogService');
 
 const createBlog = async (req, res) => {
     try {
-        const blog = await BlogService.createBlog(req.body);
+
+        const image = req.file;
+        const userId = req.userId;
+        const blog = await BlogService.createBlog(userId, req.body, image);
         res.status(201).json(blog);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -44,7 +47,7 @@ const getBlogById = async (req, res) => {
 
 const updateBlog = async (req, res) => {
     try {
-        const blog = await BlogService.updateBlog(req.params.id, req.body);
+        const blog = await BlogService.updateBlog(req.params.id, req.body , req.file);
         if (!blog) {
             res.status(404).json({ error: 'Blog not found' });
             return;

@@ -25,6 +25,31 @@ const getProjects = async(args)=> {
     }
 }
 
+async function addMilestone(projectId, milestoneData) {
+    try {
+      const project = await Project.findById(projectId);
+      if (!project) {
+        throw new Error("Project not found");
+      }
+  
+      project.milestones.push(milestoneData);
+      const updatedProject = await project.save();
+      return updatedProject;
+    } catch (error) {
+      throw new Error('Error adding milestone to project');
+    }
+  }
+
+async function deleteProject(projectId) {
+    try {
+        await Project.findByIdAndDelete(projectId);
+        return 'Project deleted successfully';
+    } catch (error) {
+        throw new Error('Error deleting project');
+    }
+}
 
 
-module.exports = { getProjects , CreateProject, getProjectById, ProjectByNameExists, getProjectByMemberId }
+
+module.exports = { getProjects , CreateProject, getProjectById, ProjectByNameExists, 
+    getProjectByMemberId , deleteProject, addMilestone}

@@ -4,11 +4,6 @@ async function createSubscriptionPlan(req, res) {
     const userId = req.params.userId;
     const planData = req.body;
     try {
-        const isAdmin = await checkUserRole(userId);
-        if (!isAdmin) {
-            return res.status(403).json({ error: 'Only admins can create subscription plans' });
-        }
-
         const plan = await SubscriptionPlanService.createSubscriptionPlan(userId, planData);
         res.status(201).json(plan);
     } catch (error) {

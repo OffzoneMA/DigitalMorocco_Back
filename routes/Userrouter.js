@@ -221,7 +221,6 @@ router.route("/sendverify/:userid").get(UserController.sendVerification);
  */
 router.route("/forgot-password").post(UserController.sendForgotPassword);
 
-
 /**
  * @swagger
  * /users/reset-password:
@@ -320,7 +319,6 @@ router.route("/UserInfo").get(AuthController.userInfo)
  */
 router.route("/Login").post(AuthController.login);
 
-
 /**
  * @swagger
  * /users/ApproveUser/{id}:
@@ -405,8 +403,95 @@ router.route("/ApproveUser/:id").get(AuthController.AuthenticateAdmin, UserContr
  *       500:
  *         description: Internal server error
  */
-
 router.route("/RejectUser/:id").get(AuthController.AuthenticateAdmin, UserController.rejectUser);
+
+/**
+ * @swagger
+ * /users/update:
+ *   put:
+ *     summary: Update user account details.
+ *     description: Update the account details of the authenticated user.
+ *     tags: [Users]
+ *     security:
+ *       - jwtToken: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 description: The first name of the user.
+ *               lastName:
+ *                 type: string
+ *                 description: The last name of the user.
+ *               phoneNumber:
+ *                 type: string
+ *                 description: The phone number of the user.
+ *               website:
+ *                 type: string
+ *                 description: The website URL of the user.
+ *               address:
+ *                 type: string
+ *                 description: The address of the user.
+ *               Country:
+ *                 type: string
+ *                 description: The country of the user.
+ *               cityState:
+ *                 type: string
+ *                 description: The city and state of the user.
+ *               region:
+ *                 type: string
+ *                 description: The region of the user.
+ *               image:
+ *                 type: string
+ *                 description: The image URL of the user.
+ *               displayName:
+ *                 type: string
+ *                 description: The display name of the user.
+ *               email:
+ *                 type: string
+ *                 description: The email address of the user.
+ *               role:
+ *                 type: string
+ *                 enum: ['Admin', 'partner', 'investor', 'member' , 'associate']
+ *                 description: The role of the user.
+ *               password:
+ *                 type: string
+ *                 description: The password of the user.
+ *               status:
+ *                 type: string
+ *                 enum: ['accepted', 'pending', 'rejected', 'notVerified', 'verified']
+ *                 description: The status of the user.
+ *               language:
+ *                 type: string
+ *                 description: The language preference of the user.
+ *     responses:
+ *       200:
+ *         description: User account updated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                   description: The ID of the updated user.
+ *                 firstName:
+ *                   type: string
+ *                   description: The first name of the user.
+ *                 lastName:
+ *                   type: string
+ *                   description: The last name of the user.
+ *                 role:
+ *                   type: string
+ *                   description: The role of the user.
+ *       500:
+ *         description: Internal server error.
+ */
+router.put('/update',AuthController.AuthenticateUser, UserController.updateUser);
 
 
 

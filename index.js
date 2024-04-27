@@ -14,6 +14,7 @@ const SubscriptionLogRouter = require("./routes/SubscriptionLogRouter");
 const EventRouter = require("./routes/EventRouter")
 const BlogRouter = require("./routes/BlogRouter")
 const OtpRouter = require("./routes/Otprouter")
+const ProjectRouter = require("./routes/ProjectRouter")
 const session = require('express-session');
 const { passport } = require("./config/passport-setup");
 const { checkSubscriptionStatus } = require("./services/MemberService");
@@ -71,6 +72,7 @@ app.use("/Sublogs", SubscriptionLogRouter);
 app.use("/events", EventRouter);
 app.use("/blogs", BlogRouter);
 app.use("/users/otp", OtpRouter);
+app.use("/projects", ProjectRouter);
 
 const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css";
 

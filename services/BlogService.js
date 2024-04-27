@@ -1,8 +1,15 @@
 const Blog = require('../models/Blog');
+const uploadService = require('./FileService');
 
-const createBlog = async (blogData) => {
+
+const createBlog = async (userId, blogData , imageData) => {
     try {
-        const blog = new Blog(blogData);
+        const blog = new Blog({creator: userId, ...blogData});
+
+        if (imageData) {
+            const logoURL = await uploadService.uploadFile(imageData, 'Blogs/' + userId + "/images/", imageData.originalname);
+            blog.image = logoURL;
+        }
         return await blog.save();
     } catch (error) {
         throw error;
@@ -34,13 +41,30 @@ const getBlogById = async (blogId) => {
     }
 };
 
-const updateBlog = async (blogId, blogData) => {
+const updateBlog = async (blogId, blogData, imageData) => {
     try {
-        return await Blog.findByIdAndUpdate(blogId, blogData, { new: true });
+        const blog = await Blog.findById(blogId);
+        if (!blog) {
+            throw new Error('Blog not found');
+        }
+        
+        if (imageData) {
+            const imageURL = await uploadService.uploadFile(imageData, 'Blogs/' + blog.creator + "/images/", imageData.originalname);
+            blog.image = imageURL;
+        }
+
+        blog.title = blogData.title || blog.title;
+        blog.resume = blogData.resume || blog.resume;
+        blog.details = blogData.details || blog.details;
+        blog.content = blogData.content || blog.content;
+        blog.tags = blogData.tags || blog.tags;
+
+        return await blog.save();
     } catch (error) {
         throw error;
     }
 };
+
 
 const deleteBlog = async (blogId) => {
     try {

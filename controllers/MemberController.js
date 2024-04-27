@@ -37,7 +37,7 @@ async function createMember(req, res) {
 
 const createCompany = async (req, res)=> {
     try {
-        const memberId = req.params.memberId;
+        const memberId = req.memberId;
         const companyData = req.body;
         const logo = req.file;
         //console.log("data" ,companyData);
@@ -51,7 +51,7 @@ const createCompany = async (req, res)=> {
 
 const createEmployee = async (req, res)=> {
     try {
-        const memberId = req.params.memberId;
+        const memberId = req.memberId;
         const employeeData = req.body;
         const photoFile = req.file;
         const result = await MemberService.createEmployee(memberId, employeeData ,photoFile);
@@ -63,7 +63,8 @@ const createEmployee = async (req, res)=> {
 
 async function updateEmployee(req, res) {
     try {
-        const { memberId, employeeId } = req.params;
+        const memberId = req.memberId;
+        const employeeId = req.params.employeeId;
         const updatedEmployeeData = req.body;
         const photo = req.file;
         const updatedEmployee = await MemberService.updateEmployee(memberId, employeeId, updatedEmployeeData, photo);
@@ -75,7 +76,8 @@ async function updateEmployee(req, res) {
 
 async function deleteEmployee(req, res) {
     try {
-        const { memberId, employeeId } = req.params;
+        const memberId = req.memberId;
+        const employeeId = req.params.employeeId;
         const deletedEmployee = await MemberService.deleteEmployee(memberId, employeeId);
         res.status(200).json(deletedEmployee);
     } catch (error) {
@@ -85,7 +87,7 @@ async function deleteEmployee(req, res) {
 
 const createLegalDocument = async (req, res)=> {
     try {
-        const memberId = req.params.memberId;
+        const memberId = req.memberId;
         const documentData = req.body;
         const docFile = req.file;
         const result = await MemberService.createLegalDocument(memberId, documentData , docFile);
@@ -97,7 +99,8 @@ const createLegalDocument = async (req, res)=> {
 
 async function updateLegalDocument(req, res) {
     try {
-        const { memberId, documentId } = req.params;
+        const memberId = req.memberId;
+        const documentId = req.params.documentId;
         const updatedDocumentData = req.body;
         const docFile = req.file;
         const updatedDocument = await MemberService.updateLegalDocument(memberId, documentId, updatedDocumentData, docFile);
@@ -109,7 +112,8 @@ async function updateLegalDocument(req, res) {
 
 async function deleteLegalDocument(req, res) {
     try {
-        const { memberId, documentId } = req.params;
+        const memberId = req.memberId;
+        const documentId = req.params.documentId;
         const deletedDocument = await MemberService.deleteLegalDocument(memberId, documentId);
         res.status(200).json(deletedDocument);
     } catch (error) {
@@ -133,15 +137,53 @@ const createProject= async (req, res) => {
 
         try {
             let data = isJsonString(req?.body.infos) ? JSON.parse(req?.body.infos) : req?.body.infos
-            const result = await MemberService.createProject(req.memberId, data, req?.files);
+            const pitchDeck = req.files['pitchDeck'];
+            const businessPlan = req.files['businessPlan'];
+            const financialProjection = req.files['financialProjection'];
+            const files = req.files['files']; 
+            // console.log("pitchDeck",pitchDeck)
+            // console.log("businessPlan",businessPlan)
+
+            // console.log("financialProjection",financialProjection)
+
+            // console.log("files",files)
+
+            const result = await MemberService.createProject(req.memberId, data, pitchDeck[0], businessPlan[0] , financialProjection[0], files);
             const member = await MemberService.getMemberById(req.memberId);
             const log = await UserLogService.createUserLog('Project Creation', member.owner);
             res.status(200).json(result);
         } catch (error) {
             res.status(500).json({ message: error.message });
         }
-    }
+}
 
+const updateProject= async (req, res) => {
+
+    try {
+        let data = isJsonString(req?.body.infos) ? JSON.parse(req?.body.infos) : req?.body.infos
+        const pitchDeck = req.files['pitchDeck'];
+        const businessPlan = req.files['businessPlan'];
+        const financialProjection = req.files['financialProjection'];
+        const files = req.files['files']; 
+
+        const result = await MemberService.updateProject(req.params.projectId, data, pitchDeck[0], businessPlan[0] , financialProjection[0], files);
+        const member = await MemberService.getMemberById(result.owner);
+        const log = await UserLogService.createUserLog('Project Edition', member.owner);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+async function getAllProjectsForMember(req, res) {
+    try {
+        const memberId = req.memberId;
+        const projects = await MemberService.getAllProjectsForMember(memberId);
+        res.status(200).json(projects);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
 
 const contactRequest = async (req, res) => {
     try {
@@ -215,7 +257,7 @@ async function getTestAllMembers(req, res) {
 }
 
 async function getInvestorsForMember(req, res) {
-    const memberId = req.params.memberId;
+    const memberId = req.memberId;
 
     try {
         const investors = await MemberService.getInvestorsForMember(memberId);
@@ -226,7 +268,7 @@ async function getInvestorsForMember(req, res) {
 }
 
 async function getContactRequestsForMember(req, res) {
-    const memberId = req.params.memberId;
+    const memberId = req.memberId;
 
     try {
         const contactRequests = await InvestorContactService.getContactRequestsForMember(memberId);
@@ -241,4 +283,4 @@ async function getContactRequestsForMember(req, res) {
 module.exports = { getContacts,getMembers, createEnterprise, getByName, subUser, createProject, 
     contactRequest, getContactRequests , createCompany , createEmployee , createLegalDocument ,createMember ,
 getTestAllMembers , getInvestorsForMember , getContactRequestsForMember ,updateEmployee ,
-deleteEmployee ,updateLegalDocument, deleteLegalDocument}
+deleteEmployee ,updateLegalDocument, deleteLegalDocument , getAllProjectsForMember , updateProject}
