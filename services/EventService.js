@@ -7,9 +7,18 @@ const uploadService = require('./FileService');
 
 // Get all events
 async function getAllEvents(args) {
+
     try {
-        const events = await Event.find().skip(args.start ? args.start : null).limit(args.qt ? args.qt : null);;
-        return events;
+      const page = args.page || 1;
+      const pageSize = args.pageSize || 10;
+      const skip = (page - 1) * pageSize;
+
+      const totalCount = await Blog.countDocuments(query);
+      const totalPages = Math.ceil(totalCount / pageSize);
+
+      const events = await Event.find().skip(skip)
+        .limit(pageSize);
+        return {totalPages,events};
     } catch (error) {
         throw error;
     }

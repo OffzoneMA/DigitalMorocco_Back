@@ -16,9 +16,20 @@ const createBlog = async (userId, blogData , imageData) => {
     }
 };
 
-const getAllBlogs = async () => {
+const getAllBlogs = async (args) => {
+
     try {
-        return await Blog.find().sort({ date: -1 });
+        const page = args.page || 1;
+        const pageSize = args.pageSize || 10;
+        const skip = (page - 1) * pageSize;
+
+        const totalCount = await Blog.countDocuments(query);
+        const totalPages = Math.ceil(totalCount / pageSize);
+
+        const blogs =  await Blog.find().sort({ date: -1 }).skip(skip)
+        .limit(pageSize);
+
+        return {totalPages , blogs};
     } catch (error) {
         throw error;
     }
