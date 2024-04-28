@@ -23,7 +23,7 @@ const getAllBlogs = async (args) => {
         const pageSize = args.pageSize || 10;
         const skip = (page - 1) * pageSize;
 
-        const totalCount = await Blog.countDocuments(query);
+        const totalCount = await Blog.countDocuments();
         const totalPages = Math.ceil(totalCount / pageSize);
 
         const blogs =  await Blog.find().sort({ date: -1 }).skip(skip)
