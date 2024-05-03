@@ -99,6 +99,16 @@ const sendTicketToUser = async (req, res) => {
     }
   };
 
+  async function supprimerCollection(req, res) {
+    try {
+      await EventService.supprimerCollection(); 
+      res.status(200).json({ message: 'La collection a été supprimée avec succès.' });
+    } catch (error) {
+      console.error('Erreur lors de la suppression de la collection :', error);
+      res.status(500).json({ error: 'Une erreur s\'est produite lors de la suppression de la collection.' });
+    }
+  }
+
 module.exports = {
     createEvent,
     getEvents,
@@ -107,5 +117,6 @@ module.exports = {
     deleteEvent,
     getAllEventsByUser,
     addAttendeeToEvent,
-    sendTicketToUser
+    sendTicketToUser,
+    supprimerCollection
 };

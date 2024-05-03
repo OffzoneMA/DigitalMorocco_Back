@@ -166,11 +166,12 @@ const updateProject= async (req, res) => {
         const financialProjection = req.files['financialProjection'];
         const files = req.files['files']; 
 
-        const result = await MemberService.updateProject(req.params.projectId, data, pitchDeck[0], businessPlan[0] , financialProjection[0], files);
+        const result = await MemberService.updateProject(req.params.projectId, data, pitchDeck?.[0], businessPlan?.[0] , financialProjection?.[0], files);
         const member = await MemberService.getMemberById(result.owner);
         const log = await UserLogService.createUserLog('Project Edition', member.owner);
         res.status(200).json(result);
     } catch (error) {
+        console.log(error.message)
         res.status(500).json({ message: error.message });
     }
 }

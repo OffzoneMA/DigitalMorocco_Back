@@ -150,7 +150,7 @@ async function updateEvent(eventId, eventData, imageData, headerImage, organizer
 
       if (organizerLogo) {
           const organizerLogoURL = await uploadService.uploadFile(organizerLogo, 'Events/' + eventData.creator + "/images/organizers", organizerLogo.originalname);
-          event.Organizeby.organizerLogo = organizerLogoURL;
+          event.organizerLogo = organizerLogoURL;
       }
 
       const updatedEvent = await event.save();
@@ -171,6 +171,14 @@ async function deleteEvent(eventId) {
         throw error;
     }
 }
+async function supprimerCollection() {
+  try {
+    await Event.deleteMany(); 
+    console.log('La collection a été supprimée avec succès.');
+  } catch (error) {
+    console.error('Erreur lors de la suppression de la collection :', error);
+  }
+}
 
 module.exports = {
     createEvent,
@@ -179,5 +187,6 @@ module.exports = {
     updateEvent,
     deleteEvent,
     getAllEventsByUser,
-    addAttendeeToEvent
+    addAttendeeToEvent,
+    supprimerCollection
 };

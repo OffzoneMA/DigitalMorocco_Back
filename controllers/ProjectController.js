@@ -36,18 +36,28 @@ const getProjectById = async (req, res) => {
 async function addMilestone(req, res) {
     try {
       const { projectId } = req.params;
-      const milestoneData = req.body;
   
-      const updatedProject = await ProjectService.addMilestone(projectId, milestoneData);
+      const updatedProject = await ProjectService.addMilestone(projectId, req.body);
 
       const member = await MemberService.getMemberById(updatedProject.owner);
       const log = await UserLogService.createUserLog('Project Add milestone', member.owner);
   
       res.status(200).json(updatedProject);
     } catch (error) {
-      console.error('Error adding milestone to project:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+      res.status(500).json({ message: error.message });
     }
   }
 
-module.exports = {  getprojects , deleteProject , getProjectById , addMilestone}
+  async function removeMilestone(req, res) {
+    try {
+        const { projectId, milestoneId } = req.params;
+  
+      const updatedProject = await ProjectService.removeMilestone(projectId, milestoneId);
+  
+      res.status(200).json(updatedProject);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+module.exports = {  getprojects , deleteProject , getProjectById , addMilestone , removeMilestone}

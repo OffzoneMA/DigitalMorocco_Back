@@ -86,4 +86,32 @@ router.get('/:projectId', ProjectController.getProjectById);
  */
 router.post('/:projectId/milestones', ProjectController.addMilestone);
 
+/**
+ * @swagger
+ * /projects/{projectId}/milestones/{milestoneId}:
+ *   delete:
+ *     summary: Supprimer un jalon d'un projet
+ *     tags: [Projects]
+ *     description: Supprime un jalon spécifié d'un projet donné.
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         description: ID du projet
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: milestoneId
+ *         required: true
+ *         description: ID du jalon à supprimer
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Succès, le jalon a été supprimé avec succès du projet.
+ *       500:
+ *         description: Erreur serveur, impossible de supprimer le jalon.
+ */
+router.delete('/:projectId/milestones/:milestoneId',ProjectController.removeMilestone)
+
 module.exports = router

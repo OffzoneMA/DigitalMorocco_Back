@@ -605,5 +605,8 @@ router.get('/user/:userId/events', EventController.getAllEventsByUser);
  */
 router.post('/:eventId/add-attendee', EventController.addAttendeeToEvent);
 
+router.delete('/supprimer-collection', EventController.supprimerCollection);
+
+
 
 module.exports = router

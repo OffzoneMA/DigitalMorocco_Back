@@ -36,20 +36,37 @@ async function addMilestone(projectId, milestoneData) {
       const updatedProject = await project.save();
       return updatedProject;
     } catch (error) {
-      throw new Error('Error adding milestone to project');
+      throw new Error('Error adding milestone to project', error);
     }
   }
 
+  async function removeMilestone(projectId, milestoneId) {
+    try {
+      const project = await Project.findById(projectId);
+      if (!project) {
+        throw new Error("Project not found");
+      }
+        project.milestones = project.milestones.filter(
+        (milestone) => milestone._id != milestoneId
+      );
+  
+      const updatedProject = await project.save();
+      return updatedProject;
+    } catch (error) {
+      throw new Error('Error removing milestone from project', error);
+    }
+  }
+  
 async function deleteProject(projectId) {
     try {
         await Project.findByIdAndDelete(projectId);
         return 'Project deleted successfully';
     } catch (error) {
-        throw new Error('Error deleting project');
+        throw new Error('Error deleting project' , error);
     }
 }
 
 
 
 module.exports = { getProjects , CreateProject, getProjectById, ProjectByNameExists, 
-    getProjectByMemberId , deleteProject, addMilestone}
+    getProjectByMemberId , deleteProject, addMilestone , removeMilestone}

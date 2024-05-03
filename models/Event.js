@@ -29,7 +29,7 @@ const eventSchema = new mongoose.Schema({
     locationType: {
         type: String,
         enum: ['online', 'physical'],
-        required: true,
+        default: 'online'
     },
     category: {
         type: String,
