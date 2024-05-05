@@ -69,6 +69,7 @@ const updateBlog = async (blogId, blogData, imageData) => {
         blog.details = blogData.details || blog.details;
         blog.content = blogData.content || blog.content;
         blog.tags = blogData.tags || blog.tags;
+        blog.date = blogData.date || blog.date;
 
         return await blog.save();
     } catch (error) {
