@@ -75,6 +75,10 @@ const upload = require("../middelware/multer");
  *                 items:
  *                   type: string
  *                 description: List of tags associated with the blog post
+ *               date:
+ *                 type: string
+ *                 format: date
+ *                 description: The date of the blog post
  *     responses:
  *       '201':
  *         description: Created
