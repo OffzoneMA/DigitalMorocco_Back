@@ -493,7 +493,28 @@ router.route("/RejectUser/:id").get(AuthController.AuthenticateAdmin, UserContro
  */
 router.put('/update',AuthController.AuthenticateUser, UserController.updateUser);
 
-
+/**
+ * @swagger
+ * /users/{email}:
+ *   get:
+ *     summary: Recherche un utilisateur par son adresse e-mail.
+ *     description: Recherche un utilisateur dans la base de données en utilisant son adresse e-mail.
+ *     parameters:
+ *       - name: email
+ *         in: path
+ *         required: true
+ *         description: L'adresse e-mail de l'utilisateur à rechercher.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Utilisateur trouvé.
+ *       '404':
+ *         description: Aucun utilisateur trouvé avec cette adresse e-mail.
+ *       '500':
+ *         description: Erreur interne du serveur lors de la recherche de l'utilisateur.
+ */
+router.get('/:email', UserController.getUserByEmail);
 
 
 module.exports = router

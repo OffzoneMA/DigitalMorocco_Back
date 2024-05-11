@@ -24,6 +24,9 @@ const blogSchema = new mongoose.Schema({
     image: {
         type: String
     },
+    coverImage: {
+        type: String
+    },
     tags: [
         {
             type: String

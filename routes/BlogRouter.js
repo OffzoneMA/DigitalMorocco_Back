@@ -58,6 +58,10 @@ const upload = require("../middelware/multer");
  *                 type: string
  *                 format: binary
  *                 description: The image file for the blog post (optional)
+ *               coverImage:
+ *                 type: string
+ *                 format: binary
+ *                 description: The image file for the blog post (optional)
  *               title:
  *                 type: string
  *                 description: The title of the blog post
@@ -96,7 +100,7 @@ const upload = require("../middelware/multer");
  *                 error:
  *                   type: string
  */
-router.post('/createBlog',AuthController.AuthenticateUser,upload.single("image"), BlogController.createBlog);
+router.post('/createBlog',AuthController.AuthenticateUser,upload.fields([{ name: 'image', maxCount: 1 },{ name: 'coverImage', maxCount: 1 }]), BlogController.createBlog);
 
 /**
  * @swagger
@@ -198,6 +202,10 @@ router.get('/:id', BlogController.getBlogById);
  *                 type: string
  *                 format: binary
  *                 description: The image file for the blog post (optional)
+ *               coverImage:
+ *                 type: string
+ *                 format: binary
+ *                 description: The image file for the blog post (optional)
  *               title:
  *                 type: string
  *                 description: The title of the blog post
@@ -229,7 +237,7 @@ router.get('/:id', BlogController.getBlogById);
  *       404:
  *         description: Blog not found
  */
-router.put('/update/:id', upload.single('image'),  BlogController.updateBlog);
+router.put('/update/:id', upload.fields([{ name: 'image', maxCount: 1 },{ name: 'coverImage', maxCount: 1 }]),  BlogController.updateBlog);
 
 /**
  * @swagger

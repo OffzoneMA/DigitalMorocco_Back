@@ -32,6 +32,19 @@ const addUser = async (req, res) => {
    }
 };
 
+const getUserByEmail = async (req , res) => {
+  try {
+    const user = await UserService.getUserByEmail(req.params.email);
+    if (user) {
+        res.status(200).json(user);
+    } else {
+        res.status(404).json({ message: 'Use not found for this e-mail.' });
+    }
+} catch (error) {
+    res.status(500).json({ message:  error.message });
+}
+}
+
 const complete_signup = async (req, res) => {
   try {
     let userId = req.params.userid
@@ -160,4 +173,6 @@ function isJsonString(str) {
   return true;
 }
 
-module.exports = { updateUser,addUser, approveUser, rejectUser, deleteUser, getUsers, complete_signup, sendVerification, confirmVerification , sendForgotPassword , resetPassword}
+module.exports = { updateUser,addUser, approveUser, rejectUser, deleteUser, getUsers, 
+  complete_signup, sendVerification, confirmVerification , sendForgotPassword , 
+  resetPassword , getUserByEmail}
