@@ -1,3 +1,4 @@
+const { Binary } = require("mongodb");
 const mongoose = require("mongoose");
 
 const MemberSchema = new mongoose.Schema({
@@ -25,12 +26,30 @@ const MemberSchema = new mongoose.Schema({
     listEmployee: [{
         firstName: { type: String },
         lastName: { type: String },
+        email: { type: String },
+        jobTitle: { type: String },
+        level: { type: String },
+        status: {
+            type: String,
+            enum: ['active', 'offline'],
+            default: 'offline'
+        },
+        address: { type: String },
+        country: { type: String },
+        cityState: { type: String },
+        phoneNumber: { type: String },
+        startDate: { type: Date },
+        personalTaxIdentifierNumber: { type: String },
+        photo: { type: Buffer },
+        department: { type: String },
     }],
     legalDocument: [{
         name: {type:String},
-        link: {type:String},
         date: { type: Date, default: Date.now },
         type: {type:String},
+        lastModifiedDate: { type: Date},
+        title: { type: String},
+        data: { type:String},
     }],
     visbility: {
         type: String,

@@ -59,25 +59,6 @@ const approveUser = async (userId,role) => {
     return await User.findByIdAndUpdate(userId, { status: 'accepted' })
 }
 
-const validateUser = async (userId) => {
-    const user = await User.findById(userId);
-    
-    if (!user) {
-        throw new Error('User does not exist!');
-    }
-    
-    return await User.findByIdAndUpdate(userId, { status: 'verified' });
-};
-
-const invalidateUser = async (userId) => {
-    const user = await User.findById(userId);
-    
-    if (!user) {
-        throw new Error('User does not exist!');
-    }
-    
-    return await User.findByIdAndUpdate(userId, { status: 'notVerified' });
-};
 
 const rejectUser = async (id, role) => {
     const request = await requestServive.getRequestByUserId(id, role);
@@ -130,4 +111,4 @@ const resetPassword = async (token, newPassword, confirmPassword) => {
     }
   }
   
-module.exports = { invalidateUser,validateUser,getUserByID, deleteUser, approveUser, rejectUser, getUsers, checkUserVerification, updateUser , resetPassword , getUserByEmail}
+module.exports = { getUserByID, deleteUser, approveUser, rejectUser, getUsers, checkUserVerification, updateUser , resetPassword , getUserByEmail}

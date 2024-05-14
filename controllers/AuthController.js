@@ -44,6 +44,7 @@ const userInfo=async(req,res)=>{
     res.status(404).json({ message: "No user found" })
   }
 }
+
 const authenticateToken=async(req,res,next)=>{
     const authHeader = req.headers['authorization']
     const token = authHeader && authHeader.split(' ')[1]
@@ -132,6 +133,8 @@ const AuthenticateMember = async (req, res, next) => {
 
   })
 }
+
+
 const AuthenticateInvestor = async (req, res, next) => {
   const authHeader = req.headers['authorization']
   const token = authHeader && authHeader.split(' ')[1]
@@ -194,26 +197,31 @@ const AuthenticatePartner = async (req, res, next) => {
 
 
 const AuthenticateSubMemberOrAdmin = async (req, res, next) => {
-  const authHeader = req.headers['authorization']
-  const token = authHeader && authHeader.split(' ')[1]
+  const authHeader = req.headers.authorization;
+ 
+  const token = authHeader && authHeader.split(' ')[1] 
   if (token == null) return res.sendStatus(401)
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
-    if (err) { return res.sendStatus(403) }
-    if (user?.user?.role == "Admin") {
-      next()
-    }
-    const userMember = await UserService.getUserByID(user?.user?._id)
-    const member = await MemberService.getMemberByUserId(userMember?._id)
-
-    if (member?.subStatus =="active") {
-      next()
-    }
-    else {
+    if (err) {
       return res.sendStatus(403)
     }
-
+    
+    if (user?.user?.role == "Admin") {
+      return next(); // Appeler next() une seule fois si l'utilisateur est un admin
+    }
+    const userMember = await UserService.getUserByID(user?.user?._id)
+   //console.log(userMember)
+    const member = await MemberService.getMemberByUserId(userMember?._id)
+    //console.log(member)
+    if (member?.subStatus == "active") {
+      console.log("OK")
+      return next(); // Appeler next() une seule fois si le statut du membre est actif
+    } else {
+      return res.sendStatus(403)
+    }
   })
 }
+
 
 module.exports = { 
   AuthenticateUserOrAdmin, AllUsers,
