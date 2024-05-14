@@ -7,6 +7,14 @@ const InvestorRequestSchema = new mongoose.Schema({
     },
     linkedin_link: String,
     dateCreated: { type: Date, default: Date.now },
+    status: {
+        type: String,
+        enum: ['Approved','Rejected', 'In Progress'],
+        default: 'In Progress'
+    },
+    communicationStatus: String,
+    note: String,
+    attachment: String,
 })
 
 

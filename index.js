@@ -27,8 +27,6 @@ const swaggerOptions = require('./config/swagger_config');
 
 const specs = swaggerJsdoc(swaggerOptions);
 
-//const authenticateJWT = require('./middelware/authenticateJWT'); // Import du middleware d'authentification
-
 const app = express();
 
 app.use(cors());
