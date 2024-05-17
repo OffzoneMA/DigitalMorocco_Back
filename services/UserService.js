@@ -4,6 +4,7 @@ const PartnerService = require('../services/PartnerService');
 const InvestorService = require('../services/InvestorService');
 const requestServive = require('../services/RequestService');
 const FileService = require('../services/FileService');
+const EmailingService = require('../services/EmailingService');
 const bcrypt = require('bcrypt');
 const UserLog = require('../models/UserLog');
 const salt=10
@@ -104,10 +105,30 @@ const resetPassword = async (token, newPassword, confirmPassword) => {
       return await User.findByIdAndUpdate(user._id, user)
   
     } catch (error) {
-      res.status(500).json(error);
+        throw new Error(error);
     }
   }
+
+  const updateFullName = async ( socialId ,socialType, fullName) => {
+    let query = {};
+    if (socialType === 'google') {
+        query.googleId = socialId;
+    } else if (socialType === 'linkedin') {
+        query.linkedinId = socialId;
+    } else if (socialType === 'facebook') {
+        query.facebookId = socialId;
+    }
+    const user = await User.findOne(query);
+        
+    if (!user) {
+        throw new Error('User not found');
+    }
+    user.displayName = fullName;
+    await user.save();
+    return user;
+};
   
 
 
-module.exports = {  getUserByID, deleteUser, approveUser, rejectUser, getUsers, checkUserVerification, updateUser , resetPassword , getUserByEmail}
+module.exports = {  getUserByID, deleteUser, approveUser, rejectUser, getUsers, checkUserVerification, 
+    updateUser , resetPassword , getUserByEmail , updateFullName}

@@ -22,14 +22,13 @@ passport.use(
                 if (existingUser) {
                     const result = await generateUserInfos(existingUser)
                     const log = await UserLogService.createUserLog('Account Signin', existingUser._id);
-                    return done(null, { user: result.user, auth: result.accessToken });
+                    return done(null, { user: result.user, auth: result.accessToken , socialId: profile.id });
                 }
                 const existingEmail = await User.findOne({ email: profile.emails[0].value })
                 if (existingEmail){
                     throw new Error('An account already exists with this email')
                 }
                 
-
                 const newUser = await User.create({
                     googleId: profile.id,
                     email: profile.emails[0].value,
@@ -41,7 +40,7 @@ passport.use(
                 const result = await generateUserInfos(newUser)
                 const log = await UserLogService.createUserLog('Account Initial Signup', newUser._id);
                 const log2 = await UserLogService.createUserLog('Verified', newUser._id);
-                return done(null, { user: result.user, auth: result.accessToken });
+                return done(null, { user: result.user, auth: result.accessToken , socialId: profile.id});
             } catch (error) {
                 const errorMessage = error.message;
                 return done(null, false, { error: errorMessage });
@@ -67,15 +66,13 @@ passport.use(
                 if (existingUser) {
                     const result = await generateUserInfos(existingUser)
                     const log = await UserLogService.createUserLog('Account Signin', existingUser._id);
-                    return done(null, { user: result.user, auth: result.accessToken });
+                    return done(null, { user: result.user, auth: result.accessToken , socialId: profile.id });
                 }
-
 
                 const existingEmail = await User.findOne({ email: profile.emails[0].value })
                 if (existingEmail) {
                     throw new Error('An account already exists with this email')
-                }
-
+                }               
 
                 const newUser = await User.create({
                     linkedinId: profile.id,
@@ -88,7 +85,7 @@ passport.use(
                  const result = await generateUserInfos(newUser)
                 const log = await UserLogService.createUserLog('Account Initial Signup', newUser._id);
                 const log2 = await UserLogService.createUserLog('Verified', newUser._id);
-                return done(null, { user: result.user, auth: result.accessToken });
+                return done(null, { user: result.user, auth: result.accessToken ,socialId: profile.id });
             } catch (error) {
                 const errorMessage = error.message;
                 return done(null, false, { error: errorMessage });
@@ -111,7 +108,7 @@ passport.use(
                 if (existingUser) {
                     const result = await generateUserInfos(existingUser)
                     const log = await UserLogService.createUserLog('Account Signin', existingUser._id);
-                    return cb(null, { user: result.user, auth: result.accessToken });
+                    return cb(null, { user: result.user, auth: result.accessToken , socialId: profile.id });
                 }
 
 
@@ -119,7 +116,6 @@ passport.use(
                 if (existingEmail) {
                     throw new Error('An account already exists with this email')
                 }
-
 
                 const newUser = await User.create({
                     facebookId: profile.id,
@@ -132,7 +128,7 @@ passport.use(
                 const result = await generateUserInfos(newUser)
                 const log = await UserLogService.createUserLog('Account Initial Signup', newUser._id);
                 const log2 = await UserLogService.createUserLog('Verified', newUser._id);
-                return cb(null, { user: result.user, auth: result.accessToken });
+                return cb(null, { user: result.user, auth: result.accessToken , socialId: profile.id});
         } catch (error) {
             
         }
