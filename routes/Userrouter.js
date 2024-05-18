@@ -152,9 +152,9 @@ router.get('/auth/linkedin/callback', (req, res, next) => {
         const socialId = user?.socialId;
 
         if (userRole) {
-            res.redirect(`${process.env.FRONTEND_URL}/Dashboard?auth=${auth}&socialId=${socialId}`);
+            res.redirect(`${process.env.FRONTEND_URL}/SignIn?auth=${auth}`);
         } else {
-            res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}&socialId=${socialId}`);
+            res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}`);
         }
     })(req, res, next);
 });
@@ -171,14 +171,14 @@ router.get('/auth/google/callback', (req, res, next) => {
         const socialId = user?.socialId;
 
         if (userRole) {
-            res.redirect(`${process.env.FRONTEND_URL}/Dashboard?auth=${auth}&socialId=${socialId}`);
+            res.redirect(`${process.env.FRONTEND_URL}/SignIn?auth=${auth}`);
         } else {
-            res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}&socialId=${socialId}`);
+            res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}`);
         }
     })(req, res, next);
 });
 
-router.get('/auth/facebook', passport.authenticate('facebook'));
+router.get('/auth/facebook', passport.authenticate('facebook', { scope: [ 'email' ] }));
 router.get('/auth/facebook/callback', (req, res, next) => {
     passport.authenticate('facebook', (err, user, info) => {
         if (err || info instanceof AuthorizationError || info?.error) {
@@ -190,9 +190,9 @@ router.get('/auth/facebook/callback', (req, res, next) => {
         const socialId = user?.socialId;
 
         if (userRole) {
-            res.redirect(`${process.env.FRONTEND_URL}/Dashboard?auth=${auth}&socialId=${socialId}`);
+            res.redirect(`${process.env.FRONTEND_URL}/SignIn?auth=${auth}`);
         } else {
-            res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}&socialId=${socialId}`);
+            res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}`);
         }
     })(req, res, next);
 });
@@ -567,10 +567,17 @@ router.delete('/:userId', UserController.deleteOneUser )
 
 /**
  * @swagger
- * /users/updateFullName:
- *   post:
+ * /users/updateFullName/{userId}:
+ *   put:
  *     summary: Update user's full name
  *     tags: [Users]
+ *     parameters:
+ *       - name: userid
+ *         in: path
+ *         description: ID of the user to complete signup
+ *         required: true
+ *         schema:
+ *           type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -581,12 +588,6 @@ router.delete('/:userId', UserController.deleteOneUser )
  *               fullName:
  *                 type: string
  *                 description: The new full name of the user
- *               socialId:
- *                 type: string
- *                 description: The social ID of the user
- *               socialType:
- *                 type: string
- *                 description: The social type (e.g., 'google', 'linkedin', 'facebook')
  *     responses:
  *       200:
  *         description: Full name updated successfully
@@ -595,6 +596,6 @@ router.delete('/:userId', UserController.deleteOneUser )
  *       500:
  *         description: Server error
  */
-router.put('/updateFullName', UserController.updateFullName);
+router.put('/updateFullName/:userId', UserController.updateFullName);
 
 module.exports = router

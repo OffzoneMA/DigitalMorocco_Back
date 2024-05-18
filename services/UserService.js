@@ -109,21 +109,15 @@ const resetPassword = async (token, newPassword, confirmPassword) => {
     }
   }
 
-  const updateFullName = async ( socialId ,socialType, fullName) => {
-    let query = {};
-    if (socialType === 'google') {
-        query.googleId = socialId;
-    } else if (socialType === 'linkedin') {
-        query.linkedinId = socialId;
-    } else if (socialType === 'facebook') {
-        query.facebookId = socialId;
-    }
-    const user = await User.findOne(query);
+  const updateFullName = async ( userId, fullName) => {
+    const user = await User.findById(userId);
         
     if (!user) {
         throw new Error('User not found');
     }
-    user.displayName = fullName;
+    if(fullName) {
+        user.displayName = fullName;
+    }
     await user.save();
     return user;
 };

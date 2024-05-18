@@ -159,6 +159,7 @@ const deleteUser = async (req, res) => {
     //const log = await UserLogService.createUserLog('Account Delete', req.params.id);
     res.status(204).json(result);
   } catch (error) {
+    console.log(error)
     res.status(500).json(error);
   }
 }
@@ -168,6 +169,7 @@ const deleteOneUser = async (req, res) => {
     const result = await UserService.deleteUser(req?.params?.userId);
     res.status(204).json(result);
   } catch (error) {
+    console.log(error)
     res.status(500).json(error);
   }
 }
@@ -183,11 +185,10 @@ function isJsonString(str) {
 }
 
 const updateFullName = async (req, res) => {
-  const { fullName, socialId, socialType } = req.body;
+  const { fullName } = req.body;
   try {
       
-      user = await UserService.updateFullName(socialId , socialType , fullName);
-      
+      user = await UserService.updateFullName(req?.params?.userId , fullName);
       res.status(200).json({ message: 'Full name updated successfully', user });
   } catch (error) {
       if (error.message === 'User not found') {

@@ -487,7 +487,7 @@ async function getAllProjectsForMember(memberId) {
 
 const deleteMember = async (userId) => {
     const member = await getMemberByUserId(userId)
-    if (Member) {
+    if (member) {
         //Contacts
         await ContactRequest.deleteMany({ member: member._id })
         await Investor.updateMany(

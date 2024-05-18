@@ -22,7 +22,7 @@ passport.use(
                 if (existingUser) {
                     const result = await generateUserInfos(existingUser)
                     const log = await UserLogService.createUserLog('Account Signin', existingUser._id);
-                    return done(null, { user: result.user, auth: result.accessToken , socialId: profile.id });
+                    return done(null, { user: result.user, auth: result.accessToken , socialId: profile.id , provider: 'google'});
                 }
                 const existingEmail = await User.findOne({ email: profile.emails[0].value })
                 if (existingEmail){
@@ -40,7 +40,7 @@ passport.use(
                 const result = await generateUserInfos(newUser)
                 const log = await UserLogService.createUserLog('Account Initial Signup', newUser._id);
                 const log2 = await UserLogService.createUserLog('Verified', newUser._id);
-                return done(null, { user: result.user, auth: result.accessToken , socialId: profile.id});
+                return done(null, { user: result.user, auth: result.accessToken , socialId: profile.id , provider: 'google'});
             } catch (error) {
                 const errorMessage = error.message;
                 return done(null, false, { error: errorMessage });
@@ -66,7 +66,7 @@ passport.use(
                 if (existingUser) {
                     const result = await generateUserInfos(existingUser)
                     const log = await UserLogService.createUserLog('Account Signin', existingUser._id);
-                    return done(null, { user: result.user, auth: result.accessToken , socialId: profile.id });
+                    return done(null, { user: result.user, auth: result.accessToken , socialId: profile.id , provider: 'linkedin'});
                 }
 
                 const existingEmail = await User.findOne({ email: profile.emails[0].value })
@@ -85,7 +85,7 @@ passport.use(
                  const result = await generateUserInfos(newUser)
                 const log = await UserLogService.createUserLog('Account Initial Signup', newUser._id);
                 const log2 = await UserLogService.createUserLog('Verified', newUser._id);
-                return done(null, { user: result.user, auth: result.accessToken ,socialId: profile.id });
+                return done(null, { user: result.user, auth: result.accessToken ,socialId: profile.id , provider: 'linkedin' });
             } catch (error) {
                 const errorMessage = error.message;
                 return done(null, false, { error: errorMessage });
@@ -99,7 +99,7 @@ passport.use(
         clientID: process.env.FACEBOOK_CLIENT_ID,
         clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
         callbackURL: '/users/auth/facebook/callback',
-        scope: ['profile', 'email'],
+        profileFields   : ['id', 'displayName', 'emails'],
       },
       async( accessToken, refreshToken, profile, cb) => {
         try {
@@ -108,9 +108,9 @@ passport.use(
                 if (existingUser) {
                     const result = await generateUserInfos(existingUser)
                     const log = await UserLogService.createUserLog('Account Signin', existingUser._id);
-                    return cb(null, { user: result.user, auth: result.accessToken , socialId: profile.id });
+                    return cb(null, { user: result.user, auth: result.accessToken , socialId: profile.id , provider: 'facebook'});
                 }
-
+                console.log(profile)
 
                 const existingEmail = await User.findOne({ email: profile.emails[0].value })
                 if (existingEmail) {
@@ -128,9 +128,9 @@ passport.use(
                 const result = await generateUserInfos(newUser)
                 const log = await UserLogService.createUserLog('Account Initial Signup', newUser._id);
                 const log2 = await UserLogService.createUserLog('Verified', newUser._id);
-                return cb(null, { user: result.user, auth: result.accessToken , socialId: profile.id});
+                return cb(null, { user: result.user, auth: result.accessToken , socialId: profile.id , provider: 'facebook'});
         } catch (error) {
-            
+            console.log(error)
         }
       }
     )

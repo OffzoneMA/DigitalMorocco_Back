@@ -70,9 +70,9 @@ const generateUserInfos = async (user) => {
 }
 
  const generateAccessToken = async (user) => {
-    const payload = user.role
-  ? { user: { _id: user._id, email: user.email, role: user.role } }
-  : { user: { _id: user._id, email: user.email } };
+    const payload = user?.role
+  ? { user: { _id: user?._id, email: user?.email, role: user?.role } }
+  : { user: { _id: user?._id, email: user?.email } };
      return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET)
 }
 

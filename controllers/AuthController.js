@@ -38,13 +38,14 @@ const userInfo=async(req,res)=>{
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => { 
       const u = await UserService.getUserByID(user?.user?._id);
       const result= await AuthService.generateUserInfos(u)
-      res.status(200).json(result?.user)
+      res.status(200).json(result?.user? result?.user : u)
     })
   }catch(error){
     res.status(404).json({ message: "No user found" })
   }
 
 }
+
 const authenticateToken=async(req,res,next)=>{
     const authHeader = req.headers['authorization']
     const token = authHeader && authHeader.split(' ')[1]
