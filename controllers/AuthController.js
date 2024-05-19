@@ -43,6 +43,7 @@ const userInfo=async(req,res)=>{
   }catch(error){
     res.status(404).json({ message: "No user found" })
   }
+
 }
 const authenticateToken=async(req,res,next)=>{
     const authHeader = req.headers['authorization']
@@ -59,7 +60,7 @@ const authenticateToken=async(req,res,next)=>{
 
 const AuthenticateAdmin = async (req, res, next) => {
 
-  const authHeader = req.headers.authorization;
+  const authHeader = req.headers['authorization']
   const token = authHeader && authHeader.split(' ')[1]
   if (token == null) return res.sendStatus(401)
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
@@ -215,7 +216,7 @@ const AuthenticateSubMemberOrAdmin = async (req, res, next) => {
   })
 }
 
-module.exports = { 
+module.exports = {
   AuthenticateUserOrAdmin, AllUsers,
   AuthenticateInvestor, AuthenticateSubMemberOrAdmin, AuthenticateSubMember, login, authenticateToken, userInfo, AuthenticateAdmin, AuthenticateMember, AuthenticateUser, AuthenticatePartner
 }

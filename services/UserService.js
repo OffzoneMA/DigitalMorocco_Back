@@ -41,43 +41,21 @@ const getUserByEmail = async (email) => {
 }
 
 
-const approveUser = async (userId,role) => {
-   
-    if (!(await User.findById(userId))) {
+const approveUser = async (id,role) => {
+    if (!(await User.findById(id))) {
         throw new Error('User doesn t exist !')
     }
-    const request = await requestServive.getRequestByUserId(userId, role);
-    
+    const request = await requestServive.getRequestByUserId(id, role);
     if (!request) {
         throw new Error('Request not found!');
     }
 
-    role == "member" && await MemberService.CreateMember({ owner: userId, rc_ice: request?.rc_ice })
-    role == "partner" && await PartnerService.CreatePartner({ owner: userId, num_rc: request?.num_rc })
-    role == "investor" && await InvestorService.CreateInvestor({ owner: userId, linkedin_link: request?.linkedin_link })
-    await requestServive.removeRequestByUserId(userId,role)
-    return await User.findByIdAndUpdate(userId, { status: 'accepted' })
+    role == "member" && await MemberService.CreateMember({ owner: id, rc_ice: request?.rc_ice })
+    role == "partner" && await PartnerService.CreatePartner({ owner: id, num_rc: request?.num_rc })
+    role == "investor" && await InvestorService.CreateInvestor({ owner: id, linkedin_link: request?.linkedin_link })
+    await requestServive.removeRequestByUserId(id,role)
+    return await User.findByIdAndUpdate(id, { status: 'accepted' })
 }
-
-const validateUser = async (userId) => {
-    const user = await User.findById(userId);
-    
-    if (!user) {
-        throw new Error('User does not exist!');
-    }
-    
-    return await User.findByIdAndUpdate(userId, { status: 'verified' });
-};
-
-const invalidateUser = async (userId) => {
-    const user = await User.findById(userId);
-    
-    if (!user) {
-        throw new Error('User does not exist!');
-    }
-    
-    return await User.findByIdAndUpdate(userId, { status: 'notVerified' });
-};
 
 const rejectUser = async (id, role) => {
     const request = await requestServive.getRequestByUserId(id, role);
@@ -130,4 +108,6 @@ const resetPassword = async (token, newPassword, confirmPassword) => {
     }
   }
   
-module.exports = { invalidateUser,validateUser,getUserByID, deleteUser, approveUser, rejectUser, getUsers, checkUserVerification, updateUser , resetPassword , getUserByEmail}
+
+
+module.exports = {  getUserByID, deleteUser, approveUser, rejectUser, getUsers, checkUserVerification, updateUser , resetPassword , getUserByEmail}
