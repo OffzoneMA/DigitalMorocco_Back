@@ -30,6 +30,29 @@ async function sendEmail(userEmail, subject, emailContent, isHTML) {
 
 }
 
+async function sendContactFromWeb( email, subject, emailContent, isHTML) {
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.email,
+      pass: process.env.password,
+    },
+  });
+
+  const emailOptions = {
+    from: email,
+    to: 'info@digitalmorocco.com',
+    subject: subject,
+    [isHTML ? 'html' : 'text']: emailContent,
+  };
+
+  return await transporter.sendMail(emailOptions);
+
+}
+
+
 //Users
 async function sendVerificationEmail(userId) {
   try {
@@ -37,10 +60,10 @@ async function sendVerificationEmail(userId) {
     const title = 'Account Verification';
     const verificationLink = `${process.env.BACKEND_URL}/users/confirm_verification/${userId}?token=${generateVerificationToken(userId)}`;
 
-    const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
+    const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate1.ejs');
     const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
 
-    const accountVerificationPath = path.join(__dirname, '..', 'templates', 'accountVerification.ejs');
+    const accountVerificationPath = path.join(__dirname, '..', 'templates', 'accountVerification1.ejs');
     const accountVerificationContent = fs.readFileSync(accountVerificationPath, 'utf-8');
 
     const compiledTemplate = ejs.compile(commonTemplateContent);
@@ -60,6 +83,29 @@ async function sendVerificationEmail(userId) {
   } catch (err) {
     throw err;
   }
+}
+async function sendContactEmail(firstName , lastName , email , phone , message) {
+
+    try {
+      const title = 'Contact Message';
+      const contactSitePath = path.join(__dirname, '..', 'templates', 'contactSite.ejs');
+      const contactSiteContent = fs.readFileSync(contactSitePath, 'utf-8');
+  
+      const compiledTemplate = ejs.compile(contactSiteContent);
+  
+      const htmlContent = compiledTemplate({
+        firstName,
+        lastName,
+        email,
+        phone,
+        message
+      });
+
+      const messageId = await sendEmail(email, title, htmlContent, true);
+      return messageId;
+    } catch (error) {
+      throw err;
+    }
 }
 
 async function sendVerificationOtpEmail(userId , otpCode) {
@@ -423,5 +469,5 @@ function isTokenExpired(decoded) {
 module.exports = { sendEmail, generateVerificationToken, isTokenExpired, 
   sendNewContactRequestEmail, sendContactAcceptToMember,sendContactRejectToMember,
   sendVerificationEmail, sendVerificationOtpEmail, VerifyUser, sendRejectedEmail,sendAcceptedEmail,
-  sendUnderReviewEmail,sendForgotPasswordEmail,verifyResetToken , sendTicketToUser}
+  sendUnderReviewEmail,sendForgotPasswordEmail,verifyResetToken , sendTicketToUser , sendContactEmail}
 

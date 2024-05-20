@@ -598,4 +598,35 @@ router.delete('/:userId', UserController.deleteOneUser )
  */
 router.put('/updateFullName/:userId', UserController.updateFullName);
 
+
+/**
+ * @swagger
+ * /send-email:
+ *   post:
+ *     summary: Send a contact email
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *               lastName:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               message:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Email sent successfully
+ *       500:
+ *         description: Error sending email
+ */
+router.post('/send-email', UserController.sendContactEmail);
+
 module.exports = router

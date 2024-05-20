@@ -199,6 +199,18 @@ const updateFullName = async (req, res) => {
   }
 };
 
+const sendContactEmail = async (req, res) => {
+  const { firstName, lastName, phone, email, message } = req.body;
+
+  try {
+      await EmailingService.sendContactEmail(firstName, lastName, phone, email, message);
+      res.status(200).send('Email sent successfully');
+  } catch (error) {
+      console.error(error);
+      res.status(500).send('Error sending email');
+  }
+};
+
 module.exports = { updateUser,addUser, approveUser, rejectUser, deleteUser, getUsers, 
   complete_signup, sendVerification, confirmVerification , sendForgotPassword , 
-  resetPassword , getUserByEmail , deleteOneUser , updateFullName}
+  resetPassword , getUserByEmail , deleteOneUser , updateFullName , sendContactEmail}
