@@ -141,10 +141,10 @@ const addEmployeeToMember = async (req, res) => {
 };
 
 const updateEmployeeFromMember = async(req, res) => {
-    const memberId = req.params.memberId;
+    const memberId = req.params.userId;
     const employeeId = req.params.employeeId;
     const updatedEmployeeData = req.body;    
-
+   
     try {
         const updatedEmployee = await MemberService.updateEmployeeToMember(memberId, employeeId, updatedEmployeeData);
         res.status(200).json(updatedEmployee);
