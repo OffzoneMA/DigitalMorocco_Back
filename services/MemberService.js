@@ -222,19 +222,33 @@ const editLegalDocument = async (documentId,userId, updatedDocumentData) => {
 
 const updateEmployeeToMember = async (memberId, employeeId, updatedEmployeeData) => {
     try {
-        const member = await Member.findById(memberId);
-        console.log(member)
-
+        const member = await Member.findOne({ owner: memberId });
         if (!member) {
             throw new Error("Membre non trouvé");
         }
 
-        const employeeIndex = member.listEmployee.findIndex(emp => emp._id === employeeId);
+        const employeeIndex = member.listEmployee.find(emp => emp._id.toString()  === employeeId);
         console.log(employeeIndex)
         if (employeeIndex === -1) {
             throw new Error("Employé non trouvé dans ce membre");
         }
-        member.listEmployee[employeeIndex] = { ...member.listEmployee[employeeIndex], ...updatedEmployeeData };
+        const base64Data = updatedEmployeeData.photo.replace(/^data:image\/\w+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+
+        employeeIndex.firstName=updatedEmployeeData.firstName;
+        employeeIndex.lastName=updatedEmployeeData.lastName;
+        employeeIndex.email=updatedEmployeeData.email;
+        employeeIndex.jobTitle=updatedEmployeeData.jobTitle;
+        employeeIndex.level=updatedEmployeeData.level;
+        employeeIndex.status=updatedEmployeeData.status;
+        employeeIndex.address=updatedEmployeeData.address;
+        employeeIndex.country=updatedEmployeeData.country;
+        employeeIndex.cityState=updatedEmployeeData.cityState;
+        employeeIndex.phoneNumber=updatedEmployeeData.phoneNumber;
+        employeeIndex.startDate=updatedEmployeeData.startDate;
+        employeeIndex.personalTaxIdentifierNumber=updatedEmployeeData.personalTaxIdentifierNumber;
+        employeeIndex.photo=buffer;
+        employeeIndex.department=updatedEmployeeData.department;
 
         await member.save();
 
