@@ -41,13 +41,14 @@ const getUserByEmail = async (email) => {
 }
 
 
-const approveUser = async (userId,role) => {
-   
+const approveUserService = async (userId,role) => {
+    
     if (!(await User.findById(userId))) {
         throw new Error('User doesn t exist !')
     }
-    const request = await requestServive.getRequestByUserId(userId, role);
     
+    const request = await requestServive.getRequestByUserId(userId, role);
+     
     if (!request) {
         throw new Error('Request not found!');
     }
@@ -56,7 +57,8 @@ const approveUser = async (userId,role) => {
     role == "partner" && await PartnerService.CreatePartner({ owner: userId, num_rc: request?.num_rc })
     role == "investor" && await InvestorService.CreateInvestor({ owner: userId, linkedin_link: request?.linkedin_link })
     await requestServive.removeRequestByUserId(userId,role)
-    return await User.findByIdAndUpdate(userId, { status: 'accepted' })
+    const updatedUser = await User.findByIdAndUpdate(userId, { status: 'accepted' }, { new: true });
+    return updatedUser;
 }
 
 
@@ -111,4 +113,4 @@ const resetPassword = async (token, newPassword, confirmPassword) => {
     }
   }
   
-module.exports = { getUserByID, deleteUser, approveUser, rejectUser, getUsers, checkUserVerification, updateUser , resetPassword , getUserByEmail}
+module.exports = { getUserByID, deleteUser, approveUserService, rejectUser, getUsers, checkUserVerification, updateUser , resetPassword , getUserByEmail}

@@ -32,16 +32,16 @@ const addCompanyToMember = async (req, res) => {
   };
 
 const addLegalDocumentToMember = async (req, res) => {
-const memberId = req.params.userId;
-const documentData= req.body; 
+    const memberId = req.params.userId;
+    const documentData= req.body; 
 
-try {
-    const updatedMember = await MemberService.addLegalDocumentToMember(memberId, documentData);
-    res.status(201).json(updatedMember);
-} catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
-}
+    try {
+        const updatedMember = await MemberService.addLegalDocumentToMember(memberId, documentData);
+        res.status(201).json(updatedMember);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
 };
 
 const getLegalDocuments = async (req, res) => {
@@ -59,12 +59,9 @@ const getLegalDocuments = async (req, res) => {
                 owner: ownerName ,
                 ownerId: ownerId
             }));
-            allLegalDocuments = allLegalDocuments.concat(legalDocumentsWithOwner);
-            
+            allLegalDocuments = allLegalDocuments.concat(legalDocumentsWithOwner);   
         }
-        
-
-        res.json(allLegalDocuments);
+          res.json(allLegalDocuments);
     } catch (error) {
         console.error("Error fetching legal documents:", error);
         res.status(500).json({ message: "Internal server error" });
@@ -251,6 +248,23 @@ const subUser = async (req, res) => {
     }
 };
 
+const checkSubscriptionStatus = async (req, res) => {
+    try {
+      const memberId =  req.params.userId;
+      console.log(memberId)
+      const result = await MemberService.checkMemberStatus(memberId);
+      console.log(result)
+  
+      if (result) {
+        res.status(200).send({ result,message: 'Member is active and has subscription logs.' });
+      } else {
+        res.status(404).send({ result,message: 'Member is not active or has no subscription logs.' });
+      }
+    } catch (error) {
+      res.status(500).send({ error: 'Internal server error' });
+    }
+  };
+
 function isJsonString(str) {
     try {
         JSON.parse(str);
@@ -260,6 +274,4 @@ function isJsonString(str) {
     return true;
 }
 
-
-
-module.exports = { editLegalDocument,deleteLegalDocument, getLegalDocuments, addLegalDocumentToMember, addCompanyToMember,updateEmployeeFromMember,deleteEmployeeFromMember,addEmployeeToMember,getEmployees,getContacts,getMembers, createEnterprise, getByName, subUser, createProject, contactRequest, getContactRequests }
+module.exports = { checkSubscriptionStatus,editLegalDocument,deleteLegalDocument, getLegalDocuments, addLegalDocumentToMember, addCompanyToMember,updateEmployeeFromMember,deleteEmployeeFromMember,addEmployeeToMember,getEmployees,getContacts,getMembers, createEnterprise, getByName, subUser, createProject, contactRequest, getContactRequests }

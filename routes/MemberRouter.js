@@ -697,4 +697,42 @@ router.route("/SubscribeMember/:subid").get(AuthController.AuthenticateMember, M
  */
 router.route("/Contacts").get(AuthController.AuthenticateMember, MemberController.getContacts)
 
+/**
+ * @swagger
+ * /members/check-subscription-status:
+ *   get:
+ *     summary: Check if the logged-in member is active and has subscription logs
+ *     description: This endpoint checks if the authenticated member has an active status and if they exist in the subscription logs.
+ *     tags: [Members]
+ *     security:
+ *       - jwtToken: []
+ *     responses:
+ *       200:
+ *         description: Member is active and has subscription logs
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Member is active and has subscription logs.
+ *       401:
+ *         description: Unauthorized - The member is not authenticated.
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: Please authenticate.
+ *       404:
+ *         description: Member not active or no subscription logs found
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Member is not active or has no subscription logs.
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: Internal server error
+ */
+router.get("/check-subscription-status/:userId", MemberController.checkSubscriptionStatus);
+
+
 module.exports = router

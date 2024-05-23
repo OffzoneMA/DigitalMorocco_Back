@@ -7,9 +7,6 @@ const User = require('../models/User');
 
 const InvestorContactService = require('../services/InvestorContactService');
 
-
-
-
 const getInvestors = async (req, res) => {
     try {
        

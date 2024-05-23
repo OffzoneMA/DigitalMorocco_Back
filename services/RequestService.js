@@ -43,14 +43,14 @@ const getRequests = async (args) => {
 }
 
 
-const getRequestByUserId = async (userId, type) => {
-    if (type == "investor") {
+const getRequestByUserId = async (userId, role) => {
+    if (role == "investor") {
         return await Investor.findOne({ user: userId })
     }
-    else if (type == "partner") {
+    else if (role == "partner") {
         return await Partner.findOne({ user: userId })
     }
-    else if (type == "member") {
+    else if (role == "member") {
         return await Member.findOne({ user: userId })
     }
 
