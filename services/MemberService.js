@@ -1079,7 +1079,34 @@ async function removeAssociatedUserFromMember(memberId, userId) {
     }
 }
 
-module.exports = {editLegalDocument,deleteLegalDocument, addLegalDocumentToMember, createCompany, updateEmployeeToMember, addEmployeeToMember, getAllEmployees, deleteMember, getContacts, getAllMembers, createProject, checkSubscriptionStatus, 
+
+const checkMemberStatus = async (memberId) => {
+    try{
+        const member = await Member.findOne({ owner: memberId, subStatus: 'active' });
+        if (!member) {
+        return false;
+        }
+        const subscriptionLog = await SubscriptionLogs.findOne({ member: member._id });
+        if (!subscriptionLog) {
+            return false;
+        }
+        const currentDate = new Date();
+        const expirationDate = new Date(subscriptionLog.subscriptionExpireDate); 
+        console.log("currentDate",currentDate)
+        console.log("expirationDate",expirationDate)
+        if (currentDate > expirationDate) {
+        return false;
+        }
+
+        return true;
+    } catch (error) {
+    console.error('Error checking member status:', error);
+    return false;
+    }
+
+  };
+
+  module.exports = {checkMemberStatus,editLegalDocument,deleteLegalDocument, addLegalDocumentToMember, createCompany, updateEmployeeToMember, addEmployeeToMember, getAllEmployees, deleteMember, getContacts, getAllMembers, createProject, checkSubscriptionStatus, 
     CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, 
     SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus ,
     createCompany , createEmployee, createLegalDocument , getTestAllMembers , createTestProject , 

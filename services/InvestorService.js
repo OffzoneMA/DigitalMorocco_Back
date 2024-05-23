@@ -121,7 +121,6 @@ const rejectContact= async (investorId, requestId, memberId) => {
     return request
 }
 
-
 module.exports = { deleteInvestor,getContacts, getProjects, CreateInvestor, 
     getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, 
     updateContactStatus ,}

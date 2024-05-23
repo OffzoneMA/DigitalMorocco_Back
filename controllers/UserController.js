@@ -126,10 +126,12 @@ const confirmVerification = async (req, res) => {
 
 const approveUser = async (req, res) => {
   try {
+  
     if (req.query?.role == "investor" || req.query?.role == "member" || req.query?.role == "partner") {
-      const result = await UserService.approveUser(req.params.userId, req.query?.role);
+      const result = await UserService.approveUserService(req.params.userId, req.query?.role);
       const emailResult = await EmailingService.sendAcceptedEmail(req.params.userId);
       const log = await UserLogService.createUserLog('Approved', req.params.userId);
+      console.log(result)
       res.status(200).json(result);
     }
     else {
