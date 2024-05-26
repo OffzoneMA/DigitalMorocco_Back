@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const MemberSchema = new mongoose.Schema({
     owner: {
-        type: mongoose.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         unique: true,
         required: true

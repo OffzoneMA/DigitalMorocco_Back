@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const i18n = require('i18next');
 const UserService = require('./UserService');
 const InvestorService = require('./InvestorService');
 const User = require('../models/User');
@@ -7,6 +8,8 @@ const fs = require('fs');
 const path = require('path');
 const nodemailer = require('nodemailer');
 const Event = require('../models/Event');
+
+// i18n.changeLanguage('fr');
 
 async function sendEmail(userEmail, subject, emailContent, isHTML) {
   const transporter = nodemailer.createTransport({
@@ -57,7 +60,13 @@ async function sendContactFromWeb( email, subject, emailContent, isHTML) {
 async function sendVerificationEmail(userId) {
   try {
     const user = await User.findById(userId);
-    const title = 'Account Verification';
+
+    const userLanguage = user?.language || 'en';
+
+    if( user?.language) {
+      await i18n.changeLanguage(userLanguage);
+    }
+    const title = i18n.t('verify_title');
     const verificationLink = `${process.env.BACKEND_URL}/users/confirm_verification/${userId}?token=${generateVerificationToken(userId)}`;
 
     const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate1.ejs');
@@ -66,24 +75,19 @@ async function sendVerificationEmail(userId) {
     const accountVerificationPath = path.join(__dirname, '..', 'templates', 'accountVerification1.ejs');
     const accountVerificationContent = fs.readFileSync(accountVerificationPath, 'utf-8');
 
-    const compiledTemplate = ejs.compile(commonTemplateContent);
-    const compiledTemplate2 = ejs.compile(accountVerificationContent);
+    // Attendre la résolution des promesses renderFile
+    const compiledTemplate2 = await ejs.renderFile(accountVerificationPath, {t: i18n.t.bind(i18n), verificationLink });
 
-    const htmlContent2 = compiledTemplate2({
-      verificationLink,
-    });
+    const compiledTemplate = await ejs.renderFile(commonTemplatePath, {t: i18n.t.bind(i18n) , title, body: compiledTemplate2 });
 
-    const htmlContent = compiledTemplate({
-      title,
-      body: htmlContent2,
-    });
-
-    const messageId = await sendEmail(user.email, title, htmlContent, true);
+    const messageId = await sendEmail(user.email, title, compiledTemplate, true);
     return messageId;
   } catch (err) {
     throw err;
   }
 }
+
+
 async function sendContactEmail(firstName , lastName , email , phone , message) {
 
     try {
@@ -142,27 +146,34 @@ async function sendVerificationOtpEmail(userId , otpCode) {
 async function sendForgotPasswordEmail(userId) {
     try {
       const user = await User.findById(userId);
-      const title = 'Reset Password';
+      const userLanguage = user?.language || 'en';
+
+      if( user?.language) {
+        await i18n.changeLanguage(userLanguage);
+      }
+      const title = i18n.t('reset_password.title');
+
       const resetPasswordLink = `${process.env.FRONTEND_URL}/ResetPassword?token=${generateVerificationToken(userId)}`;
-      const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
-      const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
+      
+      // const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
+      // const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
 
-      const resetPasswordPath = path.join(__dirname, '..', 'templates', 'resetPassword.ejs');
-      const accountVerificationContent = fs.readFileSync(resetPasswordPath, 'utf-8');
+      const resetPasswordPath = path.join(__dirname, '..', 'templates', 'resetPassword1.ejs');
+      const resetPasswordContent = await ejs.renderFile(resetPasswordPath, {t: i18n.t.bind(i18n),title , resetPasswordLink });
 
-      const compiledTemplate = ejs.compile(commonTemplateContent);
-      const compiledTemplate2 = ejs.compile(accountVerificationContent);
+      // const compiledTemplate = ejs.compile(commonTemplateContent);
+      // const compiledTemplate2 = ejs.compile(accountVerificationContent);
 
-      const htmlContent2 = compiledTemplate2({
-        resetPasswordLink,
-      });
+      // const htmlContent2 = compiledTemplate2({
+      //   resetPasswordLink,
+      // });
 
-      const htmlContent = compiledTemplate({
-        title,
-        body: htmlContent2,
-      });
+      // const htmlContent = compiledTemplate({
+      //   title,
+      //   body: htmlContent2,
+      // });
 
-      const messageId = await sendEmail(user.email, title, htmlContent, true);
+      const messageId = await sendEmail(user.email, title, resetPasswordContent, true);
       return messageId;
 
     } catch (error) {
@@ -174,23 +185,31 @@ async function sendForgotPasswordEmail(userId) {
 async function sendUnderReviewEmail(userId) {
     try {
       const user = await User.findById(userId);
-      const title = 'Acknowledgement of Your Request - Under Review';
-  
-      const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
-      const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
-  
-      const underReviewPath = path.join(__dirname, '..', 'templates', 'accountUnderReview.ejs');
-      const underReviewContent = fs.readFileSync(underReviewPath, 'utf-8');
-  
-      const compiledTemplate = ejs.compile(commonTemplateContent);
+      const userLanguage = user?.language || 'en';
 
-      const htmlContent = compiledTemplate({
-        title,
-        body: underReviewContent,
-      });
+      if( user?.language) {
+        await i18n.changeLanguage(userLanguage);
+      }
+
+      const title = i18n.t('ack_request.email_subject');
+  
+      // const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
+      // const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
+  
+      const underReviewPath = path.join(__dirname, '..', 'templates', 'underReview.ejs');
+      const underReviewContent = await ejs.renderFile(underReviewPath, {t: i18n.t.bind(i18n),title, name: user?.displayName });
+
+      // const underReviewContent = fs.readFileSync(underReviewPath, 'utf-8');
+  
+      // const compiledTemplate = ejs.compile(commonTemplateContent);
+
+      // const htmlContent = compiledTemplate({
+      //   title,
+      //   body: underReviewContent,
+      // });
 
   
-      const messageId = await sendEmail(user.email, title, htmlContent, true);
+      const messageId = await sendEmail(user.email, title, underReviewContent, true);
       return messageId;
     } catch (err) {
       throw err;
@@ -200,21 +219,19 @@ async function sendUnderReviewEmail(userId) {
 async function sendAcceptedEmail(userId) {
     try {
       const user = await User.findById(userId);
-      const title = 'Your Request Has Been Approved!';
+
+      const userLanguage = user?.language || 'en';
+
+      if( user?.language) {
+        await i18n.changeLanguage(userLanguage);
+      }
+      const title = i18n.t('request_approved.title');
   
-      const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
-      const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
+      const requestApprovedPath = path.join(__dirname, '..', 'templates', 'requestApproved.ejs');
+      const requestApprovedContent = await ejs.renderFile(requestApprovedPath, {t: i18n.t.bind(i18n),title , name : user?.displayName });
+
   
-      const acceptancePath = path.join(__dirname, '..', 'templates', 'accountAccepted.ejs');
-      const acceptanceContent = fs.readFileSync(acceptancePath, 'utf-8');
-  
-      const compiledTemplate = ejs.compile(commonTemplateContent);
-      const htmlContent = compiledTemplate({
-        title,
-        body: acceptanceContent, 
-      });
-  
-      const messageId = await sendEmail(user.email, title, htmlContent, true);
+      const messageId = await sendEmail(user.email, title, requestApprovedContent, true);
       return messageId;
     } catch (err) {
       throw err;
@@ -224,21 +241,16 @@ async function sendAcceptedEmail(userId) {
 async function sendRejectedEmail(userId) {
     try {
       const user = await User.findById(userId);
-      const title = 'Rejection of Your Request - Reason Provided';
+      const userLanguage = user?.language || 'en';
+      if( user?.language) {
+        await i18n.changeLanguage(userLanguage);
+      }
+      const title = i18n.t('request_reject.title');
   
-      const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
-      const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
+      const rejectionPath = path.join(__dirname, '..', 'templates', 'rejectionRequest.ejs');
+      const requestRejectContent = await ejs.renderFile(rejectionPath, {t: i18n.t.bind(i18n),title , name : user?.displayName });
   
-      const rejectionPath = path.join(__dirname, '..', 'templates', 'accountRejected.ejs');
-      const rejectionContent = fs.readFileSync(rejectionPath, 'utf-8');
-  
-      const compiledTemplate = ejs.compile(commonTemplateContent);
-      const htmlContent = compiledTemplate({
-        title,
-        body: rejectionContent, 
-      });
-  
-      const messageId = await sendEmail(user.email, title, htmlContent, true);
+      const messageId = await sendEmail(user.email, title, requestRejectContent, true);
       return messageId;
     } catch (err) {
       throw err;

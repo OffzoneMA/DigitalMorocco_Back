@@ -43,7 +43,8 @@ const getUserByEmail = async (email) => {
 
 
 const approveUser = async (id,role) => {
-    if (!(await User.findById(id))) {
+    const user = await User.findById(id);
+    if (!user) {
         throw new Error('User doesn t exist !')
     }
     const request = await requestServive.getRequestByUserId(id, role);
@@ -51,16 +52,16 @@ const approveUser = async (id,role) => {
         throw new Error('Request not found!');
     }
 
-    role == "member" && await MemberService.CreateMember({ owner: id, rc_ice: request?.rc_ice })
-    role == "partner" && await PartnerService.CreatePartner({ owner: id, num_rc: request?.num_rc })
-    role == "investor" && await InvestorService.CreateInvestor({ owner: id, linkedin_link: request?.linkedin_link })
+    role == "member" && await MemberService.CreateMember(id, {rc_ice: request?.rc_ice} )
+    role == "partner" && await PartnerService.CreatePartner({ owner: user?._id, num_rc: request?.num_rc })
+    role == "investor" && await InvestorService.CreateInvestor({ owner: user?._id, linkedin_link: request?.linkedin_link })
     await requestServive.removeRequestByUserId(id,role)
     return await User.findByIdAndUpdate(id, { status: 'accepted' })
 }
 
 const rejectUser = async (id, role) => {
     const request = await requestServive.getRequestByUserId(id, role);
-    if (request.rc_ice) {
+    if (request?.rc_ice) {
         await FileService.deleteFile("rc_ice", "Members/" + id);
     }
     await requestServive.removeRequestByUserId(id, role)

@@ -109,6 +109,9 @@ router.route("/name/:name").get(MemberController.getByName)
  *               funding:
  *                 type: number
  *                 description: The funding amount for the project.
+ *               totalRaised:
+ *                 type: number
+ *                 description: The funding amount for the project.
  *               currency:
  *                 type: string
  *                 enum: [MAD, €, $]
@@ -228,6 +231,8 @@ router.route("/name/:name").get(MemberController.getByName)
  *                   type: string
  *                 funding:
  *                   type: number
+ *                 totalRaised:
+ *                   type: number
  *                 currency:
  *                   type: string
  *                 stages:
@@ -337,6 +342,9 @@ router.route("/project").post(AuthController.AuthenticateMember, upload.fields([
  *                 type: string
  *                 description: The name of the project.
  *               funding:
+ *                 type: number
+ *                 description: The funding amount for the project.
+ *               totalRaised:
  *                 type: number
  *                 description: The funding amount for the project.
  *               currency:
