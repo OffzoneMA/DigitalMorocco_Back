@@ -21,44 +21,242 @@ function generateEmployeeId() {
 }
 
 const getAllMembers = async (args) => {
-  try {
-    const page = args.page || 1;
-    const pageSize = args.pageSize || 10;
-    const skip = (page - 1) * pageSize;
+    try {
+        const page = args.page || 1;
+        const pageSize = args.pageSize || 10;
+        const skip = (page - 1) * pageSize;
 
-    const query = {
-      companyName: { $exists: true },
-      visbility: 'public',
-    };
+        const query = {
+            companyName: { $exists: true },
+            visbility: 'public',
+        };
 
-    if (args.countries && args.countries.length > 0) {
-      query.country = { $in: args.countries.split(',') };
+        if (args.countries && args.countries.length > 0) {
+            query.country = { $in: args.countries.split(',') };
+        }
+
+        if (args.sectors && args.sectors.length > 0) {
+            query.companyType = { $in: args.sectors.split(',') };
+        }
+
+        if (args.stages && args.stages.length > 0) {
+            query.stage = { $in: args.stages.split(',') };
+        }
+
+        const totalCount = await Member.countDocuments(query);
+        const totalPages = Math.ceil(totalCount / pageSize);
+        const members = await Member.find(query)
+            .select('_id companyName website logo desc companyType')
+            .skip(skip)
+            .limit(pageSize);
+
+        return { members, totalPages };
+    } catch (error) {
+        console.error('Error fetching members:', error);
+        throw new Error('Something went wrong');
     }
-
-    if (args.sectors && args.sectors.length > 0) {
-      query.companyType = { $in: args.sectors.split(',') };
-    }
-
-    if (args.stages && args.stages.length > 0) {
-      query.stage = { $in: args.stages.split(',') };
-    }
-
-    const totalCount = await Member.countDocuments(query);
-    const totalPages = Math.ceil(totalCount / pageSize);
-    const members = await Member.find(query)
-      .select('_id companyName website logo desc companyType')
-      .skip(skip)
-      .limit(pageSize);
-
-    return { members, totalPages };
-  } catch (error) {
-    console.error('Error fetching members:', error);
-    throw new Error('Something went wrong');
-  }
 };
-
 async function getTestAllMembers() {
     return await Member.find();
+}
+const getAllEmployees = async (args) => {
+    try {
+        const page = args.page || 1;
+        const pageSize = args.pageSize || 10;
+        const skip = (page - 1) * pageSize;
+
+        const query = {
+            companyName: { $exists: true },
+            visbility: 'public',
+        };
+
+        if (args.countries && args.countries.length > 0) {
+            query.country = { $in: args.countries.split(',') };
+        }
+
+        if (args.sectors && args.sectors.length > 0) {
+            query.companyType = { $in: args.sectors.split(',') };
+        }
+
+        if (args.stages && args.stages.length > 0) {
+            query.stage = { $in: args.stages.split(',') };
+        }
+
+        const totalCount = await Member.countDocuments(query);
+        const totalPages = Math.ceil(totalCount / pageSize);
+        const members = await Member.find(query)
+            .select('_id companyName website logo desc companyType')
+            .skip(skip)
+            .limit(pageSize);
+
+        return { members, totalPages };
+    } catch (error) {
+        console.error('Error fetching employees:', error);
+        throw new Error('Something went wrong');
+    }
+};
+
+const addEmployeeToMember = async (userId, newEmployeeData) => {
+    try {
+        const member = await Member.findOne({ owner: userId });
+        if (!member) {
+            throw new Error('Membre non trouvé');
+        }
+
+        member.listEmployee.push({
+            ...newEmployeeData,
+        });
+
+        await member.save();
+
+        return {
+            message: 'Nouvel employé ajouté avec succès',
+            employee: newEmployeeData,
+        };
+    } catch (error) {
+        console.error('Erreur lors de l\'ajout de l\'employé :', error);
+        throw new Error('Quelque chose s\'est mal passé');
+    }
+};
+
+const createCompany = async (userId, companyData) => {
+    try {
+        const existingMember = await Member.findOne({ owner: userId });
+        if (existingMember) {
+            existingMember.companyName = companyData.companyName;
+            existingMember.legalName = companyData.legalName;
+            existingMember.website = companyData.website;
+            existingMember.contactEmail = companyData.contactEmail;
+            existingMember.desc = companyData.desc;
+            existingMember.country = companyData.country;
+            existingMember.city = companyData.city.name;
+            existingMember.companyType = companyData.companyType.join(", ");
+            existingMember.taxNbr = companyData.taxIdentfier;
+            existingMember.corporateNbr = companyData.corporateNbr;
+            existingMember.logo = companyData.logo;
+
+            const savedMember = await existingMember.save();
+
+            return {
+                message: 'Nouvelle entreprise ajoutée avec succès',
+                company: savedMember,
+            };
+        }
+        throw new Error("Le membre n'existe pas pour cet utilisateur");
+    } catch (error) {
+        throw new Error("Impossible de créer l'entreprise : " + error.message);
+    }
+};
+
+const addLegalDocumentToMember = async (memberId, documentData) => {
+    try {
+      const member = await Member.findOne({ owner: memberId });
+      if (!member) {
+        throw new Error("Member not found");
+      }
+        const uniqueFileName = `${Date.now()}-${documentData.name}`;
+      const newDocument = {
+        name: uniqueFileName,
+        date: Date.now(),
+        type: documentData.type,
+        lastModifiedDate: documentData.lastModifiedDate,
+        title: documentData.title,
+        data:documentData.data,
+      };
+      member.legalDocument.push(newDocument);
+      await member.save();
+      return member;
+    } catch (error) {
+      throw error;
+    }
+};
+
+const deleteLegalDocument = async (documentId) => {
+    try {
+        const deletedDocument = await Member.findOneAndUpdate(
+          { 'legalDocument._id': documentId },
+          { $pull: { legalDocument: { _id: documentId } } },
+          { new: true }
+        );
+    
+        if (!deletedDocument) {
+          throw new Error("Document not found");
+        }
+    
+        return deletedDocument;
+      } catch (error) {
+        console.error("Error deleting document:", error);
+        throw error;
+      }
+};
+
+const editLegalDocument = async (documentId,userId, updatedDocumentData) => {
+    try {
+       
+        const member = await Member.findOne({ owner: userId });
+        if (!member) {
+            throw new Error("Membre non trouvé");
+        }
+
+        const documentIndex = member.legalDocument.find(doc => doc._id.toString() === documentId);
+        console.log(documentIndex)
+       
+
+        if (documentIndex === -1) {
+            throw new Error("document legal non trouvé dans ce membre");
+        }
+
+        documentIndex.title = updatedDocumentData.title;
+        documentIndex.data = updatedDocumentData.data;
+        documentIndex.name = updatedDocumentData.name;
+        documentIndex.lastModifiedDate = new Date();
+        documentIndex.type = updatedDocumentData.type;
+
+        await member.save();
+        
+    } catch (error) {
+        console.error("Erreur lors de la mise à jour du document :", error);
+        throw new Error("Erreur lors de la mise à jour du document ");
+    }
+}
+
+const updateEmployeeToMember = async (memberId, employeeId, updatedEmployeeData) => {
+    try {
+        const member = await Member.findOne({ owner: memberId });
+        if (!member) {
+            throw new Error("Membre non trouvé");
+        }
+
+        const employeeIndex = member.listEmployee.find(emp => emp._id.toString()  === employeeId);
+        console.log(employeeIndex)
+        if (employeeIndex === -1) {
+            throw new Error("Employé non trouvé dans ce membre");
+        }
+        const base64Data = updatedEmployeeData.photo.replace(/^data:image\/\w+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+
+        employeeIndex.firstName=updatedEmployeeData.firstName;
+        employeeIndex.lastName=updatedEmployeeData.lastName;
+        employeeIndex.email=updatedEmployeeData.email;
+        employeeIndex.jobTitle=updatedEmployeeData.jobTitle;
+        employeeIndex.level=updatedEmployeeData.level;
+        employeeIndex.status=updatedEmployeeData.status;
+        employeeIndex.address=updatedEmployeeData.address;
+        employeeIndex.country=updatedEmployeeData.country;
+        employeeIndex.cityState=updatedEmployeeData.cityState;
+        employeeIndex.phoneNumber=updatedEmployeeData.phoneNumber;
+        employeeIndex.startDate=updatedEmployeeData.startDate;
+        employeeIndex.personalTaxIdentifierNumber=updatedEmployeeData.personalTaxIdentifierNumber;
+        employeeIndex.photo=buffer;
+        employeeIndex.department=updatedEmployeeData.department;
+
+        await member.save();
+
+        return member.listEmployee[employeeIndex];
+    } catch (error) {
+        console.error("Erreur lors de la mise à jour de l'employé :", error);
+        throw new Error("Erreur lors de la mise à jour de l'employé");
+    }
 }
 
 const CreateMember = async (userId, member) => {
@@ -95,8 +293,8 @@ const createEnterprise = async (memberId, infos, documents, logo) => {
             }
             entreprise.legalDocument = legalDocs
         }
-        if(logo){
-        let logoLink = await uploadService.uploadFile(logo[0], "Members/" + member.owner + "", 'logo')
+        if (logo) {
+            let logoLink = await uploadService.uploadFile(logo[0], "Members/" + member.owner + "", 'logo')
             entreprise.logo = logoLink
         }
         return await Member.findByIdAndUpdate(memberId, entreprise);
@@ -106,26 +304,26 @@ const createEnterprise = async (memberId, infos, documents, logo) => {
     }
 }
 
-const createCompany = async (memberId, companyData, logoFile) => {
-    try {
-        const member = await getMemberById(memberId);
+// const createCompany = async (memberId, companyData, logoFile) => {
+//     try {
+//         const member = await getMemberById(memberId);
 
-        let updatedCompanyData = { ...companyData };
+//         let updatedCompanyData = { ...companyData };
 
-        if (logoFile) {
-            const logoURL = await uploadService.uploadFile(logoFile, 'Members/' + member.owner + "", 'logo');
-            updatedCompanyData.logo = logoURL;
-            console.log(logoURL)
-        }
+//         if (logoFile) {
+//             const logoURL = await uploadService.uploadFile(logoFile, 'Members/' + member.owner + "", 'logo');
+//             updatedCompanyData.logo = logoURL;
+//             console.log(logoURL)
+//         }
 
-        const updatedMember = await Member.findByIdAndUpdate(memberId, updatedCompanyData);
+//         const updatedMember = await Member.findByIdAndUpdate(memberId, updatedCompanyData);
 
-        return updatedMember;
-    } catch (error) {
-        console.log(error);
-        throw new Error('Error creating company', error);
-    }
-};
+//         return updatedMember;
+//     } catch (error) {
+//         console.log(error);
+//         throw new Error('Error creating company', error);
+//     }
+// };
 
 const createEmployee = async (memberId, employeeData , photo)=> {
     try {
@@ -254,25 +452,25 @@ async function updateLegalDocument(memberId, documentId, updatedDocumentData, do
     }
 }
 
-async function deleteLegalDocument(memberId, documentId) {
-    try {
-        const member = await getMemberById(memberId);
-        if (!member) {
-            throw new Error('Member not found');
-        }
+// async function deleteLegalDocument(memberId, documentId) {
+//     try {
+//         const member = await getMemberById(memberId);
+//         if (!member) {
+//             throw new Error('Member not found');
+//         }
 
-        const documentIndex = member.legalDocument.findIndex(doc => doc.documentId === documentId);
-        if (documentIndex === -1) {
-            throw new Error('Document not found');
-        }
+//         const documentIndex = member.legalDocument.findIndex(doc => doc.documentId === documentId);
+//         if (documentIndex === -1) {
+//             throw new Error('Document not found');
+//         }
 
-        const deletedDocument = member.legalDocument.splice(documentIndex, 1);
-        await member.save();
-        return deletedDocument;
-    } catch (error) {
-        throw new Error('Error deleting legal document: ' + error.message);
-    }
-}
+//         const deletedDocument = member.legalDocument.splice(documentIndex, 1);
+//         await member.save();
+//         return deletedDocument;
+//     } catch (error) {
+//         throw new Error('Error deleting legal document: ' + error.message);
+//     }
+// }
 
 const createTestProject = async (memberId, infos, documents) => {
     const member = await Member.findById(memberId);
@@ -494,7 +692,7 @@ const deleteMember = async (userId) => {
         await ContactRequest.deleteMany({ member: member._id })
         await Investor.updateMany(
             { $pull: { membersRequestsAccepted: member._id }, $pull: { membersRequestsPending: member._id } })
-       
+
         //Subscriptions
         await SubscriptionLogs.deleteMany({ member: member._id })
 
@@ -506,7 +704,7 @@ const deleteMember = async (userId) => {
     else {
         await MemberReq.findOneAndDelete({ user: userId })
     }
-    await uploadService.deleteFolder('Members/' + userId +"/documents")
+    await uploadService.deleteFolder('Members/' + userId + "/documents")
     await uploadService.deleteFolder('Members/' + userId + "/Project_documents")
     await uploadService.deleteFolder('Members/' + userId)
 
@@ -883,10 +1081,37 @@ async function removeAssociatedUserFromMember(memberId, userId) {
     }
 }
 
-module.exports = { deleteMember,getContacts,getAllMembers,createProject, checkSubscriptionStatus, 
+
+const checkMemberStatus = async (memberId) => {
+    try{
+        const member = await Member.findOne({ owner: memberId, subStatus: 'active' });
+        if (!member) {
+        return false;
+        }
+        const subscriptionLog = await SubscriptionLogs.findOne({ member: member._id });
+        if (!subscriptionLog) {
+            return false;
+        }
+        const currentDate = new Date();
+        const expirationDate = new Date(subscriptionLog.subscriptionExpireDate); 
+        console.log("currentDate",currentDate)
+        console.log("expirationDate",expirationDate)
+        if (currentDate > expirationDate) {
+        return false;
+        }
+
+        return true;
+    } catch (error) {
+    console.error('Error checking member status:', error);
+    return false;
+    }
+
+  };
+
+  module.exports = {checkMemberStatus,editLegalDocument,deleteLegalDocument, addLegalDocumentToMember, createCompany, updateEmployeeToMember, addEmployeeToMember, getAllEmployees, deleteMember, getContacts, getAllMembers, createProject, checkSubscriptionStatus, 
     CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, 
     SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus ,
     createCompany , createEmployee, createLegalDocument , getTestAllMembers , createTestProject , 
     getInvestorsForMember ,cancelSubscriptionForMember,renewSubscription, upgradePlan ,
-    updateEmployee , deleteEmployee, updateLegalDocument,deleteLegalDocument , getAllProjectsForMember ,
+    updateEmployee , deleteEmployee, updateLegalDocument, getAllProjectsForMember ,
     updateProject} 

@@ -33,10 +33,7 @@ const swaggerOptions = require('./config/swagger_config');
 
 const specs = swaggerJsdoc(swaggerOptions);
 
-
-
 const app = express();
-
 
 app.use(cors());
 
@@ -102,6 +99,9 @@ app.use(
     })
 );
 
+// Applique le middleware d'authentification à toutes les routes nécessitant une authentification
+//app.use(authenticateJWT);
+
 // Routes
 app.use("/users", Userouter);
 app.use("/members", MemberRouter);
@@ -117,6 +117,7 @@ app.use("/blogs", BlogRouter);
 app.use("/users/otp", OtpRouter);
 app.use("/projects", ProjectRouter);
 app.use("/files", FileRouter);
+
 
 const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css";
 

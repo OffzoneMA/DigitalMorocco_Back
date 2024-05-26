@@ -11,29 +11,15 @@ const getAllInvestors = async (args) => {
     const page = args.page || 1;
     const pageSize = args.pageSize || 10;
     const skip = (page - 1) * pageSize;
-
-    // const countries = args.countries ? args.countries.split(',') : [];
-    // const sectors = args.sectors ? args.sectors.split(',') : [];
-    // const stages = args.stages ? args.stages.split(',') : [];
-
-    // const query = {};
-    // query.companyName = { $exists: true }
-    // query.visbility = 'public'
-    // if (countries.length > 0) query.country = { $in: countries };
-    // if (sectors.length > 0) query.sector = { $in: sectors };
-    // if (stages.length > 0) query.stage = { $in: stages };
-
     const totalCount = await Investor.countDocuments();
     const totalPages = Math.ceil(totalCount / pageSize);
-    const investors = await Investor.find().select("_id owner linkedin_link")
-        .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } }, })
+    const investors = await Investor.find()
+        .select("name description image linkedin_link type location PreferredInvestmentIndustry dateCreated numberOfInvestment numberOfExits document")
+        .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } } })
         .skip(skip)
         .limit(pageSize);
     return { investors, totalPages }
-
-
 }
-
 
 const CreateInvestor = async (investor) => {
     return await Investor.create(investor);
@@ -92,9 +78,7 @@ const updateContactStatus=async(investorId,requestId,response)=>{
         if (response == "accepted") return await acceptContact(investorId, requestId, request.member);
         if (response == "rejected") return await rejectContact(investorId, requestId, request.member);
 
-    }
-
-
+}
 
 const acceptContact = async (investorId, requestId, memberId) => {
    const request = await ContactRequest.findByIdAndUpdate(requestId, { status:"accepted" })
@@ -118,7 +102,6 @@ const acceptContact = async (investorId, requestId, memberId) => {
 
 }
 
-
 const rejectContact= async (investorId, requestId, memberId) => {
 
      const request = await ContactRequest.findByIdAndUpdate(requestId, { status:"rejected"})
@@ -137,7 +120,6 @@ const rejectContact= async (investorId, requestId, memberId) => {
      const mail = await EmailingService.sendContactRejectToMember(member.owner, investor?.name, investor?.linkedin_link, request.dateCreated);
     return request
 }
-
 
 module.exports = { deleteInvestor,getContacts, getProjects, CreateInvestor, 
     getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, 

@@ -25,6 +25,12 @@ const InvestorSchema = new mongoose.Schema({
     fundingRound : String,
     acquisitions : Number,
     linkedin_link: String,
+    type: String,
+    location: String,
+    PreferredInvestmentIndustry: String,
+    dateCreated: { type: Date, default: Date.now },
+    numberOfInvestment: { type : Number, default:0},
+    numberOfExits: { type : Number, default:0},
     document: [{
         name: String,
         link: String,
@@ -62,9 +68,7 @@ const InvestorSchema = new mongoose.Schema({
         }
     ],*/
 
-
-
-    dateCreated: { type: Date, default: Date.now },
+    
 
 })
 

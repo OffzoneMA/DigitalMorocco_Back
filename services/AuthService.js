@@ -55,6 +55,7 @@ const getAllUsers= async()=> {
 const generateUserInfos = async (user) => {
     const accessToken = await generateAccessToken(user)
     let data
+   
     if (user?.role == "member"){
         let member = await MemberService.getMemberByUserId(user._id)
         data = member?._doc ? member?._doc : member
@@ -83,4 +84,4 @@ const generateUserInfos = async (user) => {
 }
 
 
-module.exports = { signInUser, createUser, generateAccessToken, generateUserInfos , getAllUsers}
+module.exports = {signInUser, createUser, generateAccessToken, generateUserInfos , getAllUsers}

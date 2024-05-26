@@ -3,6 +3,9 @@ const RequestService = require("../services/RequestService");
 const EmailingService = require("../services/EmailingService");
 const AuthService = require("../services/AuthService");
 const UserLogService = require("../services/UserLogService");
+const User = require('../models/User');
+const mongoose = require('mongoose');
+const { ObjectId } = require('mongodb');
 
 const getUsers = async (req, res) => {
   try {
@@ -123,10 +126,12 @@ const confirmVerification = async (req, res) => {
 
 const approveUser = async (req, res) => {
   try {
+  
     if (req.query?.role == "investor" || req.query?.role == "member" || req.query?.role == "partner") {
-      const result = await UserService.approveUser(req.params.id, req.query?.role);
-      const emailResult = await EmailingService.sendAcceptedEmail(req.params.id);
-      const log = await UserLogService.createUserLog('Approved', req.params.id);
+      const result = await UserService.approveUserService(req.params.userId, req.query?.role);
+      const emailResult = await EmailingService.sendAcceptedEmail(req.params.userId);
+      const log = await UserLogService.createUserLog('Approved', req.params.userId);
+      console.log(result)
       res.status(200).json(result);
     }
     else {
@@ -140,9 +145,9 @@ const approveUser = async (req, res) => {
 const rejectUser = async (req, res) => {
   try {
     if (req.query?.role == "investor" || req.query?.role == "member" || req.query?.role == "partner") {
-      const result = await UserService.rejectUser(req.params.id, req.query?.role);
-      const emailResult = await EmailingService.sendRejectedEmail(req.params.id);
-      const log = await UserLogService.createUserLog('Rejected', req.params.id);
+      const result = await UserService.rejectUser(req.params.userId, req.query?.role);
+      const emailResult = await EmailingService.sendRejectedEmail(req.params.userId);
+      const log = await UserLogService.createUserLog('Rejected', req.params.userId);
     res.status(200).json(result);
   }
     else {

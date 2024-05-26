@@ -1,3 +1,4 @@
+const { Binary } = require("mongodb");
 const mongoose = require("mongoose");
 
 const MemberSchema = new mongoose.Schema({
@@ -23,30 +24,33 @@ const MemberSchema = new mongoose.Schema({
     logo: String,
     listEmployee: [{
         fullName: { type: String },
+        personalEmail: { type: String },
         workEmail: { type: String },
-        personalEmail: String,
-        address: {type: String},
-        country: {type: String,},
-        department: {type: String,},
-        cityState: {type: String,},
-        startDate: {type: Date,},
-        jobTitle: String,
-        typeEmp: String, 
-        personalTaxIdentifierNumber: {
+        jobTitle: { type: String },
+        level: { type: String },
+        status: {
             type: String,
-            //match: /^\d{4} - \d{4} - \d{4}$/,
+            enum: ['active', 'offline'],
+            default: 'offline'
         },
-        level: {type: String},
-        status: String,
-        image: String,
+        address: { type: String },
+        country: { type: String },
+        cityState: { type: String },
+        phoneNumber: { type: String },
+        startDate: { type: Date },
+        personalTaxIdentifierNumber: { type: String },
+        photo: { type: Buffer },
+        department: { type: String },
     }],
     legalDocument: [{
         name: {type:String},
-        link: {type:String},
         description: String,
         cityState: {type: String},
         date: { type: Date, default: Date.now },
         type: {type:String},
+        lastModifiedDate: { type: Date},
+        title: { type: String},
+        data: { type:String},
     }],
     visbility: {
         type: String,

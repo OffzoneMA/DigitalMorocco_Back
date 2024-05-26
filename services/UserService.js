@@ -42,12 +42,14 @@ const getUserByEmail = async (email) => {
 }
 
 
-const approveUser = async (id,role) => {
-    const user = await User.findById(id);
-    if (!user) {
+const approveUserService = async (userId,role) => {
+    
+    if (!(await User.findById(userId))) {
         throw new Error('User doesn t exist !')
     }
-    const request = await requestServive.getRequestByUserId(id, role);
+    
+    const request = await requestServive.getRequestByUserId(userId, role);
+     
     if (!request) {
         throw new Error('Request not found!');
     }
@@ -58,6 +60,7 @@ const approveUser = async (id,role) => {
     await requestServive.removeRequestByUserId(id,role)
     return await User.findByIdAndUpdate(id, { status: 'accepted' })
 }
+
 
 const rejectUser = async (id, role) => {
     const request = await requestServive.getRequestByUserId(id, role);
@@ -123,7 +126,5 @@ const resetPassword = async (token, newPassword, confirmPassword) => {
     return user;
 };
   
-
-
-module.exports = {  getUserByID, deleteUser, approveUser, rejectUser, getUsers, checkUserVerification, 
+module.exports = { getUserByID, deleteUser, approveUserService, rejectUser, getUsers, checkUserVerification, 
     updateUser , resetPassword , getUserByEmail , updateFullName}
