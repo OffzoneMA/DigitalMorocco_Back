@@ -256,16 +256,16 @@ async function updateLegalDocument(req, res) {
     }
 }
 
-async function deleteLegalDocument(req, res) {
-    try {
-        const memberId = req.memberId;
-        const documentId = req.params.documentId;
-        const deletedDocument = await MemberService.deleteLegalDocument(memberId, documentId);
-        res.status(200).json(deletedDocument);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-}
+// async function deleteLegalDocument(req, res) {
+//     try {
+//         const memberId = req.memberId;
+//         const documentId = req.params.documentId;
+//         const deletedDocument = await MemberService.deleteLegalDocument(memberId, documentId);
+//         res.status(200).json(deletedDocument);
+//     } catch (error) {
+//         res.status(400).json({ error: error.message });
+//     }
+// }
 
 const createEnterprise = async (req, res) => {
     try {
@@ -443,7 +443,7 @@ async function getContactRequestsForMember(req, res) {
 
 
 
-module.exports = { checkSubscriptionStatus,editLegalDocument,deleteLegalDocument, getLegalDocuments, addLegalDocumentToMember, addCompanyToMember,updateEmployeeFromMember,deleteEmployeeFromMember,addEmployeeToMember,getEmployees,getContacts,getMembers, createEnterprise, getByName, subUser, createProject, 
+module.exports = { checkSubscriptionStatus,editLegalDocument, getLegalDocuments, addLegalDocumentToMember, addCompanyToMember,updateEmployeeFromMember,deleteEmployeeFromMember,addEmployeeToMember,getEmployees,getContacts,getMembers, createEnterprise, getByName, subUser, createProject, 
     contactRequest, getContactRequests , createCompany , createEmployee , createLegalDocument ,createMember ,
 getTestAllMembers , getInvestorsForMember , getContactRequestsForMember ,updateEmployee ,
 deleteEmployee ,updateLegalDocument, deleteLegalDocument , getAllProjectsForMember , updateProject}

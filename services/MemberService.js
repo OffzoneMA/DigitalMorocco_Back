@@ -304,26 +304,26 @@ const createEnterprise = async (memberId, infos, documents, logo) => {
     }
 }
 
-const createCompany = async (memberId, companyData, logoFile) => {
-    try {
-        const member = await getMemberById(memberId);
+// const createCompany = async (memberId, companyData, logoFile) => {
+//     try {
+//         const member = await getMemberById(memberId);
 
-        let updatedCompanyData = { ...companyData };
+//         let updatedCompanyData = { ...companyData };
 
-        if (logoFile) {
-            const logoURL = await uploadService.uploadFile(logoFile, 'Members/' + member.owner + "", 'logo');
-            updatedCompanyData.logo = logoURL;
-            console.log(logoURL)
-        }
+//         if (logoFile) {
+//             const logoURL = await uploadService.uploadFile(logoFile, 'Members/' + member.owner + "", 'logo');
+//             updatedCompanyData.logo = logoURL;
+//             console.log(logoURL)
+//         }
 
-        const updatedMember = await Member.findByIdAndUpdate(memberId, updatedCompanyData);
+//         const updatedMember = await Member.findByIdAndUpdate(memberId, updatedCompanyData);
 
-        return updatedMember;
-    } catch (error) {
-        console.log(error);
-        throw new Error('Error creating company', error);
-    }
-};
+//         return updatedMember;
+//     } catch (error) {
+//         console.log(error);
+//         throw new Error('Error creating company', error);
+//     }
+// };
 
 const createEmployee = async (memberId, employeeData , photo)=> {
     try {
@@ -452,25 +452,25 @@ async function updateLegalDocument(memberId, documentId, updatedDocumentData, do
     }
 }
 
-async function deleteLegalDocument(memberId, documentId) {
-    try {
-        const member = await getMemberById(memberId);
-        if (!member) {
-            throw new Error('Member not found');
-        }
+// async function deleteLegalDocument(memberId, documentId) {
+//     try {
+//         const member = await getMemberById(memberId);
+//         if (!member) {
+//             throw new Error('Member not found');
+//         }
 
-        const documentIndex = member.legalDocument.findIndex(doc => doc.documentId === documentId);
-        if (documentIndex === -1) {
-            throw new Error('Document not found');
-        }
+//         const documentIndex = member.legalDocument.findIndex(doc => doc.documentId === documentId);
+//         if (documentIndex === -1) {
+//             throw new Error('Document not found');
+//         }
 
-        const deletedDocument = member.legalDocument.splice(documentIndex, 1);
-        await member.save();
-        return deletedDocument;
-    } catch (error) {
-        throw new Error('Error deleting legal document: ' + error.message);
-    }
-}
+//         const deletedDocument = member.legalDocument.splice(documentIndex, 1);
+//         await member.save();
+//         return deletedDocument;
+//     } catch (error) {
+//         throw new Error('Error deleting legal document: ' + error.message);
+//     }
+// }
 
 const createTestProject = async (memberId, infos, documents) => {
     const member = await Member.findById(memberId);
@@ -1111,5 +1111,5 @@ const checkMemberStatus = async (memberId) => {
     SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus ,
     createCompany , createEmployee, createLegalDocument , getTestAllMembers , createTestProject , 
     getInvestorsForMember ,cancelSubscriptionForMember,renewSubscription, upgradePlan ,
-    updateEmployee , deleteEmployee, updateLegalDocument,deleteLegalDocument , getAllProjectsForMember ,
+    updateEmployee , deleteEmployee, updateLegalDocument, getAllProjectsForMember ,
     updateProject} 
