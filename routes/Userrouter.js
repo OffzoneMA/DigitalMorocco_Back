@@ -731,9 +731,10 @@ router.put('/updateFullName/:userId', UserController.updateFullName);
 
 /**
  * @swagger
- * /send-email:
+ * /users/send-email:
  *   post:
  *     summary: Send a contact email
+ *     tags: [Users]
  *     requestBody:
  *       required: true
  *       content:

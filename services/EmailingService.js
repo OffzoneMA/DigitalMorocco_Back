@@ -43,10 +43,9 @@ async function sendContactFromWeb( email, subject, emailContent, isHTML) {
       pass: process.env.password,
     },
   });
-
   const emailOptions = {
     from: email,
-    to: 'info@digitalmorocco.com',
+    to: 'roukeyaassouma@gmail.com',
     subject: subject,
     [isHTML ? 'html' : 'text']: emailContent,
   };
@@ -91,13 +90,15 @@ async function sendVerificationEmail(userId) {
 async function sendContactEmail(firstName , lastName , email , phone , message) {
 
     try {
-      const title = 'Contact Message';
+      const title = 'Contact Message from Digital Morocco';
+
       const contactSitePath = path.join(__dirname, '..', 'templates', 'contactSite.ejs');
       const contactSiteContent = fs.readFileSync(contactSitePath, 'utf-8');
   
-      const compiledTemplate = ejs.compile(contactSiteContent);
+      const compiledTemplate2 = ejs.compile(contactSiteContent)
   
-      const htmlContent = compiledTemplate({
+      const htmlContent2 = compiledTemplate2({
+        title,
         firstName,
         lastName,
         email,
@@ -105,10 +106,10 @@ async function sendContactEmail(firstName , lastName , email , phone , message) 
         message
       });
 
-      const messageId = await sendEmail(email, title, htmlContent, true);
+      const messageId = await sendContactFromWeb(email, title, htmlContent2, true);
       return messageId;
     } catch (error) {
-      throw err;
+      throw error;
     }
 }
 

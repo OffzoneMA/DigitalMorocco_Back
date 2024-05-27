@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        border: 1px solid #dddddd;
+        border-radius: 5px;
+        background-color:#cdcdcd;
+      }
+      .header {
+        background-color: #ffffff;
+        padding: 10px;
+        text-align: center;
+        border-radius: 5px;
+      }
+      .logo {
+        max-width: 150px;
+        display: block;
+        margin: 0 auto;
+      }
+      .message {
+        margin-top: 20px;
+
+      }
+      .btn {
+        display: inline-block;
+        background-color: #007bff;
+        color: #ffffff;
+        text-decoration: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+      }
+      .footer{
+        font-style: italic;
+        line-height: 1em;
+        color: gray;
+      }
+      .user-message-content {
+      color: #333333;
+    }
+    .user-phone >span{
+        font-weight: bold;
+        font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img class="logo" src="https://firebasestorage.googleapis.com/v0/b/digital-morocco-806c5.appspot.com/o/Site_Assets%2FLogo.jpg?alt=media&token=ee407aba-4523-437a-ab73-5216912ebbd8" alt="Company Logo">
+    </div>
+    <div class="message">
+        <p>Hello,</p>
+  
+        <p><%= firstName %> <%=lastName %>  sent you the message below from the Digital Morocco website: </p>
+        
+        <div class="user-message">
+            <p class="user-message-content" style="color: rgb(32, 32, 32);"><%= message %></p>
+      
+            <p>If necessary, you can reach out to the user at <span class="user-phone"><%=email %> </span> <span>  or <%= phone %></span> for further communication.</p>
+        </div>
+        
+        <p>Please address this issue at your earliest convenience to ensure the user receives the necessary support.</p>
+    </div>
+    <div class="footer">
+      <p>Best regards,</p>
+      <p>© 2023 The Digital Morocco Team. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+
+    
