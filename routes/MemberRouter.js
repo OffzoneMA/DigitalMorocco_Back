@@ -39,27 +39,32 @@ const upload = require("../middelware/multer")
  *         logo: https://firebasestorage.googleapis.com/v0/b/digital-morocco-806c5.appspot.com/o/Members%2F64d0fd3f4ad21c95e8456f69%2Flogo?alt=media&token=4e609d74-43a4-4f8b-926f-3b8c19a70d37
  *         website: Works.net
  */
+
 /**
- * @swagger
- * tags:
- *   name: Members
- *   description: Managing API of the Member (or Start-Up) 
+ * @swagger 
  * /members:
  *   get:
  *     summary: Get all members from the DB
- *     description: list of all members exited 
- *     tags: [Members]
+ *     description: List of all members
+ *     tags: 
+ *       - Members
  *     security:
  *       - jwtToken: []
  *     responses:
- *       200:
+ *       '200':
  *         description: Successful response
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Member (Start-Up)'
  */
-router.route("/").get( MemberController.getMembers).post(AuthController.AuthenticateMember, upload.fields([{ name: 'logo', maxCount: 1 }, { name: 'files', maxCount: 5 }]) ,MemberController.createEnterprise)
+router.route("/")
+  .get(MemberController.getMembers)
+  .post(
+    AuthController.AuthenticateMember,
+    upload.fields([{ name: 'logo', maxCount: 1 }, { name: 'files', maxCount: 5 }]),
+    MemberController.createEnterprise
+  );
 
 /**
  * @swagger

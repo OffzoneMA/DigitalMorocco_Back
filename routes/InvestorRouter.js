@@ -59,7 +59,9 @@ router.route("/").get(AuthController.AuthenticateSubMemberOrAdmin,InvestorContro
  * /api/investor-requests:
  *   get:
  *     summary: Récupérer la liste des demandes d'investisseurs
- *     description: Renvoie la liste des demandes d'investisseurs avec les informations suivantes : user, linkedin_link, dateCreated, status, communicationStatus, Note.
+ *     description: >
+ *       Renvoie la liste des demandes d'investisseurs avec les informations suivantes :
+ *       user, linkedin_link, dateCreated, status, communicationStatus, Note.
  *     responses:
  *       '200':
  *         description: OK - La liste des demandes d'investisseurs a été récupérée avec succès.
@@ -121,6 +123,7 @@ router.route("/").get(AuthController.AuthenticateSubMemberOrAdmin,InvestorContro
  */
 router.get('/investor-requests', InvestorController.getInvestorRequests);
 
+
 /**
  * @swagger
  * /investors/ContactRequest:
@@ -174,7 +177,6 @@ router.route("/ContactRequest").get(AuthController.AuthenticateInvestor, Investo
  *         description: Contact request not found.
  *       500:
  *         description: Internal Server Error
-
  */
 router.route("/ContactRequest/:requestId").put(AuthController.AuthenticateInvestor, InvestorController.updateContactStatus);
 /**
