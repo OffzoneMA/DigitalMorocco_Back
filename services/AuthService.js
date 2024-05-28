@@ -67,6 +67,7 @@ const generateUserInfos = async (user) => {
         data = partner?._doc ? partner?._doc : partner
     }
     const result = user?._doc ? { ...user._doc, [user?.role]: data } : { ...user, [user?.role]: data }
+    console.log("rslt",result)
     return { accessToken: accessToken, user: result }
 }
 

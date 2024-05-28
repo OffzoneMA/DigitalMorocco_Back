@@ -24,8 +24,7 @@ const MemberSchema = new mongoose.Schema({
     logo: String,
     listEmployee: [{
         fullName: { type: String },
-        personalEmail: { type: String },
-        workEmail: { type: String },
+        email: { type: String },
         jobTitle: { type: String },
         level: { type: String },
         status: {

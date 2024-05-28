@@ -906,7 +906,6 @@ router.route("/Contacts").get(AuthController.AuthenticateMember, MemberControlle
  */
 router.get("/check-subscription-status/:userId", MemberController.checkSubscriptionStatus);
 
-
 /**
  * @swagger
  * /members/company:
@@ -971,7 +970,6 @@ router.get("/check-subscription-status/:userId", MemberController.checkSubscript
  *         description: Bad request, check the request body
  */
 router.post("/company",AuthController.AuthenticateMember, upload.single('logo'), MemberController.createCompany);
-
 
 /**
  * @swagger
@@ -1483,6 +1481,3 @@ router.post('/members/:userId', MemberController.createMember);
 router.get('/projects',AuthController.AuthenticateMember, MemberController.getAllProjectsForMember);
 
 module.exports = router;
-
-
-module.exports = router

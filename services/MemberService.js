@@ -227,37 +227,43 @@ const updateEmployeeToMember = async (memberId, employeeId, updatedEmployeeData)
             throw new Error("Membre non trouvé");
         }
 
-        const employeeIndex = member.listEmployee.find(emp => emp._id.toString()  === employeeId);
-        console.log(employeeIndex)
+        const employeeIndex = member.listEmployee.findIndex(emp => emp._id.toString() === employeeId);
         if (employeeIndex === -1) {
             throw new Error("Employé non trouvé dans ce membre");
         }
-        const base64Data = updatedEmployeeData.photo.replace(/^data:image\/\w+;base64,/, '');
-      const buffer = Buffer.from(base64Data, 'base64');
 
-        employeeIndex.firstName=updatedEmployeeData.firstName;
-        employeeIndex.lastName=updatedEmployeeData.lastName;
-        employeeIndex.email=updatedEmployeeData.email;
-        employeeIndex.jobTitle=updatedEmployeeData.jobTitle;
-        employeeIndex.level=updatedEmployeeData.level;
-        employeeIndex.status=updatedEmployeeData.status;
-        employeeIndex.address=updatedEmployeeData.address;
-        employeeIndex.country=updatedEmployeeData.country;
-        employeeIndex.cityState=updatedEmployeeData.cityState;
-        employeeIndex.phoneNumber=updatedEmployeeData.phoneNumber;
-        employeeIndex.startDate=updatedEmployeeData.startDate;
-        employeeIndex.personalTaxIdentifierNumber=updatedEmployeeData.personalTaxIdentifierNumber;
-        employeeIndex.photo=buffer;
-        employeeIndex.department=updatedEmployeeData.department;
+        const employee = member.listEmployee[employeeIndex];
+
+        // Mise à jour des champs uniquement si présents dans updatedEmployeeData
+        if (updatedEmployeeData.fullName) employee.fullName = updatedEmployeeData.fullName;
+        if (updatedEmployeeData.email) employee.email = updatedEmployeeData.email;
+        if (updatedEmployeeData.jobTitle) employee.jobTitle = updatedEmployeeData.jobTitle;
+        if (updatedEmployeeData.level) employee.level = updatedEmployeeData.level;
+        if (updatedEmployeeData.status) employee.status = updatedEmployeeData.status;
+        if (updatedEmployeeData.address) employee.address = updatedEmployeeData.address;
+        if (updatedEmployeeData.country) employee.country = updatedEmployeeData.country;
+        if (updatedEmployeeData.cityState) employee.cityState = updatedEmployeeData.cityState;
+        if (updatedEmployeeData.phoneNumber) employee.phoneNumber = updatedEmployeeData.phoneNumber;
+        if (updatedEmployeeData.startDate) employee.startDate = updatedEmployeeData.startDate;
+        if (updatedEmployeeData.personalTaxIdentifierNumber) employee.personalTaxIdentifierNumber = updatedEmployeeData.personalTaxIdentifierNumber;
+        
+        // Gestion de la photo
+        if (updatedEmployeeData.photo) {
+            const base64Data = updatedEmployeeData.photo.replace(/^data:image\/\w+;base64,/, '');
+            const buffer = Buffer.from(base64Data, 'base64');
+            employee.photo = buffer;
+        }
+
+        if (updatedEmployeeData.department) employee.department = updatedEmployeeData.department;
 
         await member.save();
-
-        return member.listEmployee[employeeIndex];
+        return employee;
     } catch (error) {
         console.error("Erreur lors de la mise à jour de l'employé :", error);
         throw new Error("Erreur lors de la mise à jour de l'employé");
     }
 }
+
 
 const CreateMember = async (userId, member) => {
     return await Member.create({ ...member, owner: userId });
