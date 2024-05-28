@@ -1,0 +1,26 @@
+{
+    "verify_title": "Verificación de Cuenta",
+    "verify_email_subject": "Verifique Su Cuenta de Correo Electrónico",
+    "welcome_message": "¡Bienvenido a la Plataforma de Redes Digitales de Marruecos!",
+    "excited_message": "Estamos emocionados de darte la bienvenida a bordo.",
+    "verification_instruction": "Para completar la verificación de su cuenta, por favor haga clic en el botón a continuación.",
+    "alternative_link_instruction": "En caso de que el botón no funcione, también puede copiar y pegar el ",
+    "alternative_link_instruction1": "siguiente enlace en su navegador:",
+    "link_placeholder": "[enlace]",
+    "expiry_warning": "Tenga en cuenta que el enlace de verificación expirará después de 1 hora. Asegúrese de completar el proceso de verificación dentro de ese tiempo.",
+    "support_message": "Si tiene alguna pregunta o necesita más ayuda, no dude en ponerse en contacto con nuestro equipo de soporte.",
+    "best_regards": "Saludos cordiales,",
+    "team_signature": "El equipo de Digital Marruecos",
+  
+    "reset_password_title": "Restablecimiento de Contraseña",
+    "reset_password_request_received": "Hemos recibido una solicitud para restablecer su contraseña.",
+    "reset_password_help": "Si no hizo esta solicitud, puede ignorar este correo electrónico de manera segura.",
+    "reset_password_button": "Restablecer Contraseña",
+    "reset_password_contact": "Si necesita ayuda, contáctenos en",
+    "reset_password_ignore": "Si no solicitó un restablecimiento de contraseña, ignore este correo electrónico.",
+    "unsubscribe": "Para darse de baja de estos correos electrónicos",
+    "unsubscribe_text": "haga clic aquí",
+    "footer": "© 2023 Todos los derechos reservados.",
+    "websiteLink": "https://www.truepositive.app"
+  }
+  

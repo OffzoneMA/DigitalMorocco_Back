@@ -1,4 +1,7 @@
 const express = require("express");
+const i18n = require('i18next');
+const Backend = require('i18next-node-fs-backend');
+const i18nextMiddleware = require('i18next-express-middleware');
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require('path')
@@ -16,9 +19,12 @@ const EventRouter = require("./routes/EventRouter")
 const BlogRouter = require("./routes/BlogRouter")
 const OtpRouter = require("./routes/Otprouter")
 const ProjectRouter = require("./routes/ProjectRouter")
+const FileRouter = require('./routes/FileRouter')
 const session = require('express-session');
 const { passport } = require("./config/passport-setup");
 const { checkSubscriptionStatus } = require("./services/MemberService");
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
 
 // Swagger Imports
 const swaggerJsdoc = require('swagger-jsdoc');
@@ -35,6 +41,40 @@ app.use(cors());
 app.use(express.json({limit: "100mb"}));
 
 app.use(express.static(path.join(__dirname, "images")))
+
+app.use(cookieParser());
+app.use(bodyParser.json());
+
+i18n
+  .use(Backend)
+//   .use(i18nextMiddleware.LanguageDetector)
+  .init({
+    backend: {
+        loadPath: __dirname + '/locales/{{lng}}/{{ns}}.json'
+    },
+    fallbackLng: 'en',
+    preload: ['en', 'fr'],
+    detection: {
+      order: ['header', 'querystring', 'cookie'],
+      caches: ['cookie'],
+    },
+  });
+
+app.use(i18nextMiddleware.handle(i18n));
+
+// app.use((req, res, next) => {
+//     res.locals.t = req.t;
+//     next();
+//   });
+
+i18n.changeLanguage('fr');
+
+  app.get('/', (req, res) => {
+    const response = req.t('ack_request.email_greeting' , { name: 'John Doe' });
+    res.status(200);
+    res.send(response);
+  });
+
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URL ,{ useNewUrlParser: true, useUnifiedTopology: true })
@@ -76,6 +116,7 @@ app.use("/events", EventRouter);
 app.use("/blogs", BlogRouter);
 app.use("/users/otp", OtpRouter);
 app.use("/projects", ProjectRouter);
+app.use("/files", FileRouter);
 
 
 const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css";

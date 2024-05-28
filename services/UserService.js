@@ -54,18 +54,17 @@ const approveUserService = async (userId,role) => {
         throw new Error('Request not found!');
     }
 
-    role == "member" && await MemberService.CreateMember({ owner: userId, rc_ice: request?.rc_ice })
-    role == "partner" && await PartnerService.CreatePartner({ owner: userId, num_rc: request?.num_rc })
-    role == "investor" && await InvestorService.CreateInvestor({ owner: userId, linkedin_link: request?.linkedin_link })
-    await requestServive.removeRequestByUserId(userId,role)
-    const updatedUser = await User.findByIdAndUpdate(userId, { status: 'accepted' }, { new: true });
-    return updatedUser;
+    role == "member" && await MemberService.CreateMember(id, {rc_ice: request?.rc_ice} )
+    role == "partner" && await PartnerService.CreatePartner({ owner: user?._id, num_rc: request?.num_rc })
+    role == "investor" && await InvestorService.CreateInvestor({ owner: user?._id, linkedin_link: request?.linkedin_link })
+    await requestServive.removeRequestByUserId(id,role)
+    return await User.findByIdAndUpdate(id, { status: 'accepted' })
 }
 
 
 const rejectUser = async (id, role) => {
     const request = await requestServive.getRequestByUserId(id, role);
-    if (request.rc_ice) {
+    if (request?.rc_ice) {
         await FileService.deleteFile("rc_ice", "Members/" + id);
     }
     await requestServive.removeRequestByUserId(id, role)

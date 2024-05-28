@@ -1,0 +1,91 @@
+{
+  "verify_title": "Vérification du Compte",
+  "verify_email_subject": "Vérification de votre Compte",
+  "welcome_message": "Bienvenue sur la Plateforme du Networking Digital Morocco !",
+  "excited_message": "Nous sommes ravis de vous accueillir à bord.",
+  "verification_instruction": "Pour finaliser la vérification de votre compte, veuillez cliquer sur le bouton ci-dessous :",
+  "alternative_link_instruction": "Dans le cas où le bouton ne fonctionne pas, vous pouvez également copier-coller le ",
+  "alternative_link_instruction1": "lien suivant dans votre navigateur :",
+  "link_placeholder": "[lien]",
+  "expiry_warning": "Veuillez noter que le lien de vérification expirera après 1 heure. Assurez-vous de finaliser le processus de vérification dans ce laps de temps.",
+  "support_message": "Si vous avez des questions ou avez besoin d'assistance supplémentaire, n'hésitez pas à contacter notre équipe de support.",
+  "best_regards": "Meilleures salutations,",
+  "team_signature": "L'équipe de Digital Morocco",
+  "verify_btn":"Vérifier mon Compte",
+  "footer_msg":"Élargissez votre réseau professionnel, accédez à des ressources exclusives, et connectez-vous avec des acteurs et des organisations engagés dans le développement du secteur digital au Maroc.",
+  "Copyright": "Copyright © 2023 Digital Morocco, tous droits réservés. Propulsé par",
+  "Copyright_link":"OFFZONE",
+
+  "reset_password": {
+    "title": "Réinitialisation de mot de passe",
+    "header": "Réinitialisez votre mot de passe",
+    "description1": "Nous avons reçu une demande pour réinitialiser votre mot de passe. Ne vous inquiétez pas,",
+    "description2": "nous sommes là pour vous aider.",
+    "button": "RÉINITIALISER MON MOT DE PASSE",
+    "note1": "N'avez-vous pas demandé de réinitialisation de mot de passe ?",
+    "note2": "Vous pouvez en toute sécurité ignorer ce message.",
+    "footer": "Copyright © 2023 Digital Morocco. Tous droits réservés. Propulsé par",
+    "contact": "Contactez-nous : support@digitalmorocco.net"
+  },
+  "ack_request": {
+    "email_subject": "Accusé de réception de votre demande !",
+    "email_greeting": "Cher(e) {{name}},",
+    "email_thank_you": "Nous vous remercions d'avoir pris le temps de nous contacter. Votre demande a été reçue et nous vous en sommes reconnaissants.",
+    "email_reviewing": "Notre équipe examine actuellement votre demande et vous fournira une réponse dès que possible. Si vous avez des questions supplémentaires ou si vous souhaitez fournir des informations complémentaires, n'hésitez pas à nous contacter.",
+    "email_appreciation": "Nous apprécions votre patience et votre intérêt pour nos services.",
+    "email_closing": "Meilleures salutations,",
+    "email_team": "L'équipe de Digital Morocco",
+    "footer_message": "Élargissez votre réseau professionnel, accédez à des ressources exclusives, et connectez-vous avec des acteurs et des organisations engagés dans le développement du secteur digital au Maroc.",
+    "footer_message1": "à propulser la frontière numérique du Maroc."
+  },
+  "under_review": {
+    "email_subject": "Confirmation de votre demande sur Digital Morocco",
+    "email_greeting": "Cher(e) {{name}},",
+    "email_thank_you": "Merci de rejoindre la communauté Digital Morocco. Nous avons bien reçu votre demande et elle est actuellement en cours de traitement.",
+    "email_reviewing": "Vous recevrez une notification une fois que votre demande aura été traitée. En attendant, nous vous invitons à explorer notre plateforme pour découvrir des opportunités de réseautage, des collaborations et des événements à venir.",
+    "email_appreciation": "Pour toute question ou assistance, notre équipe est à votre disposition.",
+    "email_closing": "Meilleures salutations,",
+    "email_team": "L'équipe de Digital Morocco",
+    "footer_message": "Élargissez votre réseau professionnel, accédez à des ressources exclusives, et connectez-vous avec des acteurs et des organisations engagés dans le développement du secteur digital au Maroc."
+  },
+  "welcome_email": {
+    "title": "Bienvenue sur",
+    "title1": "Digital Morocco",
+    "email_greeting": "Cher(e) {{name}},",
+    "email_paragraph1": "Préparez-vous à exploiter tout le potentiel de votre parcours digital avec nous.",
+    "email_paragraph2": "Si vous avez des questions ou besoin d'assistance, n'hésitez pas à nous contacter. Nous sommes là pour vous accompagner à chaque étape.",
+    "email_paragraph3": "Embarquons ensemble dans cette aventure passionnante !",
+    "email_closing": "Meilleures salutations,",
+    "email_team": "L'équipe de Digital Morocco",
+    "explore": "Explorez davantage et découvrez comment",
+    "explore1": "Digital Morocco",
+    "explore2": "peut amplifier votre succès dans le domaine digital.",
+    "explore_2": "Investir, Se Connecter, Réussir",
+    "cta": "Commencez !",
+    "footer_message": "Élargissez votre réseau professionnel, accédez à des ressources exclusives, et connectez-vous avec des acteurs et des organisations engagés dans le développement du secteur digital au Maroc.",
+    "footer_message1": "à propulser la frontière numérique du Maroc.",
+    "footer_copyright": "Copyright © 2023 Digital Morocco. Tous droits réservés. Propulsé par "
+  },
+  "request_approved":{
+    "title": "Demande approuvée",
+    "email_greeting": "Cher(e) {{name}},",
+    "email_paragraph1": "Nous sommes heureux de vous informer que votre demande a été approuvée !",
+    "email_paragraph2": "Vous avez désormais un accès complet à la plateforme Digital Morocco. Explorez les opportunités de réseautage, les collaborations et les événements à venir à votre guise.",
+    "email_paragraph3": "Si vous avez des questions ou besoin d'aide, notre équipe est là pour vous.",
+    "email_closing": "Meilleures salutations,",
+    "email_team": "L'équipe de Digital Morocco",
+    "footer_message": "Élargissez votre réseau professionnel, accédez à des ressources exclusives, et connectez-vous avec des acteurs et des organisations engagés dans le développement du secteur digital au Maroc.",
+    "footer_copyright": "Copyright © 2023 Digital Morocco, tous droits réservés. Propulsé par "
+  },
+  "request_reject":{
+    "title": "Rejet de Votre Demande sur Digital Morocco",
+    "email_greeting": "Cher(e) {{name}},",
+    "email_paragraph1": "Nous regrettons de vous informer que votre demande n'a pas été approuvée. Nous vous encourageons à consulter nos critères d'admission pour mieux comprendre cette décision.",
+    "email_paragraph2": "Si vous avez des questions ou besoin de plus d'informations, n'hésitez pas à contacter notre équipe.",
+    "email_closing": "Meilleures salutations,",
+    "email_team": "L'équipe de Digital Morocco",
+    "footer_message": "Élargissez votre réseau professionnel, accédez à des ressources exclusives, et connectez-vous avec des acteurs et des organisations engagés dans le développement du secteur digital au Maroc.",
+    "footer_copyright": "Copyright © 2023 Digital Morocco, tous droits réservés. Propulsé par"
+  }
+
+}

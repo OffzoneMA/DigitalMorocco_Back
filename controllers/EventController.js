@@ -99,24 +99,44 @@ const sendTicketToUser = async (req, res) => {
     }
   };
 
-  async function supprimerCollection(req, res) {
-    try {
-      await EventService.supprimerCollection(); 
-      res.status(200).json({ message: 'La collection a été supprimée avec succès.' });
-    } catch (error) {
-      console.error('Erreur lors de la suppression de la collection :', error);
-      res.status(500).json({ error: 'Une erreur s\'est produite lors de la suppression de la collection.' });
-    }
+async function supprimerCollection(req, res) {
+  try {
+    await EventService.supprimerCollection(); 
+    res.status(200).json({ message: 'La collection a été supprimée avec succès.' });
+  } catch (error) {
+    console.error('Erreur lors de la suppression de la collection :', error);
+    res.status(500).json({ error: 'Une erreur s\'est produite lors de la suppression de la collection.' });
   }
+}
+
+async function addConnectedAttendee(req, res) {
+  try {
+    const event = await EventService.addConnectedAttendee(req.params.eventId, req.body);
+    res.status(201).json(event);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
+async function updateConnectedAttendee(req, res) {
+  try {
+    const event = await EventService.updateConnectedAttendee(req.params.eventId, req.params.attendeeId, req.body);
+    res.status(200).json(event);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
+async function deleteConnectedAttendee(req, res) {
+  try {
+    const event = await EventService.deleteConnectedAttendee(req.params.eventId, req.params.attendeeId);
+    res.status(200).json(event);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
 
 module.exports = {
-    createEvent,
-    getEvents,
-    getEventById,
-    updateEvent,
-    deleteEvent,
-    getAllEventsByUser,
-    addAttendeeToEvent,
-    sendTicketToUser,
-    supprimerCollection
+    createEvent, getEvents, getEventById, updateEvent, deleteEvent, getAllEventsByUser, addAttendeeToEvent,
+    sendTicketToUser, supprimerCollection , addConnectedAttendee , updateConnectedAttendee , deleteConnectedAttendee
 };

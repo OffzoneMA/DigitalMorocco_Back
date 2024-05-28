@@ -38,35 +38,83 @@ async function getAllEventsByUser(userId) {
     }
   }
 
-  async function addAttendeeToEvent(eventId, attendeeData) {
-    try {
-      const event = await Event.findById(eventId);
-  
-      if (!event) {
-        throw new Error(`Event with ID ${eventId} not found`);
-      }
-  
-      event.attendees.push(attendeeData);
-      const attendeeId = event.attendees[event.attendees.length - 1]._id;
+async function addAttendeeToEvent(eventId, attendeeData) {
+  try {
+    const event = await Event.findById(eventId);
 
-      const historyData = {
-        eventType: 'event_attended',
-        eventDetails: 'Attending Event',
-        timestamp: new Date(),
-        user: attendeeId,
-        actionTargetType: 'Event',
-        actionTarget: eventId,  
-    };
-
-    await ActivityHistoryService.createActivityHistory(historyData);
-
-      await event.save();
-  
-      return event;
-    } catch (error) {
-      throw new Error(`Error adding attendee to event: ${error.message}`);
+    if (!event) {
+      throw new Error(`Event with ID ${eventId} not found`);
     }
+
+    event.attendees.push(attendeeData);
+    const attendeeId = event.attendees[event.attendees.length - 1]._id;
+
+    const historyData = {
+      eventType: 'event_attended',
+      eventDetails: 'Attending Event',
+      timestamp: new Date(),
+      user: attendeeId,
+      actionTargetType: 'Event',
+      actionTarget: eventId,  
+  };
+
+  await ActivityHistoryService.createActivityHistory(historyData);
+
+    await event.save();
+
+    return event;
+  } catch (error) {
+    throw new Error(`Error adding attendee to event: ${error.message}`);
   }
+}
+
+async function addConnectedAttendee(eventId, attendee) {
+  const user = await User.findById(attendee.userId);
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const event = await Event.findById(eventId);
+  if (!event) {
+    throw new Error('Event not found');
+  }
+
+  event.attendeesUsers.push(attendee);
+  await event.save();
+  return event;
+}
+
+async function updateConnectedAttendee(eventId, attendeeId, updatedAttendee) {
+  const event = await Event.findById(eventId);
+  if (!event) {
+    throw new Error('Event not found');
+  }
+
+  const attendee = event.attendeesUsers.id(attendeeId);
+  if (!attendee) {
+    throw new Error('Attendee not found');
+  }
+
+  Object.assign(attendee, updatedAttendee);
+  await event.save();
+  return event;
+}
+
+async function deleteConnectedAttendee(eventId, attendeeId) {
+  const event = await Event.findById(eventId);
+  if (!event) {
+    throw new Error('Event not found');
+  }
+
+  const attendee = event.attendeesUsers.id(attendeeId);
+  if (!attendee) {
+    throw new Error('Attendee not found');
+  }
+
+  attendee.remove();
+  await event.save();
+  return event;
+}
 
 // Create a new event
 async function createEvent(userId ,eventData , imageData ,headerImage , organizerLogo) {
@@ -181,12 +229,6 @@ async function supprimerCollection() {
 }
 
 module.exports = {
-    createEvent,
-    getAllEvents,
-    getEventById,
-    updateEvent,
-    deleteEvent,
-    getAllEventsByUser,
-    addAttendeeToEvent,
-    supprimerCollection
+    createEvent, getAllEvents, getEventById, updateEvent, deleteEvent, getAllEventsByUser, addAttendeeToEvent,
+    supprimerCollection , addConnectedAttendee , updateConnectedAttendee , deleteConnectedAttendee
 };

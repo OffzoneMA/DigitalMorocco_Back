@@ -589,10 +589,12 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
             throw new Error("Project not found");
         }
         
-        project.name = newData.name;
-        project.funding = newData.funding;
-        project.currency = newData.currency;
-        project.details = newData.details;
+        project.name = newData.name || project.name;
+        project.funding = newData.funding || project.funding;
+        project.totalRaised = newData.totalRaised || project.totalRaised;
+        project.currency = newData.currency || project.currency;
+        project.details = newData.details || project.details;
+        project.visbility = newData.visbility|| project.visbility;
 
         if (newData.milestones) {
             const existingMilestoneNames = project.milestones.map(milestone => milestone.name);

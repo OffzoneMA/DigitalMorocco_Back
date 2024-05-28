@@ -205,14 +205,13 @@ const updateFullName = async (req, res) => {
 };
 
 const sendContactEmail = async (req, res) => {
-  const { firstName, lastName, phone, email, message } = req.body;
 
   try {
-      await EmailingService.sendContactEmail(firstName, lastName, phone, email, message);
-      res.status(200).send('Email sent successfully');
+      await EmailingService.sendContactEmail(req.body?.firstName, req.body?.lastName, req.body?.email, req.body?.phone, req.body?.message);
+      res.status(200).send({message: 'Email sent successfully'});
   } catch (error) {
       console.error(error);
-      res.status(500).send('Error sending email');
+      res.status(500).send(error);
   }
 };
 

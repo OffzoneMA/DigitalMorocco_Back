@@ -93,6 +93,20 @@ const eventSchema = new mongoose.Schema({
             country: String
         }
     ],
+    attendeesUsers : [
+        {
+            userId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User',
+                required: true
+              },
+              role: {
+                type: String,
+                enum: ['investor', 'member', 'partner'],
+                required: true
+              }
+        }
+    ],
     organizerLogo: String,
     organizername: String,
     status:

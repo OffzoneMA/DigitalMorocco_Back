@@ -16,15 +16,17 @@
     </xml>
     <![endif]-->
     <!--[if !mso]><!-->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900"
-        rel="stylesheet" type="text/css" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:wght@100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
         }
 
         body {
-            font-family: 'Montserrat', 'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif;
+            font-family:'DM Sans';
+            /* , Montserrat ,  'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif; */
             margin: 0;
             padding: 0;
         }
@@ -304,7 +306,7 @@
                                                                     style="line-height:10px">
                                                                     <div style="max-width: 160px;"><img
                                                                             alt="Alternate text" height="auto"
-                                                                            src="/NegativeTrue.png"
+                                                                            src="https://firebasestorage.googleapis.com/v0/b/digital-morocco-806c5.appspot.com/o/Site_Assets%2FNegativeTrue.png?alt=media&token=063725a8-7309-4954-8b57-8a500c0fb3a7"
                                                                             style="display: block; height: auto; border: 0; width: 100%;"
                                                                             title="Alternate text" width="160" />
                                                                     </div>
@@ -330,7 +332,7 @@
                                                                                     href="https://www.facebook.com"
                                                                                     target="_blank"><img
                                                                                         alt="Facebook" height="auto"
-                                                                                        src=".///facebook2x.png"
+                                                                                        src="https://firebasestorage.googleapis.com/v0/b/digital-morocco-806c5.appspot.com/o/Site_Assets%2Ffacebook2x.png?alt=media&token=429ed801-251b-4962-9ea8-c15ee6d83f87"
                                                                                         style="display: block; height: auto; border: 0;"
                                                                                         title="Facebook"
                                                                                         width="32" /></a></td>
@@ -339,7 +341,7 @@
                                                                                     target="_blank"><img
                                                                                         alt="Instagram"
                                                                                         height="auto"
-                                                                                        src="/instagram2x.png"
+                                                                                        src="https://firebasestorage.googleapis.com/v0/b/digital-morocco-806c5.appspot.com/o/Site_Assets%2Finstagram2x.png?alt=media&token=b1fac0b8-436d-43ec-b090-ff178e1b356d"
                                                                                         style="display: block; height: auto; border: 0;"
                                                                                         title="Instagram"
                                                                                         width="32" /></a></td>
@@ -347,7 +349,7 @@
                                                                                     href="https://www.linkedin.com"
                                                                                     target="_blank"><img
                                                                                         alt="LinkedIn" height="auto"
-                                                                                        src="/linkedin2x.png"
+                                                                                        src="https://firebasestorage.googleapis.com/v0/b/digital-morocco-806c5.appspot.com/o/Site_Assets%2Flinkedin2x.png?alt=media&token=ecbcaf6e-f36a-4fbe-893e-962abbc3eee0"
                                                                                         style="display: block; height: auto; border: 0;"
                                                                                         title="LinkedIn"
                                                                                         width="32" /></a></td>
@@ -365,14 +367,9 @@
                                                             <td class="pad"
                                                                 style="padding-bottom:10px;padding-left:40px;padding-right:40px;padding-top:15px;">
                                                                 <div
-                                                                    style="color:#555555;font-family:Montserrat, Trebuchet MS, Lucida Grande, Lucida Sans Unicode, Lucida Sans, Tahoma, sans-serif;font-size:12px;line-height:150%;text-align:center;mso-line-height-alt:18px;">
+                                                                    style="color:#555555;font-family:'DM Sans';font-size:12px;line-height:150%;text-align:center;mso-line-height-alt:18px;">
                                                                     <p style="margin: 0;"><span
-                                                                            style="color: #d0d5dd;">Expand your
-                                                                            professional network, unlock exclusive
-                                                                            resources, and connect with individuals
-                                                                            and
-                                                                            organizations dedicated to propelling
-                                                                            Morocco's digital frontier.</span></p>
+                                                                            style="color: #d0d5dd;"><%= t('footer_msg') %></span></p>
                                                                 </div>
                                                             </td>
                                                         </tr>
@@ -408,15 +405,11 @@
                                                             <td class="pad"
                                                                 style="padding-bottom:30px;padding-left:40px;padding-right:40px;padding-top:20px;">
                                                                 <div
-                                                                    style="color:#555555;font-family:Montserrat, Trebuchet MS, Lucida Grande, Lucida Sans Unicode, Lucida Sans, Tahoma, sans-serif;font-size:12px;line-height:120%;text-align:left;mso-line-height-alt:14.399999999999999px;">
+                                                                    style="color:#555555;font-family:'DM Sans';font-size:12px;line-height:120%;text-align:left;mso-line-height-alt:14.399999999999999px;">
                                                                     <p style="margin: 0;"><span
                                                                             style="color: #ffffff;"><span
-                                                                                style="color: #d0d5dd;">Copyright ©
-                                                                                2023
-                                                                                Digital Morocco, all rights
-                                                                                reserved.
-                                                                                Powered by </span><span
-                                                                                style="color: #00cdae;"><strong>OFFZONE</strong></span></span>
+                                                                                style="color: #d0d5dd;"><%= t('Copyright') %> </span><span
+                                                                                style="color: #00cdae;"><strong><%= t('Copyright_link') %> </strong></span></span>
                                                                     </p>
                                                                 </div>
                                                             </td>

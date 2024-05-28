@@ -159,6 +159,49 @@ router.get('/auth/linkedin/callback', (req, res, next) => {
     })(req, res, next);
 });
 
+//Linkedin SignUp
+router.get('/auth/linkedin/signup', passport.authenticate('linkedin-signup'));
+router.get('/auth/linkedin/signup/callback', (req, res, next) => {
+    passport.authenticate('linkedin-signup', (err, user, info) => {
+        if (err || info instanceof AuthorizationError || info?.error) {
+            return res.redirect(`${process.env.FRONTEND_URL}/${info?.error != undefined ? 'SignUp?error=' + info?.error + '' : 'SignUp'}`);
+        }
+        const auth = user?.auth;
+
+        const userRole = user?.user?.role;
+
+        const socialId = user?.socialId;
+
+        if (userRole) {
+            res.redirect(`${process.env.FRONTEND_URL}/SignIn?auth=${auth}`);
+        } else {
+            res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}`);
+        }
+    })(req, res, next);
+});
+
+//LinkedIn SignIn
+router.get('/auth/linkedin/signin', passport.authenticate('linkedin-signin'));
+router.get('/auth/linkedin/signin/callback', (req, res, next) => {
+    passport.authenticate('linkedin-signin', (err, user, info) => {
+        if (err || info instanceof AuthorizationError || info?.error) {
+            return res.redirect(`${process.env.FRONTEND_URL}/${info?.error != undefined ? 'SignIn?error=' + info?.error + '' : 'SignIn'}`);
+        }
+        const auth = user?.auth;
+
+        const userRole = user?.user?.role;
+
+        const socialId = user?.socialId;
+
+        if (userRole) {
+            res.redirect(`${process.env.FRONTEND_URL}/SignIn?auth=${auth}`);
+        } else {
+            res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}`);
+        }
+    })(req, res, next);
+});
+
+
 router.get('/auth/google', passport.authenticate('google'));
 router.get('/auth/google/callback', (req, res, next) => {
     passport.authenticate('google', (err, user, info) => {
@@ -178,6 +221,49 @@ router.get('/auth/google/callback', (req, res, next) => {
     })(req, res, next);
 });
 
+// Google SignUp
+router.get('/auth/google/signup', passport.authenticate('google-signup'));
+router.get('/auth/google/signup/callback', (req, res, next) => {
+    passport.authenticate('google-signup', (err, user, info) => {
+        if (err || info instanceof AuthorizationError || info?.error) {
+            return res.redirect(`${process.env.FRONTEND_URL}/${info?.error != undefined ? 'SignUp?error=' + info?.error + '' : 'SignUp'}`);
+        }
+        const auth = user?.auth;
+
+        const userRole = user?.user?.role;
+
+        const socialId = user?.socialId;
+
+        if (userRole) {
+            res.redirect(`${process.env.FRONTEND_URL}/SignIn?auth=${auth}`);
+        } else {
+            res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}`);
+        }
+    })(req, res, next);
+});
+
+// Google SignIn
+router.get('/auth/google/signin', passport.authenticate('google-signin'));
+router.get('/auth/google/signin/callback', (req, res, next) => {
+    passport.authenticate('google-signin', (err, user, info) => {
+        if (err || info instanceof AuthorizationError || info?.error) {
+            return res.redirect(`${process.env.FRONTEND_URL}/${info?.error != undefined ? 'SignIn?error=' + info?.error + '' : 'SignIn'}`);
+        }
+        const auth = user?.auth;
+
+        const userRole = user?.user?.role;
+
+        const socialId = user?.socialId;
+
+        if (userRole) {
+            res.redirect(`${process.env.FRONTEND_URL}/SignIn?auth=${auth}`);
+        } else {
+            res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}`);
+        }
+    })(req, res, next);
+});
+
+
 router.get('/auth/facebook', passport.authenticate('facebook', { scope: [ 'email' ] }));
 router.get('/auth/facebook/callback', (req, res, next) => {
     passport.authenticate('facebook', (err, user, info) => {
@@ -196,6 +282,49 @@ router.get('/auth/facebook/callback', (req, res, next) => {
         }
     })(req, res, next);
 });
+
+// Facebook SignUp
+router.get('/auth/facebook/signup', passport.authenticate('facebook-signup'));
+router.get('/auth/facebook/signup/callback', (req, res, next) => {
+    passport.authenticate('facebook-signup', (err, user, info) => {
+        if (err || info instanceof AuthorizationError || info?.error) {
+            return res.redirect(`${process.env.FRONTEND_URL}/${info?.error != undefined ? 'SignUp?error=' + info?.error + '' : 'SignUp'}`);
+        }
+        const auth = user?.auth;
+
+        const userRole = user?.user?.role;
+
+        const socialId = user?.socialId;
+
+        if (userRole) {
+            res.redirect(`${process.env.FRONTEND_URL}/SignIn?auth=${auth}`);
+        } else {
+            res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}`);
+        }
+    })(req, res, next);
+});
+
+// Facebook SignIn
+router.get('/auth/facebook/signin', passport.authenticate('facebook-signin'));
+router.get('/auth/facebook/signin/callback', (req, res, next) => {
+    passport.authenticate('facebook-signin', (err, user, info) => {
+        if (err || info instanceof AuthorizationError || info?.error) {
+            return res.redirect(`${process.env.FRONTEND_URL}/${info?.error != undefined ? 'SignIn?error=' + info?.error + '' : 'SignIn'}`);
+        }
+        const auth = user?.auth;
+
+        const userRole = user?.user?.role;
+
+        const socialId = user?.socialId;
+
+        if (userRole) {
+            res.redirect(`${process.env.FRONTEND_URL}/SignIn?auth=${auth}`);
+        } else {
+            res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}`);
+        }
+    })(req, res, next);
+});
+
 
 /**
  * @swagger
@@ -599,9 +728,10 @@ router.put('/updateFullName/:userId', UserController.updateFullName);
 
 /**
  * @swagger
- * /send-email:
+ * /users/send-email:
  *   post:
  *     summary: Send a contact email
+ *     tags: [Users]
  *     requestBody:
  *       required: true
  *       content:
