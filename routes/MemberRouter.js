@@ -474,19 +474,20 @@ router.route("/name/:name").get(MemberController.getByName)
  *                 items:
  *                   type: object
  *                   properties:
- *                     firstName:
+ *                     employee:
  *                       type: string
- *                       description: First name of the team member.
- *                     lastName:
+ *                     image:
  *                       type: string
- *                       description: Last name of the team member.
- *                     role:
+ *                     status:
  *                       type: string
- *                       description: Role of the team member.
- *                 required:
- *                   - firstName
- *                   - lastName
- *                   - role
+ *                     jobTitle:
+ *                       type: string
+ *                     fullName:
+ *                       type: string
+ *                     workEmail:
+ *                       type: string
+ *                     personalEmail:
+ *                       type: string
  *               details:
  *                 type: string
  *                 description: Details about the project.
@@ -664,6 +665,7 @@ router.route("/name/:name").get(MemberController.getByName)
  */
 
 router.route("/project").post(AuthController.AuthenticateMember, upload.fields([{ name: 'businessPlan', maxCount: 1 },{ name: 'financialProjection', maxCount: 1 },{ name: 'pitchDeck', maxCount: 1 },{ name: 'files', maxCount: 8 }]), MemberController.createProject)
+
 /**
  * @swagger
  * /members/project/{projectId}:
@@ -982,7 +984,7 @@ router.post("/company",AuthController.AuthenticateMember, upload.single('logo'),
 
 /**
  * @swagger
- * /members/employee:
+ * /members/employee/{memberId}:
  *   post:
  *     summary: Create an employee for a member
  *     tags: [Members]
@@ -1039,7 +1041,7 @@ router.post("/company",AuthController.AuthenticateMember, upload.single('logo'),
  *                 description: The level of the employee
  *               status:
  *                 type: string
- *                 default: Active
+ *                 default: active
  *               photo:
  *                 type: string
  *                 format: binary
@@ -1054,11 +1056,11 @@ router.post("/company",AuthController.AuthenticateMember, upload.single('logo'),
  *       400:
  *         description: Bad request, check the request body
  */
-router.post("/employee",AuthController.AuthenticateMember, upload.single("photo"), MemberController.createEmployee);
+router.post("/employee/:memberId",AuthController.AuthenticateMember, upload.single("photo"), MemberController.createEmployee);
 
 /**
  * @swagger
- * /members/{employeeId}/employee:
+ * /members/{memberId}/employee/{employeeId}:
  *   put:
  *     summary: Mettre à jour un employé.
  *     tags: [Members]
@@ -1117,7 +1119,7 @@ router.post("/employee",AuthController.AuthenticateMember, upload.single("photo"
  *       '400':
  *         description: Erreur lors de la mise à jour de l'employé.
  */
-router.put('/:employeeId:employee',AuthController.AuthenticateMember, upload.single('photo'), MemberController.updateEmployee);
+router.put('/:memberId/employee/:employeeId',AuthController.AuthenticateMember, upload.single('photo'), MemberController.updateEmployee);
 
 /**
  * @swagger
@@ -1488,6 +1490,79 @@ router.post('/members/:userId', MemberController.createMember);
  *         description: Internal server error.
  */
 router.get('/projects',AuthController.AuthenticateMember, MemberController.getAllProjectsForMember);
+
+
+/**
+ * @swagger
+ * /members/{id}:
+ *   put:
+ *     summary: Update a member
+ *     description: Update member details by ID
+ *     tags: [Member]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Member ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               companyName:
+ *                 type: string
+ *               legalName:
+ *                 type: string
+ *               website:
+ *                 type: string
+ *               contactEmail:
+ *                 type: string
+ *               desc:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               country:
+ *                 type: string
+ *               city:
+ *                 type: string
+ *               companyType:
+ *                 type: string
+ *               taxNbr:
+ *                 type: string
+ *               corporateNbr:
+ *                 type: string
+ *               logo:
+ *                 type: string
+ *               visbility:
+ *                 type: string
+ *                 enum: ['public', 'private']
+ *               rc_ice:
+ *                 type: string
+ *               credits:
+ *                 type: number
+ *               subStatus:
+ *                 type: string
+ *                 enum: ['notActive', 'active']
+ *               expireDate:
+ *                 type: string
+ *                 format: date
+ *     responses:
+ *       200:
+ *         description: Member updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Member'
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Member not found
+ */
+router.put('/members/:id', MemberController.updateMember);
 
 module.exports = router;
 

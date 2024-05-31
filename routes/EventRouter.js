@@ -306,6 +306,50 @@ router.post('/createEvent',AuthController.AuthenticateUser,upload.fields([{ name
 
 /**
  * @swagger
+ * /events/{eventId}/promo-codes:
+ *   post:
+ *     summary: Ajouter un nouveau code promotionnel à un événement
+ *     tags: [Events]
+ *     parameters:
+ *       - in: path
+ *         name: eventId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de l'événement auquel ajouter le code promotionnel
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               code:
+ *                 type: string
+ *                 required: true
+ *               discountPercentage:
+ *                 type: number
+ *                 required: true
+ *               minOrderAmount:
+ *                 type: number
+ *                 default: 0
+ *               valid:
+ *                 type: boolean
+ *                 default: true
+ *               validUntil:
+ *                 type: string
+ *                 format: date-time
+ *                 required: true
+ *     responses:
+ *       '200':
+ *         description: Code promotionnel ajouté avec succès à l'événement
+ *       '400':
+ *         description: Erreur lors de l'ajout du code promotionnel
+ */
+router.post('/:eventId/promo-codes', EventController.addPromoCode);
+
+/**
+ * @swagger
  * /events:
  *   get:
  *     summary: Get all events

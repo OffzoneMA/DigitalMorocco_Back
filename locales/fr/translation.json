@@ -4,7 +4,7 @@
   "welcome_message": "Bienvenue sur la Plateforme du Networking Digital Morocco !",
   "excited_message": "Nous sommes ravis de vous accueillir à bord.",
   "verification_instruction": "Pour finaliser la vérification de votre compte, veuillez cliquer sur le bouton ci-dessous :",
-  "alternative_link_instruction": "Dans le cas où le bouton ne fonctionne pas, vous pouvez également copier-coller le ",
+  "alternative_link_instruction": "Dans le cas où le bouton ne fonctionne pas, vous pouvez également copier-coller le lien suivant dans votre navigateur :",
   "alternative_link_instruction1": "lien suivant dans votre navigateur :",
   "link_placeholder": "[lien]",
   "expiry_warning": "Veuillez noter que le lien de vérification expirera après 1 heure. Assurez-vous de finaliser le processus de vérification dans ce laps de temps.",
@@ -19,7 +19,7 @@
   "reset_password": {
     "title": "Réinitialisation de mot de passe",
     "header": "Réinitialisez votre mot de passe",
-    "description1": "Nous avons reçu une demande pour réinitialiser votre mot de passe. Ne vous inquiétez pas,",
+    "description1": "Nous avons reçu une demande pour réinitialiser votre mot de passe. Ne vous inquiétez pas, nous sommes là pour vous aider.",
     "description2": "nous sommes là pour vous aider.",
     "button": "RÉINITIALISER MON MOT DE PASSE",
     "note1": "N'avez-vous pas demandé de réinitialisation de mot de passe ?",

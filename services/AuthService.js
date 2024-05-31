@@ -56,7 +56,7 @@ const generateUserInfos = async (user) => {
     const accessToken = await generateAccessToken(user)
     let data
    
-    if (user?.role == "member"){
+    if (user?.role?.toLowerCase() == "member"){
         let member = await MemberService.getMemberByUserId(user._id)
         data = member?._doc ? member?._doc : member
         // if(member?.companyName) {
@@ -64,15 +64,15 @@ const generateUserInfos = async (user) => {
         //     if (project) data = { ...data, "project": project }
         // }
     }
-    if (user?.role == "partner") {
+    if (user?.role?.toLowerCase() == "partner") {
         let partner = await PartnerService.getPartnerByUserId(user._id)
         data = partner?._doc ? partner?._doc : partner
     }
-    if (user?.role == "investor") {
+    if (user?.role?.toLowerCase() == "investor") {
         let investor = await InvestorService.getInvestorByUserId(user._id)
         data = investor?._doc ? investor?._doc : investor
     }
-    const result = user?._doc ? { ...user._doc, [user?.role]: data } : { ...user, [user?.role]: data }
+    const result = user?._doc ? { ...user._doc, [user?.role?.toLowerCase()]: data } : { ...user, [user?.role?.toLowerCase()]: data }
     return { accessToken: accessToken, user: result }
 }
 

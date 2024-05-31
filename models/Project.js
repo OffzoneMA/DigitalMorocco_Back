@@ -16,10 +16,17 @@ const ProjectSchema = new mongoose.Schema({
         default: "USD"
     },
     listMember: [{
-        firstName: { type: String },
-        lastName: { type: String },
-        role: { type: String },
-        image: String
+        employee: {
+            type: mongoose.Schema.Types.ObjectId,
+        },
+        fullName: { type: String },
+        personalEmail: { type: String },
+        workEmail: { type: String },
+        jobTitle: { type: String },
+        status: {
+            type: String,
+        },
+        image: {type : String} ,
     }],
     details: String,
     milestones: [

@@ -5,7 +5,7 @@ const PartnerReq = require("../models/Requests/Partner");
 
 const getAllPartners = async (args) => {
     const page = args.page || 1;
-    const pageSize = args.pageSize || 10;
+    const pageSize = args.pageSize || 15;
     const skip = (page - 1) * pageSize;
 
     const countries = args.countries ? args.countries.split(',') : [];

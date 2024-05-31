@@ -56,9 +56,10 @@ router.route("/").get(AuthController.AuthenticateSubMemberOrAdmin,InvestorContro
  * tags:
  *   name: InvestorRequests
  *   description: Managing API of Investor Requests
- * /api/investor-requests:
+ * /investors/investor-requests:
  *   get:
  *     summary: Récupérer la liste des demandes d'investisseurs
+ *     tags: [Investors]
  *     description: >
  *       Renvoie la liste des demandes d'investisseurs avec les informations suivantes :
  *       user, linkedin_link, dateCreated, status, communicationStatus, Note.
@@ -241,6 +242,7 @@ router.route("/Contacts").get(AuthController.AuthenticateInvestor, InvestorContr
  * /investors/{investorId}/contact-requests:
  *   get:
  *     summary: Get all contact requests for an investor
+ *     tags: [Investors]
  *     parameters:
  *       - in: path
  *         name: investorId

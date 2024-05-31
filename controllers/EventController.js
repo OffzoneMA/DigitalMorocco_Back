@@ -13,6 +13,16 @@ const createEvent=async(req,res)=>{
     }
 }
 
+async function addPromoCode(req, res) {
+  const { eventId } = req.params;
+  try {
+    const event = await EventService.addPromoCode(eventId, req.body);
+    res.status(200).json(event);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
+
 const getEvents=async(req,res)=>{
     try {
         const events = await EventService.getAllEvents(req.query);
@@ -138,5 +148,6 @@ async function deleteConnectedAttendee(req, res) {
 
 module.exports = {
     createEvent, getEvents, getEventById, updateEvent, deleteEvent, getAllEventsByUser, addAttendeeToEvent,
-    sendTicketToUser, supprimerCollection , addConnectedAttendee , updateConnectedAttendee , deleteConnectedAttendee
+    sendTicketToUser, supprimerCollection , addConnectedAttendee , updateConnectedAttendee , deleteConnectedAttendee ,
+    addPromoCode
 };

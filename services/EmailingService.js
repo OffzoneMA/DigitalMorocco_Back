@@ -6,10 +6,36 @@ const User = require('../models/User');
 const ejs = require('ejs');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const Event = require('../models/Event');
+const TokenShortCode = require('../models/TokenShortCode')
 
 // i18n.changeLanguage('fr');
+
+async function saveShortCodeToTokenMapping(shortCode, token) {
+  const shortCodeEntry = new TokenShortCode({ shortCode, token });
+  return await shortCodeEntry.save();
+}
+
+async function getTokenFromShortCode(shortCode) {
+  const shortCodeEntry = await TokenShortCode.findById(shortCode);
+  if (shortCodeEntry) {
+    return shortCodeEntry.token;
+  }
+  return null;
+}
+
+const SHORT_CODE_SECRET = process.env.SHORT_CODE_SECRET || '28103bclqaponul71gjqkjpomllaxwvi';
+
+
+function generateShortCodeFromToken(token, userId) {
+  const data = `${token}-${userId}-${Date.now()}`;
+  return crypto.createHmac('sha256', SHORT_CODE_SECRET)
+               .update(data)
+               .digest('hex')
+               .slice(0, 20); 
+}
 
 async function sendEmail(userEmail, subject, emailContent, isHTML) {
   const transporter = nodemailer.createTransport({
@@ -66,13 +92,20 @@ async function sendVerificationEmail(userId) {
       await i18n.changeLanguage(userLanguage);
     }
     const title = i18n.t('verify_title');
-    const verificationLink = `${process.env.BACKEND_URL}/users/confirm_verification/${userId}?token=${generateVerificationToken(userId)}`;
+
+    const token = generateVerificationToken(userId);
+
+    const shortCode = generateShortCodeFromToken(token , userId);
+
+    const saved = await saveShortCodeToTokenMapping(shortCode, token);
+
+    const verificationLink = `${process.env.BACKEND_URL}/verify/${saved?._id}`;
 
     const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate1.ejs');
-    const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
+    // const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
 
     const accountVerificationPath = path.join(__dirname, '..', 'templates', 'accountVerification1.ejs');
-    const accountVerificationContent = fs.readFileSync(accountVerificationPath, 'utf-8');
+    // const accountVerificationContent = fs.readFileSync(accountVerificationPath, 'utf-8');
 
     // Attendre la résolution des promesses renderFile
     const compiledTemplate2 = await ejs.renderFile(accountVerificationPath, {t: i18n.t.bind(i18n), verificationLink });
@@ -154,25 +187,12 @@ async function sendForgotPasswordEmail(userId) {
       }
       const title = i18n.t('reset_password.title');
 
-      const resetPasswordLink = `${process.env.FRONTEND_URL}/ResetPassword?token=${generateVerificationToken(userId)}`;
-      
-      // const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
-      // const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
+      const token = generateForgotPassworToken(userId);
 
+      const resetPasswordLink = `${process.env.FRONTEND_URL}/ResetPassword?token=${token}`;
+      
       const resetPasswordPath = path.join(__dirname, '..', 'templates', 'resetPassword1.ejs');
       const resetPasswordContent = await ejs.renderFile(resetPasswordPath, {t: i18n.t.bind(i18n),title , resetPasswordLink });
-
-      // const compiledTemplate = ejs.compile(commonTemplateContent);
-      // const compiledTemplate2 = ejs.compile(accountVerificationContent);
-
-      // const htmlContent2 = compiledTemplate2({
-      //   resetPasswordLink,
-      // });
-
-      // const htmlContent = compiledTemplate({
-      //   title,
-      //   body: htmlContent2,
-      // });
 
       const messageId = await sendEmail(user.email, title, resetPasswordContent, true);
       return messageId;
@@ -258,11 +278,28 @@ async function sendRejectedEmail(userId) {
     }
   }
 
-async function VerifyUser(userId, token) {
+// async function VerifyUser(userId, token) {
+//   try {
+//     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+//     if (userId == decoded.userId && !isTokenExpired(decoded)) {
+//       return await User.findByIdAndUpdate(userId, { status: 'verified' });
+//     }
+//   } catch (err) {
+//     throw err;
+//   }
+// }
+
+async function VerifyUser(shortCode) {
   try {
+    const token = await getTokenFromShortCode(shortCode);
+    if (!token) {
+      throw new Error('Invalid code');
+    }
+
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    if (userId == decoded.userId && !isTokenExpired(decoded)) {
-      return await User.findByIdAndUpdate(userId, { status: 'verified' });
+    if (decoded?.userId && !isTokenExpired(decoded)) {
+      return await User.findByIdAndUpdate(decoded.userId, { status: 'verified' });
+      // return await User.findById(userId);
     }
   } catch (err) {
     throw err;
@@ -276,7 +313,7 @@ async function verifyResetToken(token) {
         return await User.findById(decoded.userId);
       }
   } catch (error) {
-      throw new Error('Invalid token');
+      throw new Error({error : 'Invalid Token'});
   }
 }
 
@@ -468,6 +505,14 @@ function generateVerificationToken(userId) {
   return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET);
 }
 
+function generateForgotPassworToken(userId) {
+  const expiresIn = '30min';
+  const payload = {
+    userId: userId
+  };
+  return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET , {expiresIn: expiresIn});
+}
+
 function isTokenExpired(decoded) {
   try {
     if (Date.now() >= decoded.exp * 1000) {
@@ -479,8 +524,9 @@ function isTokenExpired(decoded) {
   }
 }
 
-module.exports = { sendEmail, generateVerificationToken, isTokenExpired, 
+module.exports = { sendEmail, generateVerificationToken, isTokenExpired, generateForgotPassworToken, 
   sendNewContactRequestEmail, sendContactAcceptToMember,sendContactRejectToMember,
   sendVerificationEmail, sendVerificationOtpEmail, VerifyUser, sendRejectedEmail,sendAcceptedEmail,
-  sendUnderReviewEmail,sendForgotPasswordEmail,verifyResetToken , sendTicketToUser , sendContactEmail}
+  sendUnderReviewEmail,sendForgotPasswordEmail,verifyResetToken , sendTicketToUser , sendContactEmail ,
+getTokenFromShortCode , generateShortCodeFromToken , saveShortCodeToTokenMapping}
 

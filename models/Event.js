@@ -1,5 +1,34 @@
 const mongoose = require("mongoose");
-
+const EventPromoCodeSchema = new mongoose.Schema({
+    code: {
+      type: String,
+      required: true,
+      unique: true
+    },
+    discountPercentage: {
+      type: Number,
+      required: true
+    },
+    minOrderAmount: {
+      type: Number,
+      default: 0
+    },
+    valid: {
+      type: Boolean,
+      default: true
+    },
+    validUntil: {
+        type: Date,
+        required: true
+    }
+    // events: [
+    //   {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'Event'
+    //   }
+    // ]
+  });  
+  
 const eventSchema = new mongoose.Schema({
     title: {
         type: String,
@@ -14,6 +43,7 @@ const eventSchema = new mongoose.Schema({
         required: true
     },
     promoCode: String,
+    promoCodes: [EventPromoCodeSchema],
     startDate: {
         type: Date,
     },

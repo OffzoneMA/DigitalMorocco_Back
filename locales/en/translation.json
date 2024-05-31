@@ -4,7 +4,7 @@
     "welcome_message": "Welcome to the Digital Morocco Networking Platform!",
     "excited_message": "We're excited to welcome you aboard.",
     "verification_instruction": "To complete your account verification, kindly click the button below.",
-    "alternative_link_instruction": "In case the button isn't functional, you can also copy and paste the ",
+    "alternative_link_instruction": "In case the button isn't functional, you can also copy and paste the following link into your browser:",
     "alternative_link_instruction1": "following link into your browser:",
     "link_placeholder": "[link]",
     "expiry_warning": "Please be aware that the verification link will expire after 1 hour. Ensure to complete the verification process within that timeframe.",
@@ -19,7 +19,7 @@
     "reset_password":{
       "title": "Reset Password",
       "header": "Reset Your Password",
-      "description1": "We've received a request to reset your password. Don't worry,",
+      "description1": "We've received a request to reset your password. Don't worry, we are here to help you.",
       "description2": "we are here to help you.",
       "button": "RESET MY PASSWORD",
       "note1": "Didn’t request a password reset?",

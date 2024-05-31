@@ -23,7 +23,7 @@ function generateEmployeeId() {
 const getAllMembers = async (args) => {
     try {
         const page = args.page || 1;
-        const pageSize = args.pageSize || 10;
+        const pageSize = args.pageSize || 15;
         const skip = (page - 1) * pageSize;
 
         const query = {
@@ -56,9 +56,23 @@ const getAllMembers = async (args) => {
         throw new Error('Something went wrong');
     }
 };
+
 async function getTestAllMembers() {
     return await Member.find();
 }
+
+async function updateMember(memberId, updateData) {
+    try {
+        const updatedMember = await Member.findByIdAndUpdate(memberId, updateData, { new: true });
+        if (!updatedMember) {
+            throw new Error('Member not found');
+        }
+        return updatedMember;
+    } catch (error) {
+        throw error;
+    }
+}
+
 const getAllEmployees = async (args) => {
     try {
         const page = args.page || 1;
@@ -351,14 +365,31 @@ async function updateEmployee(memberId, employeeId, updatedEmployeeData, photo) 
             throw new Error('Member not found');
         }
         
-        const employeeIndex = member.listEmployee.findIndex(emp => emp._id === employeeId);
+        const employeeIndex = member.listEmployee.findIndex(emp => emp._id == employeeId);
+
         if (employeeIndex === -1) {
             throw new Error('Employee not found');
         }
         
-        member.listEmployee[employeeIndex] = { ...member.listEmployee[employeeIndex], ...updatedEmployeeData };
+        const filteredEmployeeData = Object.keys(updatedEmployeeData)
+        .filter(key => updatedEmployeeData[key] !== '' && updatedEmployeeData[key] !== null && updatedEmployeeData[key] !== undefined)
+        .reduce((obj, key) => {
+            obj[key] = updatedEmployeeData[key];
+            return obj;
+        }, {});    
 
-        if (photo) {
+        // filteredEmployeeData.image = member.listEmployee[employeeIndex].image;
+
+        const isEmptyObject = Object.keys(filteredEmployeeData).length === 0;
+
+        if (!isEmptyObject) {
+            member.listEmployee[employeeIndex] = { ...member.listEmployee[employeeIndex], ...filteredEmployeeData };
+        }
+
+        
+        // member.listEmployee[employeeIndex] = { ...member.listEmployee[employeeIndex], ...filteredEmployeeData };
+
+        if (photo && photo !== '') {
             const photoURL = await uploadService.uploadFile(photo, 'Members/' + member.owner + "/employees/" +generateEmployeeId(), photo.originalname);
             member.listEmployee[employeeIndex].image = photoURL;
         }
@@ -369,6 +400,7 @@ async function updateEmployee(memberId, employeeId, updatedEmployeeData, photo) 
         throw new Error('Error updating employee: ' + error.message);
     }
 }
+
 
 async function deleteEmployee(memberId, employeeId) {
     try {
@@ -697,7 +729,7 @@ const deleteMember = async (userId) => {
         await SubscriptionLogs.deleteMany({ member: member._id })
 
         //Project
-        await ProjectSchema.deleteMany({ owner: member._id })
+        await Project.deleteMany({ owner: member._id })
 
         await Member.findByIdAndDelete(member._id)
     }
@@ -1114,4 +1146,4 @@ const checkMemberStatus = async (memberId) => {
     createCompany , createEmployee, createLegalDocument , getTestAllMembers , createTestProject , 
     getInvestorsForMember ,cancelSubscriptionForMember,renewSubscription, upgradePlan ,
     updateEmployee , deleteEmployee, updateLegalDocument, getAllProjectsForMember ,
-    updateProject} 
+    updateProject , updateMember} 

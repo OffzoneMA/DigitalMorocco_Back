@@ -31,19 +31,21 @@ const MemberSchema = new mongoose.Schema({
         status: {
             type: String,
             enum: ['active', 'offline'],
-            default: 'offline'
+            default: 'active'
         },
         address: { type: String },
         country: { type: String },
         cityState: { type: String },
         phoneNumber: { type: String },
         startDate: { type: Date },
+        image: {type : String} ,
         personalTaxIdentifierNumber: { type: String },
         photo: { type: Buffer },
         department: { type: String },
     }],
     legalDocument: [{
         name: {type:String},
+        link: {type:String},
         description: String,
         cityState: {type: String},
         date: { type: Date, default: Date.now },

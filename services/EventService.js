@@ -142,6 +142,12 @@ async function createEvent(userId ,eventData , imageData ,headerImage , organize
     }
 }
 
+async function addPromoCode(eventId, promoCodeData) {
+  const event = await Event.findById(eventId);
+  event.promoCodes.push(promoCodeData);
+  return await event.save();
+}
+
 // Get event by ID
 async function getEventById(eventId) {
     try {
@@ -230,5 +236,5 @@ async function supprimerCollection() {
 
 module.exports = {
     createEvent, getAllEvents, getEventById, updateEvent, deleteEvent, getAllEventsByUser, addAttendeeToEvent,
-    supprimerCollection , addConnectedAttendee , updateConnectedAttendee , deleteConnectedAttendee
+    supprimerCollection , addConnectedAttendee , updateConnectedAttendee , deleteConnectedAttendee , addPromoCode
 };

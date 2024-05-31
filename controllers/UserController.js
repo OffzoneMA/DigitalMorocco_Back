@@ -116,9 +116,19 @@ const resetPassword = async (req , res) => {
 
 const confirmVerification = async (req, res) => {
   try {
-    const result = await EmailingService.VerifyUser(req.params.userid,req.query.token);
-    const log = await UserLogService.createUserLog('Verified', req.params.userid);
+    const result = await EmailingService.VerifyUser(req.params.token);
+    const log = await UserLogService.createUserLog('Verified', result?._id);
     res.redirect(`${process.env.FRONTEND_URL}/ChooseRole`);
+    // res.status(200).json(result)
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
+
+const verifyPasswordToken = async (req, res) => {
+  try {
+    const result = await EmailingService.verifyResetToken(req.query.token);
+    res.status(200).json(result);
   } catch (error) {
     res.status(500).json(error);
   }
@@ -217,4 +227,4 @@ const sendContactEmail = async (req, res) => {
 
 module.exports = { updateUser,addUser, approveUser, rejectUser, deleteUser, getUsers, 
   complete_signup, sendVerification, confirmVerification , sendForgotPassword , 
-  resetPassword , getUserByEmail , deleteOneUser , updateFullName , sendContactEmail}
+  resetPassword , getUserByEmail , deleteOneUser , updateFullName , sendContactEmail , verifyPasswordToken}

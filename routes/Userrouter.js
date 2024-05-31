@@ -407,18 +407,11 @@ router.route("/reset-password").post(UserController.resetPassword);
 
 /**
  * @swagger
- * /users/confirm_verification/{userid}:
+ * /users/verifyPasswordToken:
  *   get:
  *     summary: Confirm email verification
  *     description: Confirm email verification for a user by their ID
  *     tags: [Users]
- *     parameters:
- *       - name: userid
- *         in: path
- *         description: ID of the user to confirm email verification
- *         required: true
- *         schema:
- *           type: string
  *     responses:
  *       200:
  *         description: Email verification confirmed successfully
@@ -427,8 +420,7 @@ router.route("/reset-password").post(UserController.resetPassword);
  *       500:
  *         description: Internal server error
  */
-router.route("/confirm_verification/:userid").get(UserController.confirmVerification);
-
+router.route("/verifyPasswordToken").get(UserController.verifyPasswordToken);
 
 router.route("/UserInfo").get(AuthController.userInfo)
 
@@ -472,8 +464,6 @@ router.route("/UserInfo").get(AuthController.userInfo)
  *         description: Internal server error
  */
 router.route("/Login").post(AuthController.login);
-
-
 
 /**
  * @swagger

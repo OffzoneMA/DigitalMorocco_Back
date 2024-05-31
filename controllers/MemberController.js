@@ -31,6 +31,17 @@ const addCompanyToMember = async (req, res) => {
       }
   };
 
+  async function updateMember(req, res) {
+    try {
+        const memberId = req.params.id;
+        const updateData = req.body;
+        const updatedMember = await MemberService.updateMember(memberId, updateData);
+        res.status(200).json(updatedMember);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
 const addLegalDocumentToMember = async (req, res) => {
     const memberId = req.params.userId;
     const documentData= req.body; 
@@ -197,10 +208,10 @@ const createCompany = async (req, res)=> {
 
 const createEmployee = async (req, res)=> {
     try {
-        const memberId = req.memberId;
+        const memberId = req.memberId || req.params.memberId;
         const employeeData = req.body;
-        const photoFile = req.file;
-        const result = await MemberService.createEmployee(memberId, employeeData ,photoFile);
+        const photo = req.file;
+        const result = await MemberService.createEmployee(memberId, employeeData ,photo);
         res.json(result);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -209,10 +220,11 @@ const createEmployee = async (req, res)=> {
 
 async function updateEmployee(req, res) {
     try {
-        const memberId = req.memberId;
+        const memberId = req.memberId || req.params.memberId;
         const employeeId = req.params.employeeId;
         const updatedEmployeeData = req.body;
         const photo = req.file;
+
         const updatedEmployee = await MemberService.updateEmployee(memberId, employeeId, updatedEmployeeData, photo);
         res.status(200).json(updatedEmployee);
     } catch (error) {
@@ -294,11 +306,12 @@ const createProject= async (req, res) => {
 
             // console.log("files",files)
 
-            const result = await MemberService.createProject(req.memberId, data, pitchDeck[0], businessPlan[0] , financialProjection[0], files);
+            const result = await MemberService.createProject(req.memberId, data, pitchDeck?.[0], businessPlan?.[0] , financialProjection?.[0], files);
             const member = await MemberService.getMemberById(req.memberId);
             const log = await UserLogService.createUserLog('Project Creation', member.owner);
             res.status(200).json(result);
         } catch (error) {
+            console.log(error)
             res.status(500).json({ message: error.message });
         }
 }
@@ -317,7 +330,7 @@ const updateProject= async (req, res) => {
         const log = await UserLogService.createUserLog('Project Edition', member.owner);
         res.status(200).json(result);
     } catch (error) {
-        console.log(error.message)
+        console.log(error)
         res.status(500).json({ message: error.message });
     }
 }
@@ -446,4 +459,4 @@ async function getContactRequestsForMember(req, res) {
 module.exports = { checkSubscriptionStatus,editLegalDocument, getLegalDocuments, addLegalDocumentToMember, addCompanyToMember,updateEmployeeFromMember,deleteEmployeeFromMember,addEmployeeToMember,getEmployees,getContacts,getMembers, createEnterprise, getByName, subUser, createProject, 
     contactRequest, getContactRequests , createCompany , createEmployee , createLegalDocument ,createMember ,
 getTestAllMembers , getInvestorsForMember , getContactRequestsForMember ,updateEmployee ,
-deleteEmployee ,updateLegalDocument, deleteLegalDocument , getAllProjectsForMember , updateProject}
+deleteEmployee ,updateLegalDocument, deleteLegalDocument , getAllProjectsForMember , updateProject , updateMember}
