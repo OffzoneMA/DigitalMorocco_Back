@@ -133,8 +133,6 @@ const AuthenticateMember = async (req, res, next) => {
 
   })
 }
-
-
 const AuthenticateInvestor = async (req, res, next) => {
   const authHeader = req.headers['authorization']
   const token = authHeader && authHeader.split(' ')[1]
@@ -197,31 +195,26 @@ const AuthenticatePartner = async (req, res, next) => {
 
 
 const AuthenticateSubMemberOrAdmin = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
- 
-  const token = authHeader && authHeader.split(' ')[1] 
+  const authHeader = req.headers['authorization']
+  const token = authHeader && authHeader.split(' ')[1]
   if (token == null) return res.sendStatus(401)
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
-    if (err) {
-      return res.sendStatus(403)
-    }
-    
+    if (err) { return res.sendStatus(403) }
     if (user?.user?.role == "Admin") {
-      return next(); // Appeler next() une seule fois si l'utilisateur est un admin
+      next()
     }
     const userMember = await UserService.getUserByID(user?.user?._id)
-   //console.log(userMember)
     const member = await MemberService.getMemberByUserId(userMember?._id)
-    //console.log(member)
-    if (member?.subStatus == "active") {
-      console.log("OK")
-      return next(); // Appeler next() une seule fois si le statut du membre est actif
-    } else {
+
+    if (member?.subStatus =="active") {
+      next()
+    }
+    else {
       return res.sendStatus(403)
     }
+
   })
 }
-
 
 module.exports = { 
   AuthenticateUserOrAdmin, AllUsers,

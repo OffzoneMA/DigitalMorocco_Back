@@ -550,6 +550,7 @@ router.route("/ApproveUser/:userId").put(AuthController.AuthenticateAdmin, UserC
  *         description: Internal server error
  */
 router.route("/RejectUser/:userId").put(AuthController.AuthenticateAdmin, UserController.rejectUser);
+
 /**
  * @swagger
  * /users/update:
@@ -661,7 +662,6 @@ router.put('/update',AuthController.AuthenticateUser, UserController.updateUser)
  */
 router.get('/:email', UserController.getUserByEmail);
 
-
 /**
  * @swagger
  * /users/{userId}:
@@ -717,7 +717,6 @@ router.delete('/:userId', UserController.deleteOneUser )
  *         description: Server error
  */
 router.put('/updateFullName/:userId', UserController.updateFullName);
-
 
 /**
  * @swagger
