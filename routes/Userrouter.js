@@ -641,6 +641,87 @@ router.put('/update',AuthController.AuthenticateUser, UserController.updateUser)
 
 /**
  * @swagger
+ * /users/{userId}/updateProfile:
+ *   put:
+ *     summary: Update the user's profile
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 example: John
+ *               lastName:
+ *                 type: string
+ *                 example: Doe
+ *               email:
+ *                 type: string
+ *                 example: johndoe@example.com
+ *               phoneNumber:
+ *                 type: string
+ *                 example: "1234567890"
+ *               website:
+ *                 type: string
+ *                 example: "https://example.com"
+ *               address:
+ *                 type: string
+ *                 example: "123 Main St"
+ *               facebook:
+ *                 type: string
+ *                 example: "facebook.com/johndoe"
+ *               instagram:
+ *                 type: string
+ *                 example: "instagram.com/johndoe"
+ *               twitter:
+ *                 type: string
+ *                 example: "twitter.com/johndoe"
+ *               linkedin:
+ *                 type: string
+ *                 example: "linkedin.com/in/johndoe"
+ *               language:
+ *                 type: string
+ *                 example: "English"
+ *               region:
+ *                 type: string
+ *                 example: "North America"
+ *               country:
+ *                 type: string
+ *                 example: "USA"
+ *               cityState:
+ *                 type: string
+ *                 example: "New York"
+ *               image:
+ *                 type: string
+ *                 format: base64
+ *                 example: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABVYAAAL..."
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Profile updated successfully
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.put('/:userId/updateProfile', AuthController.AuthenticateUser, UserController.updateUserProfile);
+
+/**
+ * @swagger
  * /users/{email}:
  *   get:
  *     summary: Recherche un utilisateur par son adresse e-mail.

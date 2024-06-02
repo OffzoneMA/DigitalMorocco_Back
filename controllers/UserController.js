@@ -25,6 +25,26 @@ const updateUser = async (req, res) => {
   }
 }
 
+const updateUserProfile = async (req, res) => {
+  try {
+    const userId = req.userId || req.params.userId;
+    const updatedFields = req.body;
+
+    const user = await User.findByIdAndUpdate(userId, updatedFields, { new: true, runValidators: true });
+
+    console.log(user)
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ message: 'Profile updated successfully', user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
 const addUser = async (req, res) => {
   try { 
     const result = await AuthService.createUser(req.body);
@@ -225,6 +245,6 @@ const sendContactEmail = async (req, res) => {
   }
 };
 
-module.exports = { updateUser,addUser, approveUser, rejectUser, deleteUser, getUsers, 
+module.exports = { updateUserProfile, updateUser,addUser, approveUser, rejectUser, deleteUser, getUsers, 
   complete_signup, sendVerification, confirmVerification , sendForgotPassword , 
   resetPassword , getUserByEmail , deleteOneUser , updateFullName , sendContactEmail , verifyPasswordToken}
