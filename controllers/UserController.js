@@ -6,6 +6,7 @@ const UserLogService = require("../services/UserLogService");
 const User = require('../models/User');
 const mongoose = require('mongoose');
 const { ObjectId } = require('mongodb');
+const bcrypt = require('bcrypt');
 
 const getUsers = async (req, res) => {
   try {
@@ -134,6 +135,38 @@ const resetPassword = async (req , res) => {
   }
 }
 
+const changePassword = async (req,res) => {
+  try {
+    const { userId } = req.params;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ success: false, message: 'Current and new password are required' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const isMatch = bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+        return res.status(400).json({ success: false, message: 'Current password is incorrect' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Password changed successfully' });
+} catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error' });
+}
+}
+
 const confirmVerification = async (req, res) => {
   try {
     const result = await EmailingService.VerifyUser(req.params.token);
@@ -245,6 +278,6 @@ const sendContactEmail = async (req, res) => {
   }
 };
 
-module.exports = { updateUserProfile, updateUser,addUser, approveUser, rejectUser, deleteUser, getUsers, 
+module.exports = { changePassword,updateUserProfile, updateUser,addUser, approveUser, rejectUser, deleteUser, getUsers, 
   complete_signup, sendVerification, confirmVerification , sendForgotPassword , 
   resetPassword , getUserByEmail , deleteOneUser , updateFullName , sendContactEmail , verifyPasswordToken}
