@@ -35,18 +35,28 @@ const getAllMembers = async (args) => {
             query.country = { $in: args.countries.split(',') };
         }
 
+        // if (args.sectors && args.sectors.length > 0) {
+        //     const sectorsArray = args.sectors.split(',').map(sector => sector.trim());
+        //     const regexArray = sectorsArray.map(sector => ({
+        //         companyType: new RegExp(`\\b${sector}\\b`, 'i')
+        //     }));
+        //     query.$or = regexArray;
+        // }
+
         if (args.sectors && args.sectors.length > 0) {
-            query.companyType = { $in: args.sectors.split(',') };
-        }
+            const sectorsArray = args.sectors.split(',').map(sector => sector.trim());
+            query.companyType = { $regex: sectorsArray.join('|'), $options: 'i' };
+        }        
+        
 
         if (args.stages && args.stages.length > 0) {
             query.stage = { $in: args.stages.split(',') };
         }
-
+        console.log(query);
         const totalCount = await Member.countDocuments(query);
         const totalPages = Math.ceil(totalCount / pageSize);
         const members = await Member.find(query)
-            .select('_id companyName website logo desc companyType')
+            .select('_id companyName website logo desc companyType country')
             .skip(skip)
             .limit(pageSize);
 

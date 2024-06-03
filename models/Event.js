@@ -21,12 +21,6 @@ const EventPromoCodeSchema = new mongoose.Schema({
         type: Date,
         required: true
     }
-    // events: [
-    //   {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'Event'
-    //   }
-    // ]
   });  
   
 const eventSchema = new mongoose.Schema({

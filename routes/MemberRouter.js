@@ -31,6 +31,9 @@ const upload = require("../middelware/multer")
  *         website: 
  *           type: string
  *           description: the website of the startup
+ *         country: 
+ *           type: string
+ *           description: the website of the startup
  *         
  *       example:
  *         id: 64e0b85a9c819e682229ca82

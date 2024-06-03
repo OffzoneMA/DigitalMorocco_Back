@@ -22,6 +22,7 @@ const MemberSchema = new mongoose.Schema({
     taxNbr: String,
     corporateNbr: String,
     logo: String,
+    stage: { type: String },
     listEmployee: [{
         fullName: { type: String },
         email: { type: String },
