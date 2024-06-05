@@ -32,7 +32,7 @@ const updateUserProfile = async (req, res) => {
     const updatedFields = req.body;
 
     const user = await User.findByIdAndUpdate(userId, updatedFields, { new: true, runValidators: true });
-
+    const log = await UserLogService.createUserLog('Profile Info Update', userId);
     console.log(user)
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -44,6 +44,23 @@ const updateUserProfile = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+const updateUserLanguageRegion = async (req, res) => {
+  const { userId } = req.params;
+  const updates = req.body;
+
+  try {
+    const user = await UserService.updateUserLanguageRegionService(userId, updates);
+    const log = await UserLogService.createUserLog('Account Language And Region Update', userId);
+    res.send({ success: true, message: 'Language and region updated successfully', user });
+  } catch (error) {
+    if (error.message === 'User not found') {
+      res.status(404).send({ success: false, message: error.message });
+    } else {
+      res.status(500).send({ success: false, message: 'An error occurred', error });
+    }
+  }
+}
 
 
 const addUser = async (req, res) => {
@@ -233,12 +250,30 @@ const deleteUser = async (req, res) => {
 }
 
 const deleteOneUser = async (req, res) => {
+  const { email, password } = req.body;
+
   try {
-    const result = await UserService.deleteUser(req?.params?.userId);
-    res.status(204).json(result);
-  } catch (error) {
-    console.log(error)
-    res.status(500).json(error);
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const isMatch = bcrypt.compare(user.password, password);
+
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Incorrect password' });
+    }
+
+    // await User.deleteOne({ _id: user._id });
+    user.isDeleted = true;
+    user.deletionDate = new Date();
+    await user.save();
+
+    res.status(200).json({ message: 'Account marked for deletion. You have 14 days to restore it.' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ message: 'Server error' });
   }
 }
 
@@ -278,6 +313,6 @@ const sendContactEmail = async (req, res) => {
   }
 };
 
-module.exports = { changePassword,updateUserProfile, updateUser,addUser, approveUser, rejectUser, deleteUser, getUsers, 
+module.exports = { updateUserLanguageRegion,changePassword,updateUserProfile, updateUser,addUser, approveUser, rejectUser, deleteUser, getUsers, 
   complete_signup, sendVerification, confirmVerification , sendForgotPassword , 
   resetPassword , getUserByEmail , deleteOneUser , updateFullName , sendContactEmail , verifyPasswordToken}

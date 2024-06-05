@@ -722,6 +722,40 @@ router.put('/:userId/updateProfile', AuthController.AuthenticateUser, UserContro
 
 /**
  * @swagger
+ * /users/{userId}/languageRegion:
+ *   put:
+ *     summary: Update user language and region
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The user ID
+ *       - in: body
+ *         name: body
+ *         description: The language and region to update
+ *         required: true
+ *         schema:
+ *           type: object
+ *           properties:
+ *             language:
+ *               type: string
+ *             region:
+ *               type: string
+ *     responses:
+ *       200:
+ *         description: The language and region were successfully updated
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: An error occurred
+ */
+router.put('/:userId/languageRegion',AuthController.AuthenticateUser, UserController.updateUserLanguageRegion)
+
+/**
+ * @swagger
  * /users/{email}:
  *   get:
  *     summary: Recherche un utilisateur par son adresse e-mail.

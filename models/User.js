@@ -35,7 +35,13 @@ const UserSchema = new mongoose.Schema({
         default: 'notVerified'
     },
     language: String,
-
+    isDeleted: {
+        type: Boolean,
+        default: false,
+    },
+    deletionDate: {
+    type: Date,
+    },
 })
 
 
