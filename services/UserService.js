@@ -32,6 +32,25 @@ const updateUser = async (userId,user) => {
     return await User.findByIdAndUpdate(userId, user)
 }
 
+const updateUserLanguageRegionService = async(userId, updates) => {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+  
+    if (updates.language) {
+        user.language = updates.language;
+    }
+    
+    if (updates.region) {
+        user.region = updates.region;
+    }
+  
+    await user.save();
+  
+    return user;
+}
+
 
 const getUserByID = async (id) => {
     return await User.findById(id);
@@ -127,4 +146,4 @@ const resetPassword = async (token, newPassword, confirmPassword) => {
 };
   
 module.exports = { getUserByID, deleteUser, approveUserService, rejectUser, getUsers, checkUserVerification, 
-    updateUser , resetPassword , getUserByEmail , updateFullName}
+    updateUser , resetPassword , getUserByEmail , updateFullName,updateUserLanguageRegionService}

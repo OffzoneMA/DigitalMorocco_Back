@@ -20,6 +20,21 @@ const signInUser = async (u) => {
         else { throw new Error("This email is registered through another provider."); }
      }
     if (user) {
+
+        if (user.isDeleted) {
+            const deletionDate = new Date(user.deletionDate);
+            const currentDate = new Date();
+            const daysDifference = Math.ceil((currentDate - deletionDate) / (1000 * 60 * 60 * 24));
+      
+            if (daysDifference <= 14) {
+              user.isDeleted = false;
+              user.deletionDate = null;
+              await user.save();
+            } else {
+              throw new Error("Account permanently deleted.");
+            }
+          }
+
         const cmp = await bcrypt.compare(u.password, user.password);
         if (cmp) {
           const result= await generateUserInfos(user)

@@ -6,6 +6,7 @@ const UserLogService = require("../services/UserLogService");
 const User = require('../models/User');
 const mongoose = require('mongoose');
 const { ObjectId } = require('mongodb');
+const bcrypt = require('bcrypt');
 
 const getUsers = async (req, res) => {
   try {
@@ -24,6 +25,43 @@ const updateUser = async (req, res) => {
     res.status(500).json({ message: error.message }); 
   }
 }
+
+const updateUserProfile = async (req, res) => {
+  try {
+    const userId = req.userId || req.params.userId;
+    const updatedFields = req.body;
+
+    const user = await User.findByIdAndUpdate(userId, updatedFields, { new: true, runValidators: true });
+    const log = await UserLogService.createUserLog('Profile Info Update', userId);
+    console.log(user)
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ message: 'Profile updated successfully', user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const updateUserLanguageRegion = async (req, res) => {
+  const { userId } = req.params;
+  const updates = req.body;
+
+  try {
+    const user = await UserService.updateUserLanguageRegionService(userId, updates);
+    const log = await UserLogService.createUserLog('Account Language And Region Update', userId);
+    res.send({ success: true, message: 'Language and region updated successfully', user });
+  } catch (error) {
+    if (error.message === 'User not found') {
+      res.status(404).send({ success: false, message: error.message });
+    } else {
+      res.status(500).send({ success: false, message: 'An error occurred', error });
+    }
+  }
+}
+
 
 const addUser = async (req, res) => {
   try { 
@@ -114,6 +152,38 @@ const resetPassword = async (req , res) => {
   }
 }
 
+const changePassword = async (req,res) => {
+  try {
+    const { userId } = req.params;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ success: false, message: 'Current and new password are required' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const isMatch = bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+        return res.status(400).json({ success: false, message: 'Current password is incorrect' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Password changed successfully' });
+} catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error' });
+}
+}
+
 const confirmVerification = async (req, res) => {
   try {
     const result = await EmailingService.VerifyUser(req.params.token);
@@ -179,12 +249,30 @@ const deleteUser = async (req, res) => {
 }
 
 const deleteOneUser = async (req, res) => {
+  const { email, password } = req.body;
+
   try {
-    const result = await UserService.deleteUser(req?.params?.userId);
-    res.status(204).json(result);
-  } catch (error) {
-    console.log(error)
-    res.status(500).json(error);
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const isMatch = bcrypt.compare(user.password, password);
+
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Incorrect password' });
+    }
+
+    // await User.deleteOne({ _id: user._id });
+    user.isDeleted = true;
+    user.deletionDate = new Date();
+    await user.save();
+
+    res.status(200).json({ message: 'Account marked for deletion. You have 14 days to restore it.' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ message: 'Server error' });
   }
 }
 
@@ -224,6 +312,6 @@ const sendContactEmail = async (req, res) => {
   }
 };
 
-module.exports = { updateUser,addUser, approveUser, rejectUser, deleteUser, getUsers, 
+module.exports = { updateUserLanguageRegion,changePassword,updateUserProfile, updateUser,addUser, approveUser, rejectUser, deleteUser, getUsers, 
   complete_signup, sendVerification, confirmVerification , sendForgotPassword , 
   resetPassword , getUserByEmail , deleteOneUser , updateFullName , sendContactEmail , verifyPasswordToken}

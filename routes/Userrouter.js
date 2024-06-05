@@ -641,6 +641,121 @@ router.put('/update',AuthController.AuthenticateUser, UserController.updateUser)
 
 /**
  * @swagger
+ * /users/{userId}/updateProfile:
+ *   put:
+ *     summary: Update the user's profile
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 example: John
+ *               lastName:
+ *                 type: string
+ *                 example: Doe
+ *               email:
+ *                 type: string
+ *                 example: johndoe@example.com
+ *               phoneNumber:
+ *                 type: string
+ *                 example: "1234567890"
+ *               website:
+ *                 type: string
+ *                 example: "https://example.com"
+ *               address:
+ *                 type: string
+ *                 example: "123 Main St"
+ *               facebook:
+ *                 type: string
+ *                 example: "facebook.com/johndoe"
+ *               instagram:
+ *                 type: string
+ *                 example: "instagram.com/johndoe"
+ *               twitter:
+ *                 type: string
+ *                 example: "twitter.com/johndoe"
+ *               linkedin:
+ *                 type: string
+ *                 example: "linkedin.com/in/johndoe"
+ *               language:
+ *                 type: string
+ *                 example: "English"
+ *               region:
+ *                 type: string
+ *                 example: "North America"
+ *               country:
+ *                 type: string
+ *                 example: "USA"
+ *               cityState:
+ *                 type: string
+ *                 example: "New York"
+ *               image:
+ *                 type: string
+ *                 format: base64
+ *                 example: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABVYAAAL..."
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Profile updated successfully
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.put('/:userId/updateProfile', AuthController.AuthenticateUser, UserController.updateUserProfile);
+
+/**
+ * @swagger
+ * /users/{userId}/languageRegion:
+ *   put:
+ *     summary: Update user language and region
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The user ID
+ *       - in: body
+ *         name: body
+ *         description: The language and region to update
+ *         required: true
+ *         schema:
+ *           type: object
+ *           properties:
+ *             language:
+ *               type: string
+ *             region:
+ *               type: string
+ *     responses:
+ *       200:
+ *         description: The language and region were successfully updated
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: An error occurred
+ */
+router.put('/:userId/languageRegion',AuthController.AuthenticateUser, UserController.updateUserLanguageRegion)
+
+/**
+ * @swagger
  * /users/{email}:
  *   get:
  *     summary: Recherche un utilisateur par son adresse e-mail.
@@ -748,5 +863,55 @@ router.put('/updateFullName/:userId', UserController.updateFullName);
  *         description: Error sending email
  */
 router.post('/send-email', UserController.sendContactEmail);
+
+/**
+ * @swagger
+ * /users/{userId}/changePassword:
+ *   put:
+ *     summary: Change the password of the user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The user id
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: The password was changed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+router.put('/:userId/changePassword',AuthController.AuthenticateUser, UserController.changePassword)
 
 module.exports = router
