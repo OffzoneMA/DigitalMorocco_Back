@@ -63,7 +63,7 @@ const getLegalDocuments = async (req, res) => {
         for (const member of members) {
             const owner = member.owner; 
             const user = await User.findById(owner);    
-            const ownerName = user.displayName;
+            const ownerName = user?.displayName;
             const ownerId =user._id;
             const legalDocumentsWithOwner = member.legalDocument.map(document => ({
                 ...document.toObject(), 
@@ -337,13 +337,16 @@ const updateProject= async (req, res) => {
 
 async function getAllProjectsForMember(req, res) {
     try {
-        const memberId = req.memberId;
-        const projects = await MemberService.getAllProjectsForMember(memberId);
-        res.status(200).json(projects);
+      const memberId = req.memberId;
+      const args = req.query;
+  
+      const projects = await MemberService.getAllProjectsForMember(memberId, args);
+      res.status(200).json(projects);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+      res.status(400).json({ message: error.message });
     }
-}
+  }
+
 const contactRequest = async (req, res) => {
     try {
         const result = await InvestorContactService.CreateInvestorContactReq(req.memberId,req.params.investorId)

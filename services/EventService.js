@@ -215,7 +215,6 @@ async function updateEvent(eventId, eventData, imageData, headerImage, organizer
   }
 }
 
-
 // Delete event by ID
 async function deleteEvent(eventId) {
     try {
@@ -234,7 +233,35 @@ async function supprimerCollection() {
   }
 }
 
+/**
+ * Compter le nombre d'événements auxquels un utilisateur est inscrit.
+ * @param {mongoose.Schema.Types.ObjectId} userId - L'ID de l'utilisateur.
+ * @returns {Promise<number>} Le nombre d'événements auxquels l'utilisateur est inscrit.
+ */
+const countEventsByUserId = async (userId) => {
+  try {
+      // Compter le nombre d'événements où l'utilisateur est dans le tableau 'attendeesUsers'
+      const count = await Event.countDocuments({ 'attendeesUsers.userId': userId });
+      return count;
+  } catch (error) {
+      console.error('Erreur lors du comptage des événements:', error);
+      throw error;
+  }
+};
+
+
+async function getEventsForUser(userId) {
+  try {
+      const events = await Event.find({ 'attendeesUsers.userId': userId });
+      return events;
+  } catch (error) {
+      throw new Error('Failed to fetch events for user' , error);
+  }
+}
+
+
 module.exports = {
     createEvent, getAllEvents, getEventById, updateEvent, deleteEvent, getAllEventsByUser, addAttendeeToEvent,
-    supprimerCollection , addConnectedAttendee , updateConnectedAttendee , deleteConnectedAttendee , addPromoCode
+    supprimerCollection , addConnectedAttendee , updateConnectedAttendee , deleteConnectedAttendee , addPromoCode ,
+    countEventsByUserId , getEventsForUser
 };
