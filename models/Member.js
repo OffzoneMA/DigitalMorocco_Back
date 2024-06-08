@@ -25,13 +25,14 @@ const MemberSchema = new mongoose.Schema({
     stage: { type: String },
     listEmployee: [{
         fullName: { type: String },
-        email: { type: String },
+        workEmail: { type: String },
+        personalEmail: { type: String },
         jobTitle: { type: String },
         level: { type: String },
         status: {
             type: String,
-            enum: ['active', 'offline'],
-            default: 'active'
+            enum: ['Active', 'Offline'],
+            default: 'Offline'
         },
         address: { type: String },
         country: { type: String },
