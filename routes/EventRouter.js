@@ -369,6 +369,25 @@ router.get('/', EventController.getEvents);
 
 /**
  * @swagger
+ * /events/authuser:
+ *   get:
+ *     summary: Get all events for the authenticated user
+ *     tags: [Events]
+ *     description: Retrieves all events in which the authenticated user has participated.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of events successfully retrieved.
+ *       403:
+ *         description: Unauthorized. The user is not authenticated.
+ *       500:
+ *         description: Internal server error. Failed to retrieve events.
+ */
+router.get('/authuser', AuthController.AuthenticateUser, EventController.getEventsForUser);
+
+/**
+ * @swagger
  * /events/{id}:
  *   get:
  *     summary: Get an event by ID
@@ -540,7 +559,6 @@ router.get('/:id', EventController.getEventById);
  *       '500':
  *         description: Erreur interne du serveur.
  */
-
 router.put('/update/:eventId',upload.fields([{ name: 'image', maxCount: 1 },{ name: 'headerImage', maxCount: 1 },{ name: 'organizerLogo', maxCount: 1 }]), EventController.updateEvent);
 
 /**
@@ -649,8 +667,51 @@ router.get('/user/:userId/events', EventController.getAllEventsByUser);
  */
 router.post('/:eventId/add-attendee', EventController.addAttendeeToEvent);
 
+/**
+ * @swagger
+ * /events/{eventId}/attendeesuser:
+ *   post:
+ *     summary: Add an attendee to an event
+ *     tags: [Events]
+ *     parameters:
+ *       - in: path
+ *         name: eventId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the event
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 description: The ID of the user to be added as an attendee
+ *                 example: "60d0fe4f5311236168a109ca"
+ *               role:
+ *                 type: string
+ *                 enum: [investor, member, partner, other]
+ *                 description: The role of the attendee
+ *                 example: "member"
+ *     responses:
+ *       201:
+ *         description: Attendee added successfully
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Error message
+ */
+router.post('/:eventId/attendeesuser', EventController.addConnectedAttendee);
+
 router.delete('/supprimer-collection', EventController.supprimerCollection);
-
-
 
 module.exports = router

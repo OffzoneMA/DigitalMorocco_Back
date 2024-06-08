@@ -60,4 +60,18 @@ async function addMilestone(req, res) {
     }
   }
 
-module.exports = {  getprojects , deleteProject , getProjectById , addMilestone , removeMilestone}
+  async function updateProjectStatus(req, res) {
+    try {
+      const { projectId } = req.params;
+      const { status } = req.body;
+  
+      const updatedProject = await ProjectService.updateProjectStatus(projectId, status);
+      res.status(200).json(updatedProject);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
+
+module.exports = {  getprojects , deleteProject , getProjectById , addMilestone , removeMilestone ,
+  updateProjectStatus
+}

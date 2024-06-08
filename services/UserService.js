@@ -73,11 +73,11 @@ const approveUserService = async (userId,role) => {
         throw new Error('Request not found!');
     }
 
-    role == "member" && await MemberService.CreateMember(id, {rc_ice: request?.rc_ice} )
-    role == "partner" && await PartnerService.CreatePartner({ owner: user?._id, num_rc: request?.num_rc })
-    role == "investor" && await InvestorService.CreateInvestor({ owner: user?._id, linkedin_link: request?.linkedin_link })
-    await requestServive.removeRequestByUserId(id,role)
-    return await User.findByIdAndUpdate(id, { status: 'accepted' })
+    role == "member" && await MemberService.CreateMember(userId, {rc_ice: request?.rc_ice} )
+    role == "partner" && await PartnerService.CreatePartner({ owner: userId, num_rc: request?.num_rc })
+    role == "investor" && await InvestorService.CreateInvestor({ owner: userId, linkedin_link: request?.linkedin_link })
+    await requestServive.removeRequestByUserId(userId,role)
+    return await User.findByIdAndUpdate(userId, { status: 'accepted' })
 }
 
 

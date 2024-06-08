@@ -6,6 +6,7 @@ const MemberService = require('../services/MemberService');
 const PartnerService = require('../services/PartnerService');
 const InvestorService = require('../services/InvestorService');
 const ProjectService = require('../services/ProjectService');
+const EventService = require('../services/EventService');
 
 
 
@@ -70,14 +71,17 @@ const getAllUsers= async()=> {
 const generateUserInfos = async (user) => {
     const accessToken = await generateAccessToken(user)
     let data
+    let projectCount;
+    let eventCount;
    
     if (user?.role?.toLowerCase() == "member"){
         let member = await MemberService.getMemberByUserId(user._id)
-        data = member?._doc ? member?._doc : member
-        // if(member?.companyName) {
-        // let project= await ProjectService.getProjectByMemberId(member._id)  
-        //     if (project) data = { ...data, "project": project }
-        // }
+        projectCount = await ProjectService.countProjectsByMemberId(member?._id);
+        data = {
+            ...member?._doc ? member._doc : member,
+            projectCount
+        };
+
     }
     if (user?.role?.toLowerCase() == "partner") {
         let partner = await PartnerService.getPartnerByUserId(user._id)
@@ -87,7 +91,12 @@ const generateUserInfos = async (user) => {
         let investor = await InvestorService.getInvestorByUserId(user._id)
         data = investor?._doc ? investor?._doc : investor
     }
-    const result = user?._doc ? { ...user._doc, [user?.role?.toLowerCase()]: data } : { ...user, [user?.role?.toLowerCase()]: data }
+
+    eventCount = await EventService.countEventsByUserId(user?._id);
+    const result = user?._doc 
+    ? { ...user._doc, [user?.role?.toLowerCase()]: data, eventCount } 
+    : { ...user, [user?.role?.toLowerCase()]: data, eventCount };    
+    
     return { accessToken: accessToken, user: result }
 }
 

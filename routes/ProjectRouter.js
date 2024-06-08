@@ -114,4 +114,45 @@ router.post('/:projectId/milestones', ProjectController.addMilestone);
  */
 router.delete('/:projectId/milestones/:milestoneId',ProjectController.removeMilestone)
 
+/**
+ * @swagger
+ * /projects/{projectId}/status:
+ *   patch:
+ *     summary: Update the status of a project
+ *     tags: [Projects]
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the project to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: ["In Progress", "Active", "Stand by"]
+ *                 description: The new status of the project
+ *                 example: "Active"
+ *     responses:
+ *       200:
+ *         description: The project status was successfully updated
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Error message
+ */
+router.patch('/:projectId/status', ProjectController.updateProjectStatus);
+
 module.exports = router

@@ -4,7 +4,6 @@ const ProjectSchema = new mongoose.Schema({
     owner: {
         type: mongoose.Types.ObjectId,
         ref: "Member",
-        //unique: true,
         required: true
     },
     name: String,

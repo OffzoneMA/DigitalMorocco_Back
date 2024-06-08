@@ -66,7 +66,64 @@ async function deleteProject(projectId) {
     }
 }
 
+const countProjectsByMember = async () => {
+  try {
+      const results = await Project.aggregate([
+          {
+              $group: {
+                  _id: "$owner",
+                  projectCount: { $sum: 1 }
+              }
+          }
+      ]);
 
+      const formattedResults = results.map(result => ({
+          memberId: result._id,
+          projectCount: result.projectCount
+      }));
+
+      return formattedResults;
+  } catch (error) {
+      console.error("Error counting projects by member:", error);
+      throw error;
+  }
+};
+
+/**
+ * Compte le nombre de projets pour un membre donné.
+ * 
+ * @param {string} memberId - L'ID du membre
+ * @returns {Promise<number>} - Le nombre de projets pour ce membre
+ */
+const countProjectsByMemberId = async (memberId) => {
+  try {
+      const projectCount = await Project.countDocuments({ owner: memberId });
+      return projectCount;
+  } catch (error) {
+      console.error(`Error counting projects for member ${memberId}:`, error);
+      throw error;
+  }
+};
+
+async function updateProjectStatus(projectId, newStatus) {
+  const validStatuses = ["In Progress", "Active", "Stand by"];
+  if (!validStatuses.includes(newStatus)) {
+    throw new Error('Invalid status');
+  }
+
+  const project = await Project.findByIdAndUpdate(
+    projectId,
+    { status: newStatus },
+    { new: true } // Pour retourner le document mis à jour
+  );
+
+  if (!project) {
+    throw new Error('Project not found');
+  }
+
+  return project;
+}
 
 module.exports = { getProjects , CreateProject, getProjectById, ProjectByNameExists, 
-    getProjectByMemberId , deleteProject, addMilestone , removeMilestone}
+    getProjectByMemberId , deleteProject, addMilestone , removeMilestone , 
+    countProjectsByMember , countProjectsByMemberId , updateProjectStatus} 

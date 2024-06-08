@@ -146,8 +146,18 @@ async function deleteConnectedAttendee(req, res) {
   }
 }
 
+async function getEventsForUser(req, res) {
+  const userId = req.userId; 
+  try {
+      const events = await EventService.getEventsForUser(userId);
+      res.json(events);
+  } catch (error) {
+      res.status(500).json({ message: error });
+  }
+}
+
 module.exports = {
     createEvent, getEvents, getEventById, updateEvent, deleteEvent, getAllEventsByUser, addAttendeeToEvent,
     sendTicketToUser, supprimerCollection , addConnectedAttendee , updateConnectedAttendee , deleteConnectedAttendee ,
-    addPromoCode
+    addPromoCode , getEventsForUser
 };

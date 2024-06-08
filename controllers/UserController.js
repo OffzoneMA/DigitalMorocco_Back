@@ -211,7 +211,6 @@ const approveUser = async (req, res) => {
       const result = await UserService.approveUserService(req.params.userId, req.query?.role);
       const emailResult = await EmailingService.sendAcceptedEmail(req.params.userId);
       const log = await UserLogService.createUserLog('Approved', req.params.userId);
-      console.log(result)
       res.status(200).json(result);
     }
     else {

@@ -1416,75 +1416,28 @@ router.post('/members/:userId', MemberController.createMember);
  *     summary: Get all projects for a member
  *     tags: [Members]
  *     description: Retrieve all projects associated with a specific member.
+ *     parameters:
+ *       - in: query
+ *         name: visibility
+ *         schema:
+ *           type: string
+ *           enum: ['public', 'private']
+ *         description: Filter by project visibility
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: ["In Progress", "Active", "Stand by"]
+ *         description: Filter by project status
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter by projects created on or after the given date
  *     responses:
  *       '200':
  *         description: A list of projects associated with the member.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 _id:
- *                   type: string
- *                 owner:
- *                   type: string
- *                 name:
- *                   type: string
- *                 funding:
- *                   type: number
- *                 currency:
- *                   type: string
- *                   enum: ['MAD','€','$', "USD"]
- *                   default: "USD"
- *                 status:
- *                   type: string
- *                   enum: ["In Progress", "Active" , "Stand by"]
- *                   default : "In Progress"
- *                 stages:
- *                   type: array
- *                   items:
- *                     type: string
- *                 listMembers:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       firstName:
- *                         type: string
- *                       lastName:
- *                         type: string
- *                       role:
- *                         type: string
- *                 details:
- *                   type: string
- *                 milestones:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       name:
- *                         type: string
- *                       description:
- *                         type: string
- *                       dueDate:
- *                         type: string
- *                         format: date
- *                       completed:
- *                         type: boolean
- *                 documents:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       name:
- *                         type: string
- *                       link:
- *                         type: string
- *                       type:
- *                         type: string
- *                       date:
- *                         type: string
- *                         format: date
  *       '404':
  *         description: Member not found.
  *       '500':

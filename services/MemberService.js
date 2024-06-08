@@ -722,9 +722,24 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
     }
 }
 
-async function getAllProjectsForMember(memberId) {
+async function getAllProjectsForMember(memberId, args) {
     try {
-        const projects = await Project.find({ owner: memberId });
+        const filter = { owner: memberId };
+
+        if (args.visibility) {
+            filter.visbility = args.visibility;
+        }
+
+        if (args.status) {
+            filter.status = args.status;
+        }
+
+        if (args.date) {
+            const date = new Date(args.date);
+            filter.dateCreated = { $gte: date };
+        }
+
+        const projects = await Project.find(filter);
         return projects;
     } catch (error) {
         throw new Error('Error fetching projects for member');
