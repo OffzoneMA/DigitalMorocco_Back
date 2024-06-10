@@ -57,7 +57,7 @@ const eventSchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        enum: ['Workshop', 'Seminar', 'Conference', 'Other']
+        enum: ['Workshop', 'Seminar', 'Conference', 'Meetup', 'Other']
     },
     industry: String,
     physicalLocation: String,

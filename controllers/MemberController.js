@@ -64,7 +64,7 @@ const getLegalDocuments = async (req, res) => {
             const owner = member.owner; 
             const user = await User.findById(owner);    
             const ownerName = user?.displayName;
-            const ownerId =user._id;
+            const ownerId =user?._id;
             const legalDocumentsWithOwner = member.legalDocument.map(document => ({
                 ...document.toObject(), 
                 owner: ownerName ,

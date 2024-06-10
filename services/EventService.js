@@ -3,6 +3,7 @@ const User = require('../models/User');
 const EmailService = require('./EmailingService');
 const ActivityHistoryService = require('../services/ActivityHistoryService');
 const uploadService = require('./FileService');
+const cron = require('node-cron');
 
 
 // Get all events
@@ -258,6 +259,33 @@ async function getEventsForUser(userId) {
       throw new Error('Failed to fetch events for user' , error);
   }
 }
+
+cron.schedule('0 0 * * *', async () => {
+  try {
+      const events = await Event.find();
+
+      events.forEach(async (event) => {
+          const currentDate = new Date();
+          const startDate = new Date(event.startDate);
+          const endDate = new Date(event.endDate);
+
+          if (!event.startDate) {
+              event.status = 'upcoming';
+          } else if (currentDate < startDate) {
+              event.status = 'upcoming';
+          } else if (event.endDate && currentDate > endDate) {
+              event.status = 'past';
+          } else {
+              event.status = 'ongoing';
+          }
+          await event.save();
+      });
+
+      console.log('Les statuts des événements ont été mis à jour avec succès.');
+  } catch (error) {
+      console.error('Une erreur s\'est produite lors de la mise à jour des statuts des événements :', error);
+  }
+});
 
 
 module.exports = {

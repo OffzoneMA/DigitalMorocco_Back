@@ -108,7 +108,7 @@ passport.use('google-signin',
                     throw new Error('No account exists with this email');
                 }
 
-                return done(null, false, { error: 'This account is not registered using Google' });
+                return done(null, false, { error: 'This account is not registered using this Social network' });
             } catch (error) {
                 return done(null, false, { error: error.message });
             }
@@ -169,20 +169,21 @@ passport.use('linkedin-signup',
             clientID: process.env.LINKEDIN_CLIENT_ID,
             clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
             callbackURL: '/users/auth/linkedin/signup/callback',
-            scope: ['r_liteprofile', 'r_emailaddress'],
+            scope: ['email', 'profile','openid'],
             state: true,
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
-                const existingEmail = await User.findOne({ email: profile.emails[0].value });
+                const existingEmail = await User.findOne({ email: profile.email });
                 if (existingEmail) {
                     throw new Error('An account already exists with this email');
                 }
 
                 const newUser = await User.create({
                     linkedinId: profile.id,
-                    email: profile.emails[0].value,
+                    email: profile.email,
                     displayName: profile.displayName,
+                    image: profile.picture,
                     status: 'verified'
                 });
 
@@ -204,7 +205,8 @@ passport.use('linkedin-signin',
             clientID: process.env.LINKEDIN_CLIENT_ID,
             clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
             callbackURL: '/users/auth/linkedin/signin/callback',
-            scope: ['r_liteprofile', 'r_emailaddress'],
+            userProfileURL: 'https://api.linkedin.com/v2/userinfo',
+            scope: ['email', 'profile','openid'],
             state: true,
         },
         async (accessToken, refreshToken, profile, done) => {
@@ -217,12 +219,12 @@ passport.use('linkedin-signin',
                     return done(null, { user: result.user, auth: result.accessToken, socialId: profile.id, provider: 'linkedin' });
                 }
 
-                const existingEmail = await User.findOne({ email: profile.emails[0].value });
+                const existingEmail = await User.findOne({ email: profile.email });
                 if (!existingEmail) {
                     throw new Error('No account exists with this email');
                 }
 
-                return done(null, false, { error: 'This account is not registered using Linkedin' });
+                return done(null, false, { error: 'This account is not registered using this Social network' });
             } catch (error) {
                 return done(null, false, { error: error.message });
             }
@@ -331,7 +333,7 @@ passport.use('facebook-signin',
                     throw new Error('No account exists with this email');
                 }
 
-                return done(null, false, { error: 'This account is not registered using Facebook' });
+                return done(null, false, { error: 'This account is not registered using this Social network' });
             } catch (error) {
                 return cb(null, false, { error: error.message });
             }

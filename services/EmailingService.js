@@ -39,7 +39,7 @@ function generateShortCodeFromToken(token, userId) {
 
 async function sendEmail(userEmail, subject, emailContent, isHTML) {
   const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
+    host: 'smtp-mail.outlook.com',
     port: 587,
     secure: false,
     auth: {
@@ -119,7 +119,6 @@ async function sendVerificationEmail(userId) {
   }
 }
 
-
 async function sendContactEmail(firstName , lastName , email , phone , message) {
 
     try {
@@ -176,7 +175,6 @@ async function sendVerificationOtpEmail(userId , otpCode) {
   }
 }
 
-
 async function sendForgotPasswordEmail(userId) {
     try {
       const user = await User.findById(userId);
@@ -198,6 +196,7 @@ async function sendForgotPasswordEmail(userId) {
       return messageId;
 
     } catch (error) {
+      console.log(error)
       throw error;
     }
 
