@@ -120,7 +120,7 @@ const getAllEmployees = async (args) => {
     }
 };
 
-const addEmployeeToMember = async (userId, newEmployeeData) => {
+const addEmployee = async (userId, newEmployeeData) => {
     try {
         const member = await Member.findOne({ owner: userId });
         if (!member) {
@@ -134,7 +134,6 @@ const addEmployeeToMember = async (userId, newEmployeeData) => {
         await member.save();
 
         return {
-            message: 'Nouvel employé ajouté avec succès',
             employee: newEmployeeData,
         };
     } catch (error) {
@@ -178,9 +177,9 @@ const addLegalDocumentToMember = async (memberId, documentData) => {
       if (!member) {
         throw new Error("Member not found");
       }
-        const uniqueFileName = `${Date.now()}-${documentData.name}`;
+       
       const newDocument = {
-        name: uniqueFileName,
+        name: documentData.name,
         date: Date.now(),
         type: documentData.type,
         lastModifiedDate: documentData.lastModifiedDate,
@@ -1171,7 +1170,7 @@ const checkMemberStatus = async (memberId) => {
 
   };
 
-  module.exports = {checkMemberStatus,editLegalDocument,deleteLegalDocument, addLegalDocumentToMember, createCompany, updateEmployeeToMember, addEmployeeToMember, getAllEmployees, deleteMember, getContacts, getAllMembers, createProject, checkSubscriptionStatus, 
+  module.exports = {checkMemberStatus,editLegalDocument,deleteLegalDocument, addLegalDocumentToMember, createCompany, updateEmployeeToMember, addEmployee, getAllEmployees, deleteMember, getContacts, getAllMembers, createProject, checkSubscriptionStatus, 
     CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, 
     SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus ,
     createCompany , createEmployee, createLegalDocument , getTestAllMembers , createTestProject , 

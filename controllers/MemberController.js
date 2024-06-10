@@ -133,14 +133,16 @@ const addEmployeeToMember = async (req, res) => {
     try {
       const memberId = req.params.userId;
       const newEmployeeData = req.body;
+      console.log(memberId)
+      console.log(newEmployeeData)
       const base64Data = newEmployeeData.photo.replace(/^data:image\/\w+;base64,/, '');
       const buffer = Buffer.from(base64Data, 'base64');
   
-      const result = await MemberService.addEmployeeToMember(memberId, {
+      const result = await MemberService.addEmployee(memberId, {
         ...newEmployeeData,
-        photo: buffer, // Stocker les données binaires de l'image
+        photo: buffer, 
       });
-  
+        console.log(result)
       res.status(201).json(result);
     } catch (error) {
       console.error('Erreur lors de l\'ajout de l\'employé :', error);
