@@ -71,6 +71,8 @@ async function sendContactFromWeb( email, subject, emailContent, isHTML) {
       user: process.env.email,
       pass: process.env.password,
     },
+    logger: true, 
+    debug: true
   });
   const emailOptions = {
     from: process.env.email,
@@ -79,7 +81,15 @@ async function sendContactFromWeb( email, subject, emailContent, isHTML) {
     [isHTML ? 'html' : 'text']: emailContent,
   };
 
-  return await transporter.sendMail(emailOptions);
+  try {
+    const info = await transporter.sendMail(emailOptions);
+    console.log('Email sent: ', info);
+    return info;
+  } catch (error) {
+    console.error('Error sending email: ', error);
+    throw error;
+  }
+
 
 }
 
