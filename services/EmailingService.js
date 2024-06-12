@@ -39,12 +39,15 @@ function generateShortCodeFromToken(token, userId) {
 
 async function sendEmail(userEmail, subject, emailContent, isHTML) {
   const transporter = nodemailer.createTransport({
-    host: 'smtp-mail.outlook.com',
-    port: 587,
-    secure: false,
+    host: 'digitalmorocco.net',
+    port: 465,
+    secure: true,
     auth: {
       user: process.env.email,
       pass: process.env.password,
+    },
+    tls: {
+      rejectUnauthorized: false,
     },
   });
 
@@ -61,17 +64,17 @@ async function sendEmail(userEmail, subject, emailContent, isHTML) {
 
 async function sendContactFromWeb( email, subject, emailContent, isHTML) {
   const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
+    host: 'digitalmorocco.net',
+    port: 465,
+    secure: true,
     auth: {
       user: process.env.email,
       pass: process.env.password,
     },
   });
   const emailOptions = {
-    from: email,
-    to: 'roukeyaassouma@gmail.com',
+    from: process.env.email,
+    to: 'contact@offzone.net',
     subject: subject,
     [isHTML ? 'html' : 'text']: emailContent,
   };
@@ -143,6 +146,31 @@ async function sendContactEmail(firstName , lastName , email , phone , message) 
     } catch (error) {
       throw error;
     }
+}
+
+async function sendContactEmailConfirm(firstName , lastName , email , message) {
+
+  try {
+    
+    const title = i18n.t('contactSite.confirm.subject');
+
+    const contactSitePath = path.join(__dirname, '..', 'templates', 'contactConfirm.ejs');
+    const contactSiteContent = fs.readFileSync(contactSitePath, 'utf-8');
+
+    const compiledTemplate2 = ejs.compile(contactSiteContent)
+
+    const htmlContent2 = compiledTemplate2({
+      t: i18n.t.bind(i18n),
+      title,
+      name: `${firstName} ${lastName}`,
+      message
+    });
+
+    const messageId = await sendEmail(email, title, htmlContent2, true);
+    return messageId;
+  } catch (error) {
+    throw error;
+  }
 }
 
 async function sendVerificationOtpEmail(userId , otpCode) {
@@ -527,5 +555,5 @@ module.exports = { sendEmail, generateVerificationToken, isTokenExpired, generat
   sendNewContactRequestEmail, sendContactAcceptToMember,sendContactRejectToMember,
   sendVerificationEmail, sendVerificationOtpEmail, VerifyUser, sendRejectedEmail,sendAcceptedEmail,
   sendUnderReviewEmail,sendForgotPasswordEmail,verifyResetToken , sendTicketToUser , sendContactEmail ,
-getTokenFromShortCode , generateShortCodeFromToken , saveShortCodeToTokenMapping}
+getTokenFromShortCode , generateShortCodeFromToken , saveShortCodeToTokenMapping , sendContactEmailConfirm}
 

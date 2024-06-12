@@ -86,6 +86,21 @@
     "email_team": "L'équipe de Digital Morocco",
     "footer_message": "Élargissez votre réseau professionnel, accédez à des ressources exclusives, et connectez-vous avec des acteurs et des organisations engagés dans le développement du secteur digital au Maroc.",
     "footer_copyright": "Copyright © 2023 Digital Morocco, tous droits réservés. Propulsé par"
+  },
+  "contactSite": {
+    "confirm": {
+      "subject": "Confirmation de réception",
+      "greeting": "Bonjour {{name}},",
+      "thankYou": "Merci de nous avoir contactés. Nous avons bien reçu votre message :",
+      "responseTime": "Nous vous répondrons dans les plus brefs délais.",
+      "regards": "Cordialement,",
+      "team": "L'équipe de support",
+      "support": "Si vous avez des questions ou avez besoin d'assistance, n'hésitez pas à contacter notre équipe de support.",
+      "signature": "© 2023 L'équipe de Digital Morocco. Tous droits réservés."
+    },
+    "messageReceived": "vous a envoyé le message ci-dessous depuis le site Digital Morocco :",
+        "reachOut": "Si nécessaire, vous pouvez contacter l'utilisateur à",
+        "pleaseAddress": "Veuillez traiter cette question dans les plus brefs délais pour garantir que l'utilisateur reçoive le support nécessaire."
   }
 
 }

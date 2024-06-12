@@ -113,7 +113,6 @@ const complete_signup = async (req, res) => {
   }
 };
 
-
 const sendVerification = async (req, res) => {
   try {
     const result = await EmailingService.sendVerificationEmail(req.params.userid);
@@ -276,7 +275,6 @@ const deleteOneUser = async (req, res) => {
   }
 }
 
-
 function isJsonString(str) {
   try {
     JSON.parse(str);
@@ -305,6 +303,7 @@ const sendContactEmail = async (req, res) => {
 
   try {
       await EmailingService.sendContactEmail(req.body?.firstName, req.body?.lastName, req.body?.email, req.body?.phone, req.body?.message);
+      await EmailingService.sendContactEmailConfirm(req.body?.firstName, req.body?.lastName, req.body?.email, req.body?.message);
       res.status(200).send({message: 'Email sent successfully'});
   } catch (error) {
       console.error(error);

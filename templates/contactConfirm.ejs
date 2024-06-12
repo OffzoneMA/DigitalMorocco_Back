@@ -60,24 +60,19 @@
       <img class="logo" src="https://firebasestorage.googleapis.com/v0/b/digital-morocco-806c5.appspot.com/o/Site_Assets%2FLogo.jpg?alt=media&token=ee407aba-4523-437a-ab73-5216912ebbd8" alt="Company Logo">
     </div>
     <div class="message">
-        <p>Hello,</p>
-  
-        <p><%= firstName %> <%=lastName %> sent you the message below from the Digital Morocco website: </p>
-        
-        <div class="user-message">
-            <p class="user-message-content" style="color: rgb(32, 32, 32);"><%= message %></p>
-      
-            <p>If necessary, you can reach out to the user at <span class="user-phone"><%=email %> </span> <span>  or <%= phone %></span> for further communication.</p>
-        </div>
-        
-        <p>Please address this issue at your earliest convenience to ensure the user receives the necessary support.</p>
+        <p><%= t('contactSite.confirm.greeting' , { name: name }) %></p>
+        <p><%= t('contactSite.confirm.thankYou') %></p>
+        <blockquote>
+            <p><%= message %></p>
+        </blockquote>
+        <p><%= t('contactSite.confirm.responseTime') %></p>
+        <p><%= t('contactSite.confirm.support') %></p>
     </div>
     <div class="footer">
-      <p>Best regards,</p>
-      <p>© 2023 The Digital Morocco Team. All rights reserved.</p>
+        <p><%= t('contactSite.confirm.regards') %></p>
+        <p><%= t('contactSite.confirm.signature') %></p>
     </div>
   </div>
 </body>
 </html>
 
-    

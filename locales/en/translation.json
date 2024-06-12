@@ -88,6 +88,21 @@
       "email_team": "The Digital Morocco Team",
       "footer_message": "Expand your professional network, unlock exclusive resources, and connect with individuals and organizations dedicated to propelling Morocco's digital frontier.",
       "footer_copyright": "Copyright © 2023 Digital Morocco, all rights reserved. Powered by"
+    },
+    "contactSite": {
+      "confirm": {
+        "subject": "Confirmation of Receipt",
+        "greeting": "Hello {{name}},",
+        "thankYou": "Thank you for contacting us. We have received your message:",
+        "responseTime": "We will respond to you as soon as possible.",
+        "regards": "Best regards,",
+        "support": "If you have any questions or need assistance, don't hesitate to contact our support team.",
+        "team": "The Support Team",
+        "signature": "© 2023 The Digital Morocco Team. All rights reserved."
+      },
+      "messageReceived": "sent you the message below from the Digital Morocco website:",
+        "reachOut": "If necessary, you can reach out to the user at",
+        "pleaseAddress": "Please address this issue at your earliest convenience to ensure the user receives the necessary support."
     }
     
     

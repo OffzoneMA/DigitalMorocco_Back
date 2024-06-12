@@ -53,7 +53,7 @@ i18n
 //   .use(i18nextMiddleware.LanguageDetector)
   .init({
     backend: {
-        loadPath: __dirname + '/locales/{{lng}}/{{ns}}.json'
+        loadPath: path.resolve("./locales/{{lng}}/{{ns}}.json")
     },
     fallbackLng: 'en',
     preload: ['en', 'fr'],
@@ -73,7 +73,7 @@ app.use(i18nextMiddleware.handle(i18n));
 i18n.changeLanguage('fr');
 
   app.get('/', (req, res) => {
-    const response = req.t('ack_request.email_greeting' , { name: 'John Doe' });
+    const response = i18n.t('ack_request.email_greeting' , { name: 'John Doe' });
     res.status(200);
     res.send(response);
   });
