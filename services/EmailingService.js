@@ -76,7 +76,7 @@ async function sendContactFromWeb( email, subject, emailContent, isHTML) {
   });
   const emailOptions = {
     from: process.env.email,
-    to: 'Youssef.diouri@offzone.net',
+    to: 'contact@offzone.net',
     subject: subject,
     [isHTML ? 'html' : 'text']: emailContent,
   };
