@@ -52,7 +52,6 @@ const getAllMembers = async (args) => {
         if (args.stages && args.stages.length > 0) {
             query.stage = { $in: args.stages.split(',') };
         }
-        console.log(query);
         const totalCount = await Member.countDocuments(query);
         const totalPages = Math.ceil(totalCount / pageSize);
         const members = await Member.find(query)

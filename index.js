@@ -73,7 +73,7 @@ app.use(i18nextMiddleware.handle(i18n));
 i18n.changeLanguage('fr');
 
   app.get('/', (req, res) => {
-    const response = i18n.t('ack_request.email_greeting' , { name: 'John Doe' });
+    const response = `${i18n.t('welcome_email.title')} ${i18n.t('welcome_email.title1')}`;
     res.status(200);
     res.send(response);
   });
