@@ -61,6 +61,7 @@ i18n
       order: ['header', 'querystring', 'cookie'],
       caches: ['cookie'],
     },
+    localePath: path.resolve("./locales"),
   });
 
 app.use(i18nextMiddleware.handle(i18n));
