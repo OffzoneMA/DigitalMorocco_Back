@@ -171,6 +171,40 @@ const createCompany = async (userId, companyData) => {
     }
 };
 
+const createTestCompany = async (userId, companyData , logo) => {
+    try {
+        const existingMember = await Member.findOne({ owner: userId });
+        if (existingMember) {
+            existingMember.companyName = companyData.companyName;
+            existingMember.legalName = companyData.legalName;
+            existingMember.website = companyData.website;
+            existingMember.contactEmail = companyData.contactEmail;
+            existingMember.desc = companyData.desc;
+            existingMember.country = companyData.country;
+            existingMember.city = companyData.city;
+            existingMember.stage = companyData.stage;
+            existingMember.companyType = companyData.companyType;
+            existingMember.taxNbr = companyData.taxIdentfier;
+            existingMember.corporateNbr = companyData.corporateNbr;
+
+            if (logo) {
+                let logoLink = await uploadService.uploadFile(logo, "Members/" + existingMember.owner + "", 'logo')
+                existingMember.logo = logoLink
+            }
+
+            const savedMember = await existingMember.save();
+
+            return {
+                message: 'Nouvelle entreprise ajoutée avec succès',
+                company: savedMember,
+            };
+        }
+        throw new Error("Le membre n'existe pas pour cet utilisateur");
+    } catch (error) {
+        throw new Error("Impossible de créer l'entreprise : " + error.message);
+    }
+};
+
 const addLegalDocumentToMember = async (memberId, documentData) => {
     try {
       const member = await Member.findOne({ owner: memberId });
@@ -286,7 +320,6 @@ const updateEmployeeToMember = async (memberId, employeeId, updatedEmployeeData)
         throw new Error("Erreur lors de la mise à jour de l'employé");
     }
 }
-
 
 const CreateMember = async (userId, member) => {
     return await Member.create({ ...member, owner: userId });
@@ -1176,4 +1209,4 @@ const checkMemberStatus = async (memberId) => {
     createCompany , createEmployee, createLegalDocument , getTestAllMembers , createTestProject , 
     getInvestorsForMember ,cancelSubscriptionForMember,renewSubscription, upgradePlan ,
     updateEmployee , deleteEmployee, updateLegalDocument, getAllProjectsForMember ,
-    updateProject , updateMember} 
+    updateProject , updateMember , createTestCompany} 

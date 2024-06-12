@@ -459,9 +459,58 @@ async function getContactRequestsForMember(req, res) {
     }
 }
 
+const getUniqueCountries = async (req, res) => {
+    try {
+      const countries = await Member.distinct('country');
+      res.status(200).json(countries);
+    } catch (error) {
+      res.status(500).json({ message: 'Erreur lors de la récupération des pays uniques', error });
+    }
+};
 
+const getUniqueStages = async (req, res) => {
+    try {
+      const stages = await Member.distinct('stage');
+      res.status(200).json(stages);
+    } catch (error) {
+      res.status(500).json({ message: 'Erreur lors de la récupération des stages uniques', error });
+    }
+};
+
+const getUniqueCompanyTypes = async (req, res) => {
+    try {
+      const members = await Member.find().select('companyType');
+      const companyTypesSet = new Set();
+  
+      members.forEach(member => {
+        if (member.companyType) {
+          member.companyType.split(',').forEach(type => {
+            companyTypesSet.add(type.trim());
+          });
+        }
+      });
+  
+      res.status(200).json([...companyTypesSet]);
+    } catch (error) {
+      res.status(500).json({ message: 'Erreur lors de la récupération des types de compagnie uniques', error });
+    }
+};
+
+const createTestCompany = async (req, res) => {
+    const userId = req.params.userId;
+    const companyData = req.body;
+    const logo = req.file;
+  
+    try {
+      const result = await MemberService.createTestCompany(userId , companyData , logo);
+      res.status(200).json(result);
+    } catch (error) {
+      return res.status(500).json({ message: "Impossible de créer l'entreprise : " + error.message });
+    }
+  };
 
 module.exports = { checkSubscriptionStatus,editLegalDocument, getLegalDocuments, addLegalDocumentToMember, addCompanyToMember,updateEmployeeFromMember,deleteEmployeeFromMember,addEmployeeToMember,getEmployees,getContacts,getMembers, createEnterprise, getByName, subUser, createProject, 
     contactRequest, getContactRequests , createCompany , createEmployee , createLegalDocument ,createMember ,
 getTestAllMembers , getInvestorsForMember , getContactRequestsForMember ,updateEmployee ,
-deleteEmployee ,updateLegalDocument, deleteLegalDocument , getAllProjectsForMember , updateProject , updateMember}
+deleteEmployee ,updateLegalDocument, deleteLegalDocument , getAllProjectsForMember , updateProject , updateMember ,
+getUniqueCountries , getUniqueStages , getUniqueCompanyTypes , createTestCompany}

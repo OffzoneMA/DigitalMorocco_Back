@@ -1518,4 +1518,150 @@ router.get('/projects',AuthController.AuthenticateMember, MemberController.getAl
  */
 router.put('/members/:id', MemberController.updateMember);
 
+/**
+ * @swagger
+ * /members/unique-countries:
+ *   get:
+ *     summary: Get unique countries
+ *     description: Retrieve a list of unique countries from members
+ *     responses:
+ *       200:
+ *         description: A list of unique countries
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ */
+router.get('/unique-countries', MemberController.getUniqueCountries);
+
+  
+/**
+ * @swagger
+ * /members/unique-stages:
+ *   get:
+ *     summary: Get unique stages
+ *     description: Retrieve a list of unique stages from members
+ *     responses:
+ *       200:
+ *         description: A list of unique stages
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ */
+router.get('/unique-stages', MemberController.getUniqueStages);
+
+  
+/**
+ * @swagger
+ * /members/unique-companyTypes:
+ *   get:
+ *     summary: Get unique company types
+ *     description: Retrieve a list of unique company types from members
+ *     responses:
+ *       200:
+ *         description: A list of unique company types
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ */
+router.get('/unique-companyTypes', MemberController.getUniqueCompanyTypes);
+
+/**
+ * @swagger
+ * /members/{userId}/create-test-company:
+ *   post:
+ *     summary: Create or update a test company
+ *     description: Create or update a test company for a given user ID
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               companyName:
+ *                 type: string
+ *               legalName:
+ *                 type: string
+ *               website:
+ *                 type: string
+ *               contactEmail:
+ *                 type: string
+ *               desc:
+ *                 type: string
+ *               country:
+ *                 type: string
+ *                 enum:
+ *                   - USA
+ *                   - Canada
+ *                   - France
+ *                   - Germany
+ *                   - Japan
+ *                   - Morocco
+ *                   - Other
+ *               city:
+ *                 type: string
+ *                 enum:
+ *                   - New York
+ *                   - Los Angeles
+ *                   - Toronto
+ *                   - Paris
+ *                   - Berlin
+ *                   - Tokyo
+ *                   - Casablanca
+ *                   - Other
+ *               stage:
+ *                 type: string
+ *                 enum:
+ *                   - Idea
+ *                   - Pree-Seed
+ *                   - Seed
+ *                   - Serie A
+ *                   - Serie B
+ *                   - Serie C
+ *                   - Serie D
+ *                   - Serie E
+ *                   - IPO
+ *               companyType:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   enum:
+ *                     - Fintech
+ *                     - Healthtech
+ *                     - ECommerce
+ *                     - Edutech
+ *                     - Travel
+ *                     - CRM
+ *                     - HRM
+ *               taxIdentfier:
+ *                 type: string
+ *               corporateNbr:
+ *                 type: string
+ *               logo:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Company created or updated successfully
+ *       500:
+ *         description: Error creating or updating company
+ */
+router.post('/:userId/create-test-company', upload.single('logo'), MemberController.createTestCompany);
+
 module.exports = router;
