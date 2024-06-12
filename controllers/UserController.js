@@ -303,7 +303,7 @@ const sendContactEmail = async (req, res) => {
 
   try {
       await EmailingService.sendContactEmail(req.body?.firstName, req.body?.lastName, req.body?.email, req.body?.phone, req.body?.message);
-      // await EmailingService.sendContactEmailConfirm(req.body?.firstName, req.body?.lastName, req.body?.email, req.body?.message);
+      await EmailingService.sendContactEmailConfirm(req.body?.firstName, req.body?.lastName, req.body?.email, req.body?.message);
       res.status(200).send({message: 'Email sent successfully'});
   } catch (error) {
       console.error(error);
