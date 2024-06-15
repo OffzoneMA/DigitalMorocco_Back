@@ -44,8 +44,9 @@ const getAllMembers = async (args) => {
         // }
 
         if (args.sectors && args.sectors.length > 0) {
-            const sectorsArray = args.sectors.split(',').map(sector => sector.trim());
-            query.companyType = { $regex: sectorsArray.join('|'), $options: 'i' };
+            // const sectorsArray = args.sectors.split(',').map(sector => sector.trim());
+            query.companyType = { $in: args.sectors.split(',') };
+            // query.companyType = { $regex: sectorsArray.join('|'), $options: 'i' };
         }        
         
 
@@ -667,6 +668,7 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
         project.totalRaised = newData.totalRaised || project.totalRaised;
         project.currency = newData.currency || project.currency;
         project.details = newData.details || project.details;
+        project.stage = newData.stage || project.stage;
         project.visbility = newData.visbility|| project.visbility;
 
         if (newData.milestones) {
@@ -677,15 +679,15 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
               }
             });
         }
-        if (newData.stages) {
-            for (const stage of newData.stages) {
-                const isStageExists = project.stages.includes(stage);
+        // if (newData.stages) {
+        //     for (const stage of newData.stages) {
+        //         const isStageExists = project.stages.includes(stage);
                 
-                if (!isStageExists) {
-                    project.stages.push(stage);
-                }
-            }
-        }
+        //         if (!isStageExists) {
+        //             project.stages.push(stage);
+        //         }
+        //     }
+        // }
         if (newData.listMember) {
             for (const member of newData.listMember) {
                 const isMemberExists = project.listMember.some(existingMember => 

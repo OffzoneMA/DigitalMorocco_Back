@@ -54,7 +54,9 @@ const ProjectSchema = new mongoose.Schema({
         enum:["In Progress", "Active" , "Stand by"],
         default :"In Progress"
     },
-    stages: [String]
+    // stages: [String],
+    stage: String
+
 })
 
 

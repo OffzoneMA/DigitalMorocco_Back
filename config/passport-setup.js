@@ -56,7 +56,7 @@ passport.use('google-signup',
         {
             clientID: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            callbackURL: '/users/auth/google/signup/callback',
+            callbackURL: `${process.env.BACKEND_URL}/users/auth/google/signup/callback`,
             scope: ['profile', 'email'],
         },
         async (accessToken, refreshToken, profile, done) => {
@@ -90,7 +90,7 @@ passport.use('google-signin',
         {
             clientID: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            callbackURL: '/users/auth/google/signin/callback',
+            callbackURL: `${process.env.BACKEND_URL}/users/auth/google/signin/callback`,
             scope: ['profile', 'email'],
         },
         async (accessToken, refreshToken, profile, done) => {
@@ -168,7 +168,7 @@ passport.use('linkedin-signup',
         {
             clientID: process.env.LINKEDIN_CLIENT_ID,
             clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-            callbackURL: '/users/auth/linkedin/signup/callback',
+            callbackURL: `${process.env.BACKEND_URL}/users/auth/linkedin/signup/callback`,
             scope: ['email', 'profile','openid'],
             state: true,
         },
@@ -204,7 +204,7 @@ passport.use('linkedin-signin',
         {
             clientID: process.env.LINKEDIN_CLIENT_ID,
             clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-            callbackURL: '/users/auth/linkedin/signin/callback',
+            callbackURL: `${process.env.BACKEND_URL}/users/auth/linkedin/signin/callback`,
             userProfileURL: 'https://api.linkedin.com/v2/userinfo',
             scope: ['email', 'profile','openid'],
             state: true,
@@ -281,7 +281,7 @@ passport.use('facebook-signup',
         {
             clientID: process.env.FACEBOOK_CLIENT_ID,
             clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-            callbackURL: '/users/auth/facebook/signup/callback',
+            callbackURL: `${process.env.BACKEND_URL}/users/auth/facebook/signup/callback`,
             profileFields: ['id', 'displayName', 'emails'],
         },
         async (accessToken, refreshToken, profile, cb) => {
@@ -315,7 +315,7 @@ passport.use('facebook-signin',
         {
             clientID: process.env.FACEBOOK_CLIENT_ID,
             clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-            callbackURL: '/users/auth/facebook/signin/callback',
+            callbackURL: `${process.env.BACKEND_URL}/users/auth/facebook/signin/callback`,
             profileFields: ['id', 'displayName', 'emails'],
         },
         async (accessToken, refreshToken, profile, cb) => {
