@@ -507,10 +507,22 @@ const createTestCompany = async (req, res) => {
     } catch (error) {
       return res.status(500).json({ message: "Impossible de créer l'entreprise : " + error.message });
     }
-  };
+};
+
+const shareProject = async (req, res) => {
+    try {
+        const { projectId,  investorIds } = req.body;
+        const memberId = req.memberId;
+        const contact = await InvestorContactService.shareProjectWithInvestors(projectId, memberId, investorIds);
+        res.status(200).json(contact);
+    } catch (error) {
+        console.log(error)
+        res.status(400).json({ message: error.message });
+    }
+};
 
 module.exports = { checkSubscriptionStatus,editLegalDocument, getLegalDocuments, addLegalDocumentToMember, addCompanyToMember,updateEmployeeFromMember,deleteEmployeeFromMember,addEmployeeToMember,getEmployees,getContacts,getMembers, createEnterprise, getByName, subUser, createProject, 
     contactRequest, getContactRequests , createCompany , createEmployee , createLegalDocument ,createMember ,
 getTestAllMembers , getInvestorsForMember , getContactRequestsForMember ,updateEmployee ,
 deleteEmployee ,updateLegalDocument, deleteLegalDocument , getAllProjectsForMember , updateProject , updateMember ,
-getUniqueCountries , getUniqueStages , getUniqueCompanyTypes , createTestCompany}
+getUniqueCountries , getUniqueStages , getUniqueCompanyTypes , createTestCompany , updateMember , shareProject}

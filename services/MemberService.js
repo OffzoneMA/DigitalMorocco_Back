@@ -153,7 +153,7 @@ const createCompany = async (userId, companyData) => {
             existingMember.desc = companyData.desc;
             existingMember.country = companyData.country;
             existingMember.city = companyData.city.name;
-            existingMember.companyType = companyData.companyType.join(", ");
+            existingMember.companyType = companyData.companyType;
             existingMember.taxNbr = companyData.taxIdentfier;
             existingMember.corporateNbr = companyData.corporateNbr;
             existingMember.logo = companyData.logo;
@@ -1204,10 +1204,12 @@ const checkMemberStatus = async (memberId) => {
 
   };
 
+
+
   module.exports = {checkMemberStatus,editLegalDocument,deleteLegalDocument, addLegalDocumentToMember, createCompany, updateEmployeeToMember, addEmployee, getAllEmployees, deleteMember, getContacts, getAllMembers, createProject, checkSubscriptionStatus, 
     CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, 
     SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus ,
     createCompany , createEmployee, createLegalDocument , getTestAllMembers , createTestProject , 
     getInvestorsForMember ,cancelSubscriptionForMember,renewSubscription, upgradePlan ,
     updateEmployee , deleteEmployee, updateLegalDocument, getAllProjectsForMember ,
-    updateProject , updateMember , createTestCompany} 
+    updateProject , updateMember , createTestCompany , updateMember} 

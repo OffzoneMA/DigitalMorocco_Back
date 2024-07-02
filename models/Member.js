@@ -31,7 +31,7 @@ const MemberSchema = new mongoose.Schema({
         level: { type: String },
         status: {
             type: String,
-            enum: ['Active', 'Offline'],
+            enum: ['Active', 'Offline' , 'active'],
             default: 'Offline'
         },
         address: { type: String },

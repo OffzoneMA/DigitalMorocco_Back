@@ -49,7 +49,7 @@ const upload = require("../middelware/multer")
  *             schema:
  *               $ref: '#/components/schemas/Investor'
  */
-router.route("/").get(AuthController.AuthenticateSubMemberOrAdmin,InvestorController.getInvestors)
+router.route("/").get(AuthController.AuthenticateSubMemberOrAdmin, InvestorController.getInvestors)
 
 /**
  * @swagger
@@ -257,5 +257,201 @@ router.route("/Contacts").get(AuthController.AuthenticateInvestor, InvestorContr
 router.get('/investors/:investorId/contact-requests', InvestorController.getContactRequestsForInvestor);
 
 router.route("/Projects").get(AuthController.AuthenticateInvestor, InvestorController.getProjects)
+
+/**
+ * @swagger
+ * /investors/creactTest:
+ *   post:
+ *     summary: Create a new investor
+ *     tags: [Investors]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               owner:
+ *                 type: string
+ *                 description: The user ID of the owner
+ *               name:
+ *                 type: string
+ *                 description: The name of the investor
+ *               legalName:
+ *                 type: string
+ *                 description: The legal name of the investor
+ *               companyType:
+ *                 type: string
+ *                 description: The type of the company
+ *               description:
+ *                 type: string
+ *                 description: A description of the investor
+ *               foundedDate:
+ *                 type: string
+ *                 description: The date the company was founded
+ *               headquarter:
+ *                 type: string
+ *                 description: The location of the headquarters
+ *               investmentStage:
+ *                 type: string
+ *                 description: The investment stage
+ *               lastFundingType:
+ *                 type: string
+ *                 description: The last funding type
+ *               phoneNumber:
+ *                 type: string
+ *                 description: The phone number of the investor
+ *               emailAddress:
+ *                 type: string
+ *                 description: The email address of the investor
+ *               investmentCapacity:
+ *                 type: number
+ *                 description: The investment capacity of the investor
+ *               image:
+ *                 type: string
+ *                 description: The image URL of the investor
+ *               investorType:
+ *                 type: string
+ *                 description: The type of investor
+ *               website:
+ *                 type: string
+ *                 description: The website of the investor
+ *               fund:
+ *                 type: number
+ *                 description: The fund amount
+ *               fundingRound:
+ *                 type: string
+ *                 description: The funding round
+ *               acquisitions:
+ *                 type: number
+ *                 description: The number of acquisitions
+ *               linkedin_link:
+ *                 type: string
+ *                 description: The LinkedIn link of the investor
+ *               type:
+ *                 type: string
+ *                 description: The type of investor
+ *               location:
+ *                 type: string
+ *                 description: The location of the investor
+ *               PreferredInvestmentIndustry:
+ *                 type: string
+ *                 description: The preferred investment industry
+ *               dateCreated:
+ *                 type: string
+ *                 format: date
+ *                 description: The date the investor was created
+ *               numberOfInvestment:
+ *                 type: number
+ *                 description: The number of investments
+ *               numberOfExits:
+ *                 type: number
+ *                 description: The number of exits
+ *     responses:
+ *       201:
+ *         description: The investor was successfully created
+ *       400:
+ *         description: Bad request
+ */
+router.post("/creactTest", InvestorController.addInvestor);
+
+/**
+ * @swagger
+ * /investors/{id}:
+ *   put:
+ *     summary: Update an existing investor
+ *     tags: [Investors]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the investor to update
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The name of the investor
+ *               legalName:
+ *                 type: string
+ *                 description: The legal name of the investor
+ *               companyType:
+ *                 type: string
+ *                 description: The type of the company
+ *               description:
+ *                 type: string
+ *                 description: A description of the investor
+ *               foundedDate:
+ *                 type: string
+ *                 description: The date the company was founded
+ *               headquarter:
+ *                 type: string
+ *                 description: The location of the headquarters
+ *               investmentStage:
+ *                 type: string
+ *                 description: The investment stage
+ *               lastFundingType:
+ *                 type: string
+ *                 description: The last funding type
+ *               phoneNumber:
+ *                 type: string
+ *                 description: The phone number of the investor
+ *               emailAddress:
+ *                 type: string
+ *                 description: The email address of the investor
+ *               investmentCapacity:
+ *                 type: number
+ *                 description: The investment capacity of the investor
+ *               image:
+ *                 type: string
+ *                 description: The image URL of the investor
+ *               investorType:
+ *                 type: string
+ *                 description: The type of investor
+ *               website:
+ *                 type: string
+ *                 description: The website of the investor
+ *               fund:
+ *                 type: number
+ *                 description: The fund amount
+ *               fundingRound:
+ *                 type: string
+ *                 description: The funding round
+ *               acquisitions:
+ *                 type: number
+ *                 description: The number of acquisitions
+ *               linkedin_link:
+ *                 type: string
+ *                 description: The LinkedIn link of the investor
+ *               type:
+ *                 type: string
+ *                 description: The type of investor
+ *               location:
+ *                 type: string
+ *                 description: The location of the investor
+ *               PreferredInvestmentIndustry:
+ *                 type: string
+ *                 description: The preferred investment industry
+ *               numberOfInvestment:
+ *                 type: number
+ *                 description: The number of investments
+ *               numberOfExits:
+ *                 type: number
+ *                 description: The number of exits
+ *     responses:
+ *       200:
+ *         description: The investor was successfully updated
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Investor not found
+ */
+router.put("/:id", InvestorController.updateInvestor);
 
 module.exports = router

@@ -62,7 +62,6 @@ const updateUserLanguageRegion = async (req, res) => {
   }
 }
 
-
 const addUser = async (req, res) => {
   try { 
     const result = await AuthService.createUser(req.body);
@@ -187,7 +186,7 @@ const confirmVerification = async (req, res) => {
   try {
     const result = await EmailingService.VerifyUser(req.params.token);
     const log = await UserLogService.createUserLog('Verified', result?._id);
-    res.redirect(`${process.env.FRONTEND_URL}/ChooseRole`);
+    res.redirect(`${process.env.FRONTEND_URL}/ChooseRole/user_id=${result?._id}&redirectFromVerify=${true}`);
     // res.status(200).json(result)
   } catch (error) {
     res.status(500).json(error);
@@ -275,6 +274,27 @@ const deleteOneUser = async (req, res) => {
   }
 }
 
+const deleteOneOfUser = async (req, res) => {
+
+  try {
+    const user = await User.findById(req.params?.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    await User.deleteOne({ _id: user._id });
+    // user.isDeleted = true;
+    // user.deletionDate = new Date();
+    // await user.save();
+
+    res.status(200).json({ message: 'Account marked for deletion. You have 14 days to restore it.' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
 function isJsonString(str) {
   try {
     JSON.parse(str);
@@ -285,10 +305,10 @@ function isJsonString(str) {
 }
 
 const updateFullName = async (req, res) => {
-  const { fullName } = req.body;
+  const { fullName , image } = req.body;
   try {
       
-      user = await UserService.updateFullName(req?.params?.userId , fullName);
+      const user = await UserService.updateFullName(req?.params?.userId , fullName , image);
       res.status(200).json({ message: 'Full name updated successfully', user });
   } catch (error) {
       if (error.message === 'User not found') {
@@ -312,5 +332,5 @@ const sendContactEmail = async (req, res) => {
 };
 
 module.exports = { updateUserLanguageRegion,changePassword,updateUserProfile, updateUser,addUser, approveUser, rejectUser, deleteUser, getUsers, 
-  complete_signup, sendVerification, confirmVerification , sendForgotPassword , 
+  complete_signup, sendVerification, confirmVerification , sendForgotPassword , deleteOneOfUser ,
   resetPassword , getUserByEmail , deleteOneUser , updateFullName , sendContactEmail , verifyPasswordToken}

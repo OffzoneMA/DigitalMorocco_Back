@@ -5,6 +5,7 @@ const ContactRequest = require("../models/ContactRequest");
 const MemberService = require("./MemberService");
 const InvestorService = require("./InvestorService");
 const UserService = require("./UserService");
+const ProjectService = require("./ProjectService");
 const ActivityHistoryService = require('../services/ActivityHistoryService');
 
 const User = require("../models/User");
@@ -82,6 +83,79 @@ const CreateInvestorContactReq = async (memberId, investorId) => {
     return contact
 }
 
+const shareProjectWithInvestors = async (projectId, memberId, investorIds) => {
+    const project = await ProjectService.getProjectById(projectId);
+    if (!project) {
+        throw new Error("Project doesn't exist");
+    }
+
+    const member = await MemberService.getMemberById(memberId);
+    if (!member) {
+        throw new Error("Member doesn't exist");
+    }
+
+    const cost = process.env.Share_Project_Cost || 100;
+    const delay = process.env.Contact_Delay_After_Reject_by_days || 180;
+
+    if (member.subStatus === "notActive") {
+        throw new Error('Must Subscribe!');
+    }
+
+    if (member.credits < cost * investorIds.length) {
+        throw new Error('Not Enough Credits!');
+    }
+
+    const results = [];
+
+    for (const investorId of investorIds) {
+        const investor = await InvestorService.getInvestorById(investorId);
+        if (!investor) {
+            results.push({ investorId, status: "Investor doesn't exist" });
+            continue;
+        }
+
+        const existingRequest = await ContactRequest.findOne({ member: memberId, investor: investorId, status: { $in: ["pending", "accepted"]} , project: projectId });
+        if (existingRequest) {
+            results.push({ investorId, status: 'Request already exists' });
+            continue;
+        }
+
+        const latestRejectedRequest = await ContactRequest.findOne({ member: memberId, investor: investorId, status: 'rejected' , project: projectId }).sort({ dateCreated: -1 });
+        if (latestRejectedRequest) {
+            const daysDiff = (new Date() - latestRejectedRequest.dateCreated) / (1000 * 60 * 60 * 24);
+            if (daysDiff < delay) {
+                results.push({ investorId, status: `Can't make a contact request, ${Math.ceil(delay - daysDiff)} day(s) remaining` });
+                continue;
+            }
+        }
+
+        const contact = await ContactRequest.create({ member: memberId, investor: investorId, cost , project: projectId});
+        await Member.findByIdAndUpdate(memberId, { $push: { investorsRequestsPending: investorId }, $inc: { credits: -cost } });
+        await Investor.findByIdAndUpdate(investorId, { $push: { membersRequestsPending: memberId } });
+
+        const historyData = {
+            member: memberId,
+            eventType: 'contact_request_sent',
+            eventDetails: 'Send Contact Request to',
+            timestamp: new Date(),
+            user: member.owner,
+            actionTargetType: 'Project',
+            actionTarget: projectId,
+            targetUser: {
+                usertype: 'Investor',
+                userId: investor?.owner
+            }
+        };
+
+        await ActivityHistoryService.createActivityHistory(historyData);
+        await EmailingService.sendNewProjectShareRequestEmail(investor.owner, member.companyName, member.country, project);
+
+        results.push({ investorId, status: 'Request sent successfully' });
+    }
+
+    return results;
+};
+
 const getAllContactRequest = async (args, role, id) => {
     const page = args.page || 1;
     const pageSize = args.pageSize || 10;
@@ -144,5 +218,5 @@ async function getContactRequestsForMember(memberId) {
 
 
 module.exports = { CreateInvestorContactReq, getAllContactRequest ,getAllContactRequest,
-    getContactRequestsForInvestor , getContactRequestsForMember , getAllContactRequest
+    getContactRequestsForInvestor , getContactRequestsForMember , getAllContactRequest , shareProjectWithInvestors
  }

@@ -15,6 +15,7 @@ const login=async(req,res)=>{
       const log = await UserLogService.createUserLog('Account Signin', user.user._id);
         res.status(200).json(user)
     }catch(error){
+      console.log(error)
       res.status(404).json({ message: error.message})
     }
 

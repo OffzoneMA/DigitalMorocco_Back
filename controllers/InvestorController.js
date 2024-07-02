@@ -4,7 +4,6 @@ const UserLogService = require('../services/UserLogService');
 const investorRequest = require('../models/Requests/Investor');
 const User = require('../models/User');
 
-
 const InvestorContactService = require('../services/InvestorContactService');
 
 const getInvestors = async (req, res) => {
@@ -103,5 +102,17 @@ async function getContactRequestsForInvestor(req, res) {
     }
 }
 
+const updateInvestor = async (req, res) => {
+    try {
+        const investor = await InvestorService.updateInvestor(req.params.id, req.body);
+        if (!investor) {
+            return res.status(404).json({ message: "Investor not found" });
+        }
+        res.status(200).json(investor);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 module.exports = { getInvestorRequests,updateContactStatus, addInvestor, getInvestors, 
-    getContactRequests, getContacts, getProjects , getContactRequestsForInvestor}
+    getContactRequests, getContacts, getProjects , getContactRequestsForInvestor , updateInvestor}

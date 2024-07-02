@@ -8,8 +8,8 @@ const UserLogService = require('../services/UserLogService');
 
 
 const getAllInvestors = async (args) => {
-    const page = args.page || 1;
-    const pageSize = args.pageSize || 10;
+    const page = args?.page || 1;
+    const pageSize = args?.pageSize || 10;
     const skip = (page - 1) * pageSize;
     const totalCount = await Investor.countDocuments();
     const totalPages = Math.ceil(totalCount / pageSize);
@@ -121,6 +121,10 @@ const rejectContact= async (investorId, requestId, memberId) => {
     return request
 }
 
+const updateInvestor = async (id, data) => {
+    return await Investor.findByIdAndUpdate(id, data, { new: true });
+};
+
 module.exports = { deleteInvestor,getContacts, getProjects, CreateInvestor, 
     getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, 
-    updateContactStatus ,}
+    updateContactStatus , updateInvestor}

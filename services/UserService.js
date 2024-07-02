@@ -132,7 +132,7 @@ const resetPassword = async (token, newPassword, confirmPassword) => {
     }
   }
 
-  const updateFullName = async ( userId, fullName) => {
+  const updateFullName = async ( userId, fullName , image) => {
     const user = await User.findById(userId);
         
     if (!user) {
@@ -140,6 +140,9 @@ const resetPassword = async (token, newPassword, confirmPassword) => {
     }
     if(fullName) {
         user.displayName = fullName;
+    }
+    if(image) {
+        user.image = image;
     }
     await user.save();
     return user;

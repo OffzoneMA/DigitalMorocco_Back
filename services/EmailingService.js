@@ -390,6 +390,36 @@ async function sendNewContactRequestEmail(userId, companyName,country) {
   }
 }
 
+
+const sendNewProjectShareRequestEmail = async (userId, companyName, country, project) => {
+  const user = await User.findById(userId);
+  const title = `New Project Share Request from ${companyName}`;
+  const link = `${process.env.FRONTEND_URL}/Dashboard_investor#Contact Requests`;
+
+  const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
+    const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
+
+    const contactRequestPath = path.join(__dirname, '..', 'templates', 'contactRequest.ejs');
+    const contactRequestContent = fs.readFileSync(contactRequestPath, 'utf-8');
+
+    const compiledTemplate = ejs.compile(commonTemplateContent);
+    const compiledTemplate2 = ejs.compile(contactRequestContent);
+
+    const htmlContent2 = compiledTemplate2({
+      link,
+      companyName,
+      country
+    });
+
+    const htmlContent = compiledTemplate({
+      title,
+      body: htmlContent2,
+    });
+
+   const messageId = await sendEmail(user.email, title, htmlContent, true);
+
+};
+
 async function sendContactAcceptToMember(userId, InvestorName, linkedin_link, eventDate) {
   try {
      const user = await User.findById(userId);
@@ -565,5 +595,6 @@ module.exports = { sendEmail, generateVerificationToken, isTokenExpired, generat
   sendNewContactRequestEmail, sendContactAcceptToMember,sendContactRejectToMember,
   sendVerificationEmail, sendVerificationOtpEmail, VerifyUser, sendRejectedEmail,sendAcceptedEmail,
   sendUnderReviewEmail,sendForgotPasswordEmail,verifyResetToken , sendTicketToUser , sendContactEmail ,
-getTokenFromShortCode , generateShortCodeFromToken , saveShortCodeToTokenMapping , sendContactEmailConfirm}
+getTokenFromShortCode , generateShortCodeFromToken , saveShortCodeToTokenMapping , sendContactEmailConfirm , 
+sendNewProjectShareRequestEmail}
 

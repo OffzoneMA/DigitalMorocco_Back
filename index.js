@@ -28,6 +28,8 @@ const { checkSubscriptionStatus } = require("./services/MemberService");
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const Event = require('./models/Event');
+const User = require('./models/User');
+const Investor = require('./models/Investor');
 
 // Swagger Imports
 const swaggerJsdoc = require('swagger-jsdoc');
@@ -338,7 +340,117 @@ mongoose.connect(process.env.MONGO_URL ,{ useNewUrlParser: true, useUnifiedTopol
             //   console.error('Error inserting events:', error);
             //   mongoose.connection.close();
             // });
-        });
+        
+          //   const imageUrls = [
+          //     'https://i.ibb.co/mcJ6V1F/img-inv9.png',
+          //     'https://i.ibb.co/FJmpbHm/img-inv8.png',
+          //     'https://i.ibb.co/sQGRhx4/img-inv10.png',
+          //     'https://i.ibb.co/VJxx1YB/img-inv12.png',
+          //     'https://i.ibb.co/jR5gChr/img-inv7.png',
+          //     'https://i.ibb.co/F0xKTFK/img-inv11.png',
+          //     'https://i.ibb.co/bKMJrFp/img-inv5.png',
+          //     'https://i.ibb.co/HpkK3tY/img-inv4.png',
+          //     'https://i.ibb.co/Jt3q4Bq/img-inv1.png',
+          //     'https://i.ibb.co/tbrTvq5/img-inv2.png',
+          //     'https://i.ibb.co/BLmJPJz/img-inv3.png',
+          //     'https://i.ibb.co/PwW1zhn/img-inv.png',
+          // ];
+          
+          // const createUsersAndInvestors = async () => {
+          //     const users = [];
+          //     const investors = [];
+          
+          //     for (let i = 1; i <= 10; i++) {
+          //         const imageIndex = (i - 1) % imageUrls.length; // Loop through the image URLs
+          //         const imageUrl = imageUrls[imageIndex];
+          
+          //         const user = {
+          //             firstName: `InvestorFirstName${i}`,
+          //             lastName: `InvestorLastName${i}`,
+          //             phoneNumber: `1234567890${i}`,
+          //             website: `http://example${i}.com`,
+          //             address: `Address ${i}`,
+          //             Country: `Country ${i}`,
+          //             cityState: `CityState${i}`,
+          //             region: `Region ${i}`,
+          //             image: imageUrl,
+          //             displayName: `Investor${i}`,
+          //             email: `investormail${i}@example.com`,
+          //             role: 'investor',
+          //             password: `password${i}`, // Ensure passwords are hashed in a real application
+          //             status: 'accepted',
+          //             language: `Language${i}`,
+          //         };
+          //         users.push(user);
+          //     }
+          
+          //     try {
+          //         const createdUsers = await User.insertMany(users);
+          //         console.log('10 users created successfully');
+          
+          //         createdUsers.forEach((user, index) => {
+          //             const investor = {
+          //                 owner: user._id,
+          //                 name: `InvestorName${user.firstName}`,
+          //                 legalName: `InvestorLegalName${user.firstName}`,
+          //                 companyType: `CompanyType${user.firstName}`,
+          //                 description: `Description for ${user.firstName}`,
+          //                 foundedDate: `FoundedDate for ${user.firstName}`,
+          //                 headquarter: `Headquarter for ${user.firstName}`,
+          //                 investmentStage: `InvestmentStage for ${user.firstName}`,
+          //                 lastFundingType: `LastFundingType for ${user.firstName}`,
+          //                 phoneNumber: user.phoneNumber,
+          //                 emailAddress: user.email,
+          //                 investmentCapacity: 1000000, // Example value
+          //                 image: user.image,
+          //                 investorType: `InvestorType for ${user.firstName}`,
+          //                 website: user.website,
+          //                 fund: 500000, // Example value
+          //                 fundingRound: `FundingRound for ${user.firstName}`,
+          //                 acquisitions: 5, // Example value
+          //                 linkedin_link: `http://linkedin.com/in/${user.firstName}`,
+          //                 type: `Type for ${user.firstName}`,
+          //                 location: user.cityState,
+          //                 PreferredInvestmentIndustry: `PreferredIndustry for ${user.firstName}`,
+          //                 numberOfInvestment: 10, // Example value
+          //                 numberOfExits: 2, // Example value
+          //                 document: [
+          //                     { name: `Document1 for ${user.firstName}`, link: `http://example${user.firstName}.com/doc1` },
+          //                     { name: `Document2 for ${user.firstName}`, link: `http://example${user.firstName}.com/doc2` },
+          //                 ],
+          //                 investments: [
+          //                     {
+          //                         announcementDate: new Date(),
+          //                         companyName: `Company1 for ${user.firstName}`,
+          //                         companyLogo: `http://example${user.firstName}.com/logo1.jpg`,
+          //                         location: user.cityState,
+          //                         fundingRound: `Series A`,
+          //                         moneyRaised: 1000000,
+          //                     },
+          //                     {
+          //                         announcementDate: new Date(),
+          //                         companyName: `Company2 for ${user.firstName}`,
+          //                         companyLogo: `http://example${user.firstName}.com/logo2.jpg`,
+          //                         location: user.cityState,
+          //                         fundingRound: `Series B`,
+          //                         moneyRaised: 2000000,
+          //                     },
+          //                 ],
+          //             };
+          //             investors.push(investor);
+          //         });
+          
+          //         await Investor.insertMany(investors);
+          //         console.log('10 investors created successfully');
+          //     } catch (error) {
+          //         console.error('Error creating users or investors:', error);
+          //     } finally {
+          //         mongoose.connection.close();
+          //     }
+          // };
+          
+          // createUsersAndInvestors();
+          });
     })
     .catch(err => console.log(err));
 

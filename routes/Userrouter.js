@@ -506,7 +506,7 @@ router.route("/Login").post(AuthController.login);
  *       500:
  *         description: Internal server error
  */
-router.route("/ApproveUser/:userId").put(AuthController.AuthenticateAdmin, UserController.approveUser);
+router.route("/ApproveUser/:userId").put( UserController.approveUser);
 
 /**
  * @swagger
@@ -802,12 +802,35 @@ router.delete('/:userId', UserController.deleteOneUser )
 
 /**
  * @swagger
+ * /users/OneUser/{userId}:
+ *   delete:
+ *     summary: Supprime un utilisateur.
+ *     description: Supprime un utilisateur en fonction de son identifiant.
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         description: Identifiant de l'utilisateur à supprimer.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '204':
+ *         description: Utilisateur supprimé avec succès.
+ *       '404':
+ *         description: Utilisateur non trouvé.
+ *       '500':
+ *         description: Erreur interne du serveur.
+ */
+router.delete('/OneUser/:userId', UserController.deleteOneOfUser )
+
+/**
+ * @swagger
  * /users/updateFullName/{userId}:
  *   put:
  *     summary: Update user's full name
  *     tags: [Users]
  *     parameters:
- *       - name: userid
+ *       - name: userId
  *         in: path
  *         description: ID of the user to complete signup
  *         required: true
@@ -821,6 +844,9 @@ router.delete('/:userId', UserController.deleteOneUser )
  *             type: object
  *             properties:
  *               fullName:
+ *                 type: string
+ *                 description: The new full name of the user
+ *               image:
  *                 type: string
  *                 description: The new full name of the user
  *     responses:

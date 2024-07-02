@@ -23,7 +23,7 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['Admin', 'partner', 'investor', 'member' , 'associate']
+        enum: ['Admin', 'partner', 'investor', 'member' , 'Member' , 'associate']
     },
     password: String,
     dateCreated: { type: Date, default: Date.now },

@@ -26,6 +26,7 @@ const ProjectSchema = new mongoose.Schema({
             type: String,
         },
         image: {type : String} ,
+        photo: {type : String},
     }],
     details: String,
     milestones: [

@@ -254,7 +254,7 @@ router.route("/:userId/employees/:employeeId").put( MemberController.updateEmplo
  *       '500':
  *         description: Erreur interne du serveur
  */
-router.route("/employees/:userId").post(AuthController.AuthenticateSubMemberOrAdmin,MemberController.addEmployeeToMember)
+router.route("/employees/:userId").post(AuthController.AuthenticateMember,MemberController.addEmployeeToMember)
 
 /**
  * @swagger
@@ -320,7 +320,7 @@ router.route("/employees/:userId").post(AuthController.AuthenticateSubMemberOrAd
  *       '500':
  *         description: Erreur interne du serveur
  */
-router.route("/company/:userId").post(AuthController.AuthenticateSubMemberOrAdmin,MemberController.addCompanyToMember)
+router.route("/company/:userId").post(AuthController.AuthenticateMember,MemberController.addCompanyToMember)
 
 /**
  * @swagger
@@ -480,6 +480,8 @@ router.route("/name/:name").get(MemberController.getByName)
  *                     employee:
  *                       type: string
  *                     image:
+ *                       type: string
+ *                     photo:
  *                       type: string
  *                     status:
  *                       type: string
@@ -1662,5 +1664,121 @@ router.get('/unique-companyTypes', MemberController.getUniqueCompanyTypes);
  *         description: Error creating or updating company
  */
 router.post('/:userId/create-test-company', upload.single('logo'), MemberController.createTestCompany);
+
+/**
+ * @swagger
+ * /members/{id}:
+ *   put:
+ *     summary: Update an existing member
+ *     tags: [Members]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the member to update
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               companyName:
+ *                 type: string
+ *                 description: The name of the company
+ *               legalName:
+ *                 type: string
+ *                 description: The legal name of the company
+ *               website:
+ *                 type: string
+ *                 description: The website of the company
+ *               contactEmail:
+ *                 type: string
+ *                 description: The contact email of the company
+ *               desc:
+ *                 type: string
+ *                 description: A description of the company
+ *               address:
+ *                 type: string
+ *                 description: The address of the company
+ *               country:
+ *                 type: string
+ *                 description: The country of the company
+ *               city:
+ *                 type: string
+ *                 description: The city of the company
+ *               companyType:
+ *                 type: string
+ *                 description: The type of the company
+ *               taxNbr:
+ *                 type: string
+ *                 description: The tax number of the company
+ *               corporateNbr:
+ *                 type: string
+ *                 description: The corporate number of the company
+ *               logo:
+ *                 type: string
+ *                 description: The logo of the company
+ *               stage:
+ *                 type: string
+ *                 description: The stage of the company
+ *               visibility:
+ *                 type: string
+ *                 enum: [public, private]
+ *               rc_ice:
+ *                 type: string
+ *               dateCreated:
+ *                 type: string
+ *                 format: date
+ *               credits:
+ *                 type: number
+ *               subStatus:
+ *                 type: string
+ *                 enum: [notActive, active]
+ *               expireDate:
+ *                 type: string
+ *                 format: date
+ *     responses:
+ *       200:
+ *         description: The member was successfully updated
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Member not found
+ */
+router.put("/:id", MemberController.updateMember);
+
+/**
+ * @swagger
+ * /members/share-project:
+ *   post:
+ *     summary: Share a project with multiple investors
+ *     description: Share a project with a list of investors and send them an email with project details.
+ *     tags:
+ *       - Projects
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               projectId:
+ *                 type: string
+ *                 description: ID of the project to be shared
+ *               investorIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of investor IDs to share the project with
+ *     responses:
+ *       200:
+ *         description: Requests were processed successfully
+ *       500:
+ *         description: Server error
+ */
+router.post("/share-project", AuthController.AuthenticateMember, MemberController.shareProject);
 
 module.exports = router;
