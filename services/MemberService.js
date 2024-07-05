@@ -670,7 +670,9 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
         project.details = newData.details || project.details;
         project.stage = newData.stage || project.stage;
         project.visbility = newData.visbility|| project.visbility;
-
+        project.country = newData.country|| project.country;
+        project.sector = newData.sector|| project.sector;
+        console.log(newData.stage)
         if (newData.milestones) {
             const existingMilestoneNames = project.milestones.map(milestone => milestone.name);
             newData.milestones.forEach(newMilestone => {
@@ -688,17 +690,32 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
         //         }
         //     }
         // }
+        console.log(newData.listMember)
         if (newData.listMember) {
-            for (const member of newData.listMember) {
-                const isMemberExists = project.listMember.some(existingMember => 
-                    existingMember.firstName === member.firstName && existingMember.lastName === member.lastName
-                );
+            // Create a map of new members by personalEmail and workEmail
+            const newMembersMap = new Map(newData.listMember.map(member => [member.personalEmail + member.workEmail, member]));
+            // Filter out members that are no longer in the new list
+            project.listMember = project.listMember.filter(existingMember => {
+                const key = existingMember.personalEmail + existingMember.workEmail;
+                return newMembersMap.has(key);
+            });
 
-                if (!isMemberExists) {
-                    project.listMember.push(member);
-                }
+            // Add or update members
+            newData.listMember.forEach(newMember => {
+            const key = newMember.personalEmail + newMember.workEmail;
+            const existingMemberIndex = project.listMember.findIndex(existingMember => (existingMember.personalEmail + existingMember.workEmail) === key);
+
+            if (existingMemberIndex !== -1) {
+                // Update existing member
+                project.listMember[existingMemberIndex] = { ...project.listMember[existingMemberIndex], ...newMember };
+            } else {
+                // Add new member
+                project.listMember.push(newMember);
             }
-        }
+            });
+           
+          }
+        
 
 
         if (pitchDeck) {
@@ -752,6 +769,7 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
         const updatedProject = await project.save();
         return updatedProject;
     } catch (error) {
+        console.log(error)
         throw new Error('Error updating project');
     }
 }

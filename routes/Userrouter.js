@@ -152,7 +152,7 @@ router.get('/auth/linkedin/callback', (req, res, next) => {
         const socialId = user?.socialId;
 
         if (userRole) {
-            res.redirect(`${process.env.FRONTEND_URL}/SignIn?auth=${auth}`);
+            res.redirect(`${process.env.FRONTEND_URL}/Success?auth=${auth}`);
         } else {
             res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}`);
         }
@@ -173,7 +173,7 @@ router.get('/auth/linkedin/signup/callback', (req, res, next) => {
         const socialId = user?.socialId;
 
         if (userRole) {
-            res.redirect(`${process.env.FRONTEND_URL}/SignIn?auth=${auth}`);
+            res.redirect(`${process.env.FRONTEND_URL}/Success?auth=${auth}`);
         } else {
             res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}`);
         }
@@ -194,7 +194,7 @@ router.get('/auth/linkedin/signin/callback', (req, res, next) => {
         const socialId = user?.socialId;
 
         if (userRole) {
-            res.redirect(`${process.env.FRONTEND_URL}/SignIn?auth=${auth}`);
+            res.redirect(`${process.env.FRONTEND_URL}/Success?auth=${auth}`);
         } else {
             res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}`);
         }
@@ -214,7 +214,7 @@ router.get('/auth/google/callback', (req, res, next) => {
         const socialId = user?.socialId;
 
         if (userRole) {
-            res.redirect(`${process.env.FRONTEND_URL}/SignIn?auth=${auth}`);
+            res.redirect(`${process.env.FRONTEND_URL}/Success?auth=${auth}`);
         } else {
             res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}`);
         }
@@ -235,7 +235,7 @@ router.get('/auth/google/signup/callback', (req, res, next) => {
         const socialId = user?.socialId;
 
         if (userRole) {
-            res.redirect(`${process.env.FRONTEND_URL}/SignIn?auth=${auth}`);
+            res.redirect(`${process.env.FRONTEND_URL}/Success?auth=${auth}`);
         } else {
             res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}`);
         }
@@ -256,7 +256,7 @@ router.get('/auth/google/signin/callback', (req, res, next) => {
         const socialId = user?.socialId;
 
         if (userRole) {
-            res.redirect(`${process.env.FRONTEND_URL}/SignIn?auth=${auth}`);
+            res.redirect(`${process.env.FRONTEND_URL}/Success?auth=${auth}`);
         } else {
             res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}`);
         }
@@ -276,7 +276,7 @@ router.get('/auth/facebook/callback', (req, res, next) => {
         const socialId = user?.socialId;
 
         if (userRole) {
-            res.redirect(`${process.env.FRONTEND_URL}/SignIn?auth=${auth}`);
+            res.redirect(`${process.env.FRONTEND_URL}/Success?auth=${auth}`);
         } else {
             res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}`);
         }
@@ -297,7 +297,7 @@ router.get('/auth/facebook/signup/callback', (req, res, next) => {
         const socialId = user?.socialId;
 
         if (userRole) {
-            res.redirect(`${process.env.FRONTEND_URL}/SignIn?auth=${auth}`);
+            res.redirect(`${process.env.FRONTEND_URL}/Success?auth=${auth}`);
         } else {
             res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}`);
         }
@@ -318,7 +318,7 @@ router.get('/auth/facebook/signin/callback', (req, res, next) => {
         const socialId = user?.socialId;
 
         if (userRole) {
-            res.redirect(`${process.env.FRONTEND_URL}/SignIn?auth=${auth}`);
+            res.redirect(`${process.env.FRONTEND_URL}/Success?auth=${auth}`);
         } else {
             res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?auth=${auth}`);
         }

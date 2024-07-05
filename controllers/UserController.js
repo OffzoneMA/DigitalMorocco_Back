@@ -186,7 +186,7 @@ const confirmVerification = async (req, res) => {
   try {
     const result = await EmailingService.VerifyUser(req.params.token);
     const log = await UserLogService.createUserLog('Verified', result?._id);
-    res.redirect(`${process.env.FRONTEND_URL}/ChooseRole/user_id=${result?._id}&redirectFromVerify=${true}`);
+    res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?user_id=${result?._id}&redirectFromVerify=${true}`);
     // res.status(200).json(result)
   } catch (error) {
     res.status(500).json(error);

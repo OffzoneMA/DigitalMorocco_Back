@@ -730,10 +730,6 @@ router.route("/project").post(AuthController.AuthenticateMember, upload.fields([
  *               details:
  *                 type: string
  *                 description: Details about the project.
- *               stages:
- *                 type: array
- *                 items:
- *                   type: string
  *               milestones:
  *                 type: array
  *                 description: List of project milestones.
