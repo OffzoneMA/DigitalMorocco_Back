@@ -13,6 +13,34 @@ const TokenShortCode = require('../models/TokenShortCode')
 
 // i18n.changeLanguage('fr');
 
+const languages = [
+  { id: 'en', label: 'English' },
+  { id: 'fr', label: 'French' },
+  { id: 'es', label: 'Spanish' },
+  { id: 'de', label: 'German' },
+  { id: 'it', label: 'Italian' },
+  { id: 'pt', label: 'Portuguese' },
+  { id: 'ru', label: 'Russian' },
+  { id: 'zh', label: 'Chinese' },
+  { id: 'ja', label: 'Japanese' },
+  { id: 'ko', label: 'Korean' },
+  { id: 'ar', label: 'Arabic' },
+  { id: 'hi', label: 'Hindi' },
+  { id: 'tr', label: 'Turkish' },
+  { id: 'nl', label: 'Dutch' },
+  { id: 'pl', label: 'Polish' },
+  { id: 'sv', label: 'Swedish' },
+  { id: 'fi', label: 'Finnish' },
+  { id: 'da', label: 'Danish' },
+  { id: 'no', label: 'Norwegian' },
+  { id: 'el', label: 'Greek' },
+];
+
+function getLanguageIdByLabel(label) {
+  const language = languages.find(lang => lang.label === label);
+  return language ? language.id : null;
+}
+
 async function saveShortCodeToTokenMapping(shortCode, token) {
   const shortCodeEntry = new TokenShortCode({ shortCode, token });
   return await shortCodeEntry.save();
@@ -83,7 +111,6 @@ async function sendContactFromWeb( email, subject, emailContent, isHTML) {
 
   try {
     const info = await transporter.sendMail(emailOptions);
-    console.log('Email sent: ', info);
     return info;
   } catch (error) {
     console.error('Error sending email: ', error);
@@ -95,13 +122,13 @@ async function sendContactFromWeb( email, subject, emailContent, isHTML) {
 
 
 //Users
-async function sendVerificationEmail(userId) {
+async function sendVerificationEmail(userId , language) {
   try {
     const user = await User.findById(userId);
 
-    const userLanguage = user?.language || 'en';
+    const userLanguage = language || getLanguageIdByLabel(user?.language);
 
-    if( user?.language) {
+    if(userLanguage) {
       await i18n.changeLanguage(userLanguage);
     }
     const title = i18n.t('verify_title');
@@ -158,9 +185,13 @@ async function sendContactEmail(firstName , lastName , email , phone , message) 
     }
 }
 
-async function sendContactEmailConfirm(firstName , lastName , email , message) {
+async function sendContactEmailConfirm(firstName , lastName , email , message , language) {
 
   try {
+
+    if(language) {
+      await i18n.changeLanguage(language);
+    }
     
     const title = i18n.t('contactSite.confirm.subject');
 
@@ -213,12 +244,12 @@ async function sendVerificationOtpEmail(userId , otpCode) {
   }
 }
 
-async function sendForgotPasswordEmail(userId) {
+async function sendForgotPasswordEmail(userId , language) {
     try {
       const user = await User.findById(userId);
-      const userLanguage = user?.language || 'en';
+      const userLanguage = language || getLanguageIdByLabel(user?.language) ;
 
-      if( user?.language) {
+      if(userLanguage) {
         await i18n.changeLanguage(userLanguage);
       }
       const title = i18n.t('reset_password.title');
@@ -240,12 +271,12 @@ async function sendForgotPasswordEmail(userId) {
 
 }
 
-async function sendUnderReviewEmail(userId) {
+async function sendUnderReviewEmail(userId , lang) {
     try {
       const user = await User.findById(userId);
-      const userLanguage = user?.language || 'en';
+      const userLanguage = lang || getLanguageIdByLabel(user?.language) ;
 
-      if( user?.language) {
+      if(userLanguage) {
         await i18n.changeLanguage(userLanguage);
       }
 
@@ -278,9 +309,9 @@ async function sendAcceptedEmail(userId) {
     try {
       const user = await User.findById(userId);
 
-      const userLanguage = user?.language || 'en';
+      const userLanguage = getLanguageIdByLabel(user?.language);
 
-      if( user?.language) {
+      if(userLanguage) {
         await i18n.changeLanguage(userLanguage);
       }
       const title = i18n.t('request_approved.title');
@@ -299,8 +330,9 @@ async function sendAcceptedEmail(userId) {
 async function sendRejectedEmail(userId) {
     try {
       const user = await User.findById(userId);
-      const userLanguage = user?.language || 'en';
-      if( user?.language) {
+      const userLanguage = getLanguageIdByLabel(user?.language) ;
+
+      if(userLanguage) {
         await i18n.changeLanguage(userLanguage);
       }
       const title = i18n.t('request_reject.title');
@@ -596,5 +628,5 @@ module.exports = { sendEmail, generateVerificationToken, isTokenExpired, generat
   sendVerificationEmail, sendVerificationOtpEmail, VerifyUser, sendRejectedEmail,sendAcceptedEmail,
   sendUnderReviewEmail,sendForgotPasswordEmail,verifyResetToken , sendTicketToUser , sendContactEmail ,
 getTokenFromShortCode , generateShortCodeFromToken , saveShortCodeToTokenMapping , sendContactEmailConfirm , 
-sendNewProjectShareRequestEmail}
+sendNewProjectShareRequestEmail , getLanguageIdByLabel}
 

@@ -2,7 +2,16 @@
 
 const NewsLetterSubscriber = require('../models/NewsLetterSubscriber');
 
+async function isSubscribe (email) {
+  const subscription = await NewsLetterSubscriber.findOne({ email });
+    return subscription !== null;
+}
+
 async function subscribe(email) {
+  const subscription = await NewsLetterSubscriber.findOne({ email });
+  if(subscription) {
+    return { alreadySubscribed: true, subscriber: subscription };
+  }
   const subscriber = new NewsLetterSubscriber({ email });
   return await subscriber.save();
 }
@@ -56,6 +65,6 @@ try {
   
 
 module.exports = {
-  subscribe,getAllSubscribers,
+  subscribe,getAllSubscribers, isSubscribe,
   unsubscribe, deleteSubscriber
 };

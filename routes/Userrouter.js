@@ -60,6 +60,7 @@ const { passport } = require("../config/passport-setup")
  *               message: Error message describing the issue
  */
 router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAdmin, UserController.getUsers).put(AuthController.AuthenticateUser, UserController.updateUser).delete(AuthController.AuthenticateUser, UserController.deleteUser)
+
 /**
  * @swagger
  * /users/complete_signup/{userid}:
@@ -86,6 +87,9 @@ router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAd
  *               role:
  *                 type: string
  *                 enum: [member, investor, partner]
+ *               language:
+ *                 type: string
+ *                 description: The language of the user
  *               rc_ice:
  *                 type: string
  *                 format: binary  
@@ -117,7 +121,6 @@ router.route("/").post(UserController.addUser).get(AuthController.AuthenticateAd
  *       500:
  *         description: Internal server error
  */
-
 router.route("/complete_signup/:userid").post(UserService.checkUserVerification, upload.single('rc_ice'), UserController.complete_signup)
 
 /**
@@ -340,6 +343,12 @@ router.get('/auth/facebook/signin/callback', (req, res, next) => {
  *         required: true
  *         schema:
  *           type: string
+ *       - name: lang
+ *         in: query
+ *         description: Preferred language code of the user (e.g., 'en' for English, 'fr' for French)
+ *         required: false
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Verification email sent successfully
@@ -365,6 +374,9 @@ router.route("/sendverify/:userid").get(UserController.sendVerification);
  *             properties:
  *               email:
  *                 type: string
+ *               lang:
+ *                 type: string
+ *                 description: Language preference for the email content (e.g., 'en', 'fr')
  *     responses:
  *       200:
  *         description: Email sent successfully
@@ -848,7 +860,10 @@ router.delete('/OneUser/:userId', UserController.deleteOneOfUser )
  *                 description: The new full name of the user
  *               image:
  *                 type: string
- *                 description: The new full name of the user
+ *                 description: The new image of the user
+ *               language:
+ *                 type: string
+ *                 description: The language of the user
  *     responses:
  *       200:
  *         description: Full name updated successfully
@@ -881,6 +896,8 @@ router.put('/updateFullName/:userId', UserController.updateFullName);
  *               email:
  *                 type: string
  *               message:
+ *                 type: string
+ *               language:
  *                 type: string
  *     responses:
  *       200:

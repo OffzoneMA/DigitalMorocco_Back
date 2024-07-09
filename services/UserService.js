@@ -9,6 +9,33 @@ const bcrypt = require('bcrypt');
 const UserLog = require('../models/UserLog');
 const salt=10
 
+const languages = [
+    { id: 'en', label: 'English' },
+    { id: 'fr', label: 'French' },
+    { id: 'es', label: 'Spanish' },
+    { id: 'de', label: 'German' },
+    { id: 'it', label: 'Italian' },
+    { id: 'pt', label: 'Portuguese' },
+    { id: 'ru', label: 'Russian' },
+    { id: 'zh', label: 'Chinese' },
+    { id: 'ja', label: 'Japanese' },
+    { id: 'ko', label: 'Korean' },
+    { id: 'ar', label: 'Arabic' },
+    { id: 'hi', label: 'Hindi' },
+    { id: 'tr', label: 'Turkish' },
+    { id: 'nl', label: 'Dutch' },
+    { id: 'pl', label: 'Polish' },
+    { id: 'sv', label: 'Swedish' },
+    { id: 'fi', label: 'Finnish' },
+    { id: 'da', label: 'Danish' },
+    { id: 'no', label: 'Norwegian' },
+    { id: 'el', label: 'Greek' },
+  ];
+
+  const getLanguageLabelById = (id) => {
+    const language = languages.find(lang => lang.id === id);
+    return language ? language.label : null;
+  };
 
 const getUsers = async (args) => {
     return await User.find().skip(args.start ? args.start : null).limit(args.qt ? args.qt : null);
@@ -51,7 +78,6 @@ const updateUserLanguageRegionService = async(userId, updates) => {
     return user;
 }
 
-
 const getUserByID = async (id) => {
     return await User.findById(id);
 }
@@ -79,7 +105,6 @@ const approveUserService = async (userId,role) => {
     await requestServive.removeRequestByUserId(userId,role)
     return await User.findByIdAndUpdate(userId, { status: 'accepted' })
 }
-
 
 const rejectUser = async (id, role) => {
     const request = await requestServive.getRequestByUserId(id, role);
@@ -132,7 +157,7 @@ const resetPassword = async (token, newPassword, confirmPassword) => {
     }
   }
 
-  const updateFullName = async ( userId, fullName , image) => {
+  const updateFullName = async ( userId, fullName , image , language) => {
     const user = await User.findById(userId);
         
     if (!user) {
@@ -143,6 +168,9 @@ const resetPassword = async (token, newPassword, confirmPassword) => {
     }
     if(image) {
         user.image = image;
+    } 
+    if(language){
+        user.language = language;
     }
     await user.save();
     return user;

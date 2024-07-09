@@ -65,12 +65,12 @@ passport.use('google-signup',
                 if (existingEmail) {
                     throw new Error('An account already exists with this email');
                 }
-
                 const newUser = await User.create({
                     googleId: profile.id,
                     email: profile.emails[0].value,
                     displayName: profile.displayName,
-                    status: 'verified'
+                    status: 'verified',
+                    image: profile.photos?.[0]?.value
                 });
 
                 const result = await generateUserInfos(newUser);

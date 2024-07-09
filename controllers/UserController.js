@@ -7,6 +7,7 @@ const User = require('../models/User');
 const mongoose = require('mongoose');
 const { ObjectId } = require('mongodb');
 const bcrypt = require('bcrypt');
+const NewsletterService = require('../services/NewsletterService');
 
 const getUsers = async (req, res) => {
   try {
@@ -64,8 +65,12 @@ const updateUserLanguageRegion = async (req, res) => {
 
 const addUser = async (req, res) => {
   try { 
+    console.log(req.body)
     const result = await AuthService.createUser(req.body);
     const log = await UserLogService.createUserLog('Account Initial Signup', result.user._id);
+    if(req.body?.offers) {
+      const newLetterResult = await NewsletterService.subscribe(req.body?.email);
+    }
     res.status(201).json(result);
   } catch (error) {
     res.status(400).json({ message: error.message }); 
@@ -91,12 +96,13 @@ const complete_signup = async (req, res) => {
     let file = req?.file ? req?.file : null
     let data = isJsonString(req?.body) ? JSON.parse(req?.body) : req?.body
     const user = await UserService.getUserByID(userId)
+    console.log(data?.language)
     if (user && user?.role) res.status(400).json({ message: "Already has a Role!" });
     if (user && !user?.role){
      if (data?.role == "investor" || data?.role == "member" || data?.role == "partner") {
     //  const request= await RequestService.createRequest(data, userId, data?.role, file);
     const request = await RequestService.createRequestTest(data, userId , data?.role)
-     const result = await EmailingService.sendUnderReviewEmail(userId);
+     const result = await EmailingService.sendUnderReviewEmail(userId , data?.language);
      const log = await UserLogService.createUserLog('Account Under Review', userId);
       res.status(200).json(request);
     }
@@ -114,7 +120,9 @@ const complete_signup = async (req, res) => {
 
 const sendVerification = async (req, res) => {
   try {
-    const result = await EmailingService.sendVerificationEmail(req.params.userid);
+    console.log(req.query?.lang)
+    console.log(req.params.userid)
+    const result = await EmailingService.sendVerificationEmail(req.params.userid , req.query?.lang);
     res.status(200).json(result);
   } catch (error) {
     console.log(error)
@@ -124,13 +132,14 @@ const sendVerification = async (req, res) => {
 
 const sendForgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email  , lang } = req.body;
+    console.log("forgot" , lang)
     const user = await UserService.getUserByEmail(email);
 
     if (!user) {
         return res.status(404).json({ message: 'User not found.' });
     }
-    const result = await EmailingService.sendForgotPasswordEmail(user._id);
+    const result = await EmailingService.sendForgotPasswordEmail(user._id , lang);
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json(error);
@@ -305,10 +314,9 @@ function isJsonString(str) {
 }
 
 const updateFullName = async (req, res) => {
-  const { fullName , image } = req.body;
+  const { fullName , image , language } = req.body;
   try {
-      
-      const user = await UserService.updateFullName(req?.params?.userId , fullName , image);
+      const user = await UserService.updateFullName(req?.params?.userId , fullName , image , language);
       res.status(200).json({ message: 'Full name updated successfully', user });
   } catch (error) {
       if (error.message === 'User not found') {
@@ -323,10 +331,9 @@ const sendContactEmail = async (req, res) => {
 
   try {
       await EmailingService.sendContactEmail(req.body?.firstName, req.body?.lastName, req.body?.email, req.body?.phone, req.body?.message);
-      await EmailingService.sendContactEmailConfirm(req.body?.firstName, req.body?.lastName, req.body?.email, req.body?.message);
+      await EmailingService.sendContactEmailConfirm(req.body?.firstName, req.body?.lastName, req.body?.email, req.body?.message , req.body?.language);
       res.status(200).send({message: 'Email sent successfully'});
   } catch (error) {
-      console.error(error);
       res.status(500).send(error);
   }
 };
