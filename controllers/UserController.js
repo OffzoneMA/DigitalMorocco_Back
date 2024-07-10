@@ -9,6 +9,34 @@ const { ObjectId } = require('mongodb');
 const bcrypt = require('bcrypt');
 const NewsletterService = require('../services/NewsletterService');
 
+const languages = [
+  { id: 'en', label: 'English' },
+  { id: 'fr', label: 'French' },
+  { id: 'es', label: 'Spanish' },
+  { id: 'de', label: 'German' },
+  { id: 'it', label: 'Italian' },
+  { id: 'pt', label: 'Portuguese' },
+  { id: 'ru', label: 'Russian' },
+  { id: 'zh', label: 'Chinese' },
+  { id: 'ja', label: 'Japanese' },
+  { id: 'ko', label: 'Korean' },
+  { id: 'ar', label: 'Arabic' },
+  { id: 'hi', label: 'Hindi' },
+  { id: 'tr', label: 'Turkish' },
+  { id: 'nl', label: 'Dutch' },
+  { id: 'pl', label: 'Polish' },
+  { id: 'sv', label: 'Swedish' },
+  { id: 'fi', label: 'Finnish' },
+  { id: 'da', label: 'Danish' },
+  { id: 'no', label: 'Norwegian' },
+  { id: 'el', label: 'Greek' },
+];
+
+function getLanguageIdByLabel(label) {
+  const language = languages.find(lang => lang.label === label);
+  return language ? language.id : null;
+}
+
 const getUsers = async (req, res) => {
   try {
     const result = await UserService.getUsers(req.query);
@@ -65,12 +93,12 @@ const updateUserLanguageRegion = async (req, res) => {
 
 const addUser = async (req, res) => {
   try { 
-    console.log(req.body)
     const result = await AuthService.createUser(req.body);
     const log = await UserLogService.createUserLog('Account Initial Signup', result.user._id);
     if(req.body?.offers) {
       const newLetterResult = await NewsletterService.subscribe(req.body?.email);
     }
+    const emailresult = await EmailingService.sendVerificationEmail(result.user._id , getLanguageIdByLabel(req.body?.language)); 
     res.status(201).json(result);
   } catch (error) {
     res.status(400).json({ message: error.message }); 
@@ -120,8 +148,6 @@ const complete_signup = async (req, res) => {
 
 const sendVerification = async (req, res) => {
   try {
-    console.log(req.query?.lang)
-    console.log(req.params.userid)
     const result = await EmailingService.sendVerificationEmail(req.params.userid , req.query?.lang);
     res.status(200).json(result);
   } catch (error) {
