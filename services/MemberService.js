@@ -1202,17 +1202,17 @@ const checkMemberStatus = async (memberId) => {
         if (!member) {
         return false;
         }
-        const subscriptionLog = await SubscriptionLogs.findOne({ member: member._id });
-        if (!subscriptionLog) {
-            return false;
-        }
-        const currentDate = new Date();
-        const expirationDate = new Date(subscriptionLog.subscriptionExpireDate); 
-        console.log("currentDate",currentDate)
-        console.log("expirationDate",expirationDate)
-        if (currentDate > expirationDate) {
-        return false;
-        }
+        // const subscriptionLog = await SubscriptionLogs.findOne({ member: member._id });
+        // if (!subscriptionLog) {
+        //     return false;
+        // }
+        // const currentDate = new Date();
+        // const expirationDate = new Date(subscriptionLog.subscriptionExpireDate); 
+        // console.log("currentDate",currentDate)
+        // console.log("expirationDate",expirationDate)
+        // if (currentDate > expirationDate) {
+        // return false;
+        // }
 
         return true;
     } catch (error) {
@@ -1221,8 +1221,6 @@ const checkMemberStatus = async (memberId) => {
     }
 
   };
-
-
 
   module.exports = {checkMemberStatus,editLegalDocument,deleteLegalDocument, addLegalDocumentToMember, createCompany, updateEmployeeToMember, addEmployee, getAllEmployees, deleteMember, getContacts, getAllMembers, createProject, checkSubscriptionStatus, 
     CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, 

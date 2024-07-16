@@ -15,14 +15,21 @@ const ContactRequestSchema = new mongoose.Schema({
     },
     cost:Number,
     requestLetter: String,
-    document: {},
-    date: String,
+    document: {
+        name: String,
+        link: String,
+        mimeType: String,
+    },
+    date: {
+        type: Date,
+        default: Date.now
+    },
     communicationStatus: String,
     notes: String,
     status: {
         type: String,
         enum: ['Pending', 'Accepted', 'Rejected' ,'In Progress'],
-        default: 'pending'
+        default: 'Pending'
     },
 
     dateCreated: { type: Date, default: Date.now },

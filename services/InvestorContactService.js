@@ -7,6 +7,7 @@ const InvestorService = require("./InvestorService");
 const UserService = require("./UserService");
 const ProjectService = require("./ProjectService");
 const ActivityHistoryService = require('../services/ActivityHistoryService');
+const uploadService = require('./FileService')
 
 const User = require("../models/User");
 
@@ -68,6 +69,99 @@ const CreateInvestorContactReq = async (memberId, investorId) => {
         timestamp: new Date(),
         user: updatedMember.owner,
         actionTargetType: 'Subscribe',
+        targetUser: {
+            usertype: 'Investor',
+            userId: updatedInvestor._id
+        }    
+    };
+
+    await ActivityHistoryService.createActivityHistory(historyData);
+
+    //Send Email Notification to the investor
+    await EmailingService.sendNewContactRequestEmail(investor.owner, member?.companyName, member?.country);
+
+
+    return contact
+}
+
+const CreateInvestorContactReqForProject = async (memberId, investorId , projectId , document , data) => {
+    const cost = process.env.credits || 3
+    const delay = process.env.Contact_Delay_After_Reject_by_days || 180
+    const member = await MemberService.getMemberById(memberId)
+    const investor = await InvestorService.getInvestorById(investorId)
+    const project = await ProjectService.getProjectById(projectId) 
+
+    if (!member || !investor || !project) {
+        throw new Error("member Or Investor Or Project doesn't exist")
+    }
+
+    const request = await ContactRequest.find({ $and: [{ status: { $in: ["Pending", "Accepted"] } }, { member: memberId }, { investor: investorId } , {project: projectId}] })
+    if (request.length>0) {
+        throw new Error('Request already exists')
+    }
+
+    //Checks delay expiration
+    const latestRejectedContactRequest = await ContactRequest
+        .find({ $and: [{ status: 'Rejected' }, { member: memberId }, { investor: investorId } , {project: projectId}] })
+        .sort({ dateCreated: -1 })
+        .limit(1);
+    if (latestRejectedContactRequest.length>0) {
+        const daysDiff = await DiffDate(latestRejectedContactRequest[0].dateCreated)
+        //daysDiff < delay  Means still have to wait to make a contact request
+        if (daysDiff < delay){
+            throw new Error("You can't make a contact request to this investor, " + (delay - daysDiff)+" day(s) remaining!" )
+        }
+       
+    }
+
+    if (member?.subStatus == "notActive") {
+        throw new Error('Must Subscribe !')
+    }
+    if (member?.credits < cost) {
+        throw new Error('Not Enough Credits!')
+    }
+
+    let docLink = null;
+
+    if (document) {
+        docLink = await uploadService.uploadFile(document, `Members/${member.owner}/Project_documents`, document.originalname);
+    }
+
+    const contactRequestData = {
+        member: memberId,
+        investor: investorId,
+        project: projectId,
+        cost,
+        document: docLink ? {
+            name: document.originalname,
+            link: docLink,
+            mimeType: document.mimetype
+        } : undefined,
+        requestLetter: data,
+    };
+    const contact = new ContactRequest(contactRequestData);
+    await contact.save();
+
+    const updateMember = {
+        $push: { investorsRequestsPending: investorId },
+        $inc: { credits: -cost },
+    };
+
+    const updateInvestor = {
+        $push: { membersRequestsPending: memberId },
+    };
+
+    const updatedInvestor = await Investor.findByIdAndUpdate(investorId, updateInvestor)
+    const updatedMember = await Member.findByIdAndUpdate(memberId, updateMember)
+
+    const historyData = {
+        member: updatedMember._id,
+        eventType: 'contact_request_sent',
+        eventDetails: 'Send Contact Request to',
+        timestamp: new Date(),
+        user: updatedMember.owner,
+        actionTargetType: 'Project',
+        actionTarget: projectId,
         targetUser: {
             usertype: 'Investor',
             userId: updatedInvestor._id
@@ -218,5 +312,6 @@ async function getContactRequestsForMember(memberId) {
 
 
 module.exports = { CreateInvestorContactReq, getAllContactRequest ,getAllContactRequest,
-    getContactRequestsForInvestor , getContactRequestsForMember , getAllContactRequest , shareProjectWithInvestors
+    getContactRequestsForInvestor , getContactRequestsForMember , getAllContactRequest , 
+    shareProjectWithInvestors , CreateInvestorContactReqForProject
  }

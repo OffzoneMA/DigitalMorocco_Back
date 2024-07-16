@@ -351,20 +351,24 @@ async function getAllProjectsForMember(req, res) {
 
 const contactRequest = async (req, res) => {
     try {
-        const result = await InvestorContactService.CreateInvestorContactReq(req.memberId,req.params.investorId)
+        const { investorId, projectId } = req.body;
+        const document = req.file;
+        const result = await InvestorContactService.CreateInvestorContactReqForProject(req.memberId,investorId , projectId , document , req.body?.letter)
         const member = await MemberService.getMemberById(req.memberId);
-        const messageLog ='Request ID :'+result._id+' from member : '+req.memberId+' to investor : '+req.params.investorId;
+        const messageLog ='Request ID :'+result._id+' from member : '+req.memberId+' to investor : '+ investorId + ' for project : '+projectId;
         const log = await UserLogService.createUserLog(messageLog, member.owner);
-        const investor =  await InvestorService.getInvestorById(req.params.investorId);
+        const investor =  await InvestorService.getInvestorById(investorId);
         const logInvestor = await UserLogService.createUserLog(messageLog, investor.owner);
         res.status(200).json(result);
     } catch (error) {
         res.status(500).json({ message: error.message });
+        console.log( "send contact"  ,error)
     }
 }
 
 const getContactRequests = async (req, res) => {
     try {
+        console.log("all q" ,req.query )
         const result = await InvestorContactService.getAllContactRequest(req.query,"member",req.memberId)
         res.status(200).json(result);
     } catch (error) {
@@ -452,6 +456,7 @@ async function getContactRequestsForMember(req, res) {
     const memberId = req.memberId;
 
     try {
+        console.log("all" ,memberId )
         const contactRequests = await InvestorContactService.getContactRequestsForMember(memberId);
         res.json({ success: true, contactRequests });
     } catch (error) {
@@ -512,6 +517,7 @@ const createTestCompany = async (req, res) => {
 const shareProject = async (req, res) => {
     try {
         const { projectId,  investorIds } = req.body;
+        console.log(req.body)
         const memberId = req.memberId;
         const contact = await InvestorContactService.shareProjectWithInvestors(projectId, memberId, investorIds);
         res.status(200).json(contact);

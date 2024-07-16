@@ -780,31 +780,74 @@ router.route("/project").post(AuthController.AuthenticateMember, upload.fields([
 router.put("/project/:projectId", AuthController.AuthenticateMember, upload.fields([{ name: 'businessPlan', maxCount: 1 },{ name: 'financialProjection', maxCount: 1 },{ name: 'pitchDeck', maxCount: 1 },{ name: 'files', maxCount: 8 }]), MemberController.updateProject);
 
 router.route("/project").post(AuthController.AuthenticateMember, upload.fields([{ name: 'businessPlan', maxCount: 1 },{ name: 'financialProjection', maxCount: 1 },{ name: 'pitchDeck', maxCount: 1 },{ name: 'files', maxCount: 8 }]), MemberController.createProject)
+
 /**
  * @swagger
- * tags:
- *   name: Members
- * /members/ContactRequest/{investorId}:
+ * /members/sendContact:
  *   post:
- *     summary: create a contact request by the investor ID
- *     description: create a contact request to the investor desired by its investor ID
+ *     summary: Create a contact request
  *     tags: [Members]
- *     security:
- *       - jwtToken: []
- *     parameters:
- *       - name: investorId
- *         in: path
- *         description: The id of investor that needs to be fetched.
- *         required: true
- *         schema:
- *           type: string
- *     example:
- *       investorId: "e45gjse4442"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               investorId:
+ *                 type: string
+ *                 description: ID of the investor to contact
+ *               projectId:
+ *                 type: string
+ *                 description: ID of the project
+ *               document:
+ *                 type: string
+ *                 format: binary
+ *                 description: Document file
+ *               data:
+ *                 type: object
+ *                 description: Additional data for the contact request
+ *     responses:
+ *       201:
+ *         description: Contact request created successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/sendContact', AuthController.AuthenticateMember , upload.single('document'), MemberController.contactRequest);
+
+/**
+ * @swagger
+ * /members/share-project:
+ *   post:
+ *     summary: Share a project with multiple investors
+ *     description: Share a project with a list of investors and send them an email with project details.
+ *     tags:
+ *       - Projects
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               projectId:
+ *                 type: string
+ *                 description: ID of the project to be shared
+ *               investorIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of investor IDs to share the project with
  *     responses:
  *       200:
- *         description: Successful response
+ *         description: Requests were processed successfully
+ *       500:
+ *         description: Server error
  */
-router.route("/ContactRequest/:investorId").post(AuthController.AuthenticateSubMember, MemberController.contactRequest )
+router.post("/share-project", AuthController.AuthenticateMember, MemberController.shareProject);
+
 
 /**
  * @swagger
@@ -1442,7 +1485,6 @@ router.post('/members/:userId', MemberController.createMember);
  */
 router.get('/projects',AuthController.AuthenticateMember, MemberController.getAllProjectsForMember);
 
-
 /**
  * @swagger
  * /members/{id}:
@@ -1532,7 +1574,6 @@ router.put('/members/:id', MemberController.updateMember);
  *                 type: string
  */
 router.get('/unique-countries', MemberController.getUniqueCountries);
-
   
 /**
  * @swagger
@@ -1552,7 +1593,6 @@ router.get('/unique-countries', MemberController.getUniqueCountries);
  */
 router.get('/unique-stages', MemberController.getUniqueStages);
 
-  
 /**
  * @swagger
  * /members/unique-companyTypes:
@@ -1745,36 +1785,5 @@ router.post('/:userId/create-test-company', upload.single('logo'), MemberControl
  *         description: Member not found
  */
 router.put("/:id", MemberController.updateMember);
-
-/**
- * @swagger
- * /members/share-project:
- *   post:
- *     summary: Share a project with multiple investors
- *     description: Share a project with a list of investors and send them an email with project details.
- *     tags:
- *       - Projects
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               projectId:
- *                 type: string
- *                 description: ID of the project to be shared
- *               investorIds:
- *                 type: array
- *                 items:
- *                   type: string
- *                 description: Array of investor IDs to share the project with
- *     responses:
- *       200:
- *         description: Requests were processed successfully
- *       500:
- *         description: Server error
- */
-router.post("/share-project", AuthController.AuthenticateMember, MemberController.shareProject);
 
 module.exports = router;

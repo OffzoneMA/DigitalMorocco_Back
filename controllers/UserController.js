@@ -124,21 +124,23 @@ const complete_signup = async (req, res) => {
     let file = req?.file ? req?.file : null
     let data = isJsonString(req?.body) ? JSON.parse(req?.body) : req?.body
     const user = await UserService.getUserByID(userId)
-    console.log(data?.language)
-    if (user && user?.role) res.status(400).json({ message: "Already has a Role!" });
-    if (user && !user?.role){
+    if (user && user?.role) {
+      res.status(400).json({ message: "Already has a Role!" });
+    }
+    else if (user && !user?.role){
      if (data?.role == "investor" || data?.role == "member" || data?.role == "partner") {
-    //  const request= await RequestService.createRequest(data, userId, data?.role, file);
-    const request = await RequestService.createRequestTest(data, userId , data?.role)
+     //  const request= await RequestService.createRequest(data, userId, data?.role, file);
+     const request = await RequestService.createRequestTest(data, userId , data?.role)
      const result = await EmailingService.sendUnderReviewEmail(userId , data?.language);
      const log = await UserLogService.createUserLog('Account Under Review', userId);
       res.status(200).json(request);
+     }
+      else {
+        res.status(400).json({ message: "Missing role" });
+      }
     }
     else {
-      res.status(400).json({ message: "Missing role" });
-    }}
-    else {
-      res.status(400).json({ message: "Missing User Id" });
+        res.status(400).json({ message: "Missing User Id" });
     }
 
   } catch (error) {
@@ -348,7 +350,7 @@ const updateFullName = async (req, res) => {
       if (error.message === 'User not found') {
           res.status(404).json({ message: error.message });
       } else {
-          res.status(500).json({ message: 'Server error', error: error.message });
+          res.status(500).json({ message: 'Server error', error: error });
       }
   }
 };

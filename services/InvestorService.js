@@ -21,6 +21,15 @@ const getAllInvestors = async (args) => {
     return { investors, totalPages }
 }
 
+const getInvestors = async () => {
+    const totalCount = await Investor.countDocuments();
+    const investors = await Investor.find()
+        .select("name description image linkedin_link type location PreferredInvestmentIndustry dateCreated numberOfInvestment numberOfExits document")
+        .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } } }); 
+
+    return { investors, totalCount }
+}
+
 const CreateInvestor = async (investor) => {
     return await Investor.create(investor);
 }
@@ -127,4 +136,4 @@ const updateInvestor = async (id, data) => {
 
 module.exports = { deleteInvestor,getContacts, getProjects, CreateInvestor, 
     getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, 
-    updateContactStatus , updateInvestor}
+    updateContactStatus , updateInvestor , getInvestors}

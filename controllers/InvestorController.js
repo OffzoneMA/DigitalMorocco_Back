@@ -19,6 +19,19 @@ const getInvestors = async (req, res) => {
     }
 };
 
+const getAllInvestors = async (req, res) => {
+    try {
+       
+        const result = await InvestorService.getInvestors();
+        
+        res.status(200).json(result);
+        return;
+    } catch (error) {
+        
+        res.status(500).json( error );
+    }
+};
+
 const getInvestorRequests = async (req, res) => {
     try {
       // Récupérer la liste des demandes d'investisseurs avec les informations des utilisateurs associés
@@ -115,4 +128,5 @@ const updateInvestor = async (req, res) => {
 };
 
 module.exports = { getInvestorRequests,updateContactStatus, addInvestor, getInvestors, 
-    getContactRequests, getContacts, getProjects , getContactRequestsForInvestor , updateInvestor}
+    getContactRequests, getContacts, getProjects , getContactRequestsForInvestor , updateInvestor , 
+    getAllInvestors}
