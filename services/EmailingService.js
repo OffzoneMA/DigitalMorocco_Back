@@ -67,9 +67,12 @@ function generateShortCodeFromToken(token, userId) {
 
 async function sendEmail(userEmail, subject, emailContent, isHTML) {
   const transporter = nodemailer.createTransport({
-    host: 'digitalmorocco.net',
+    host: 'mail.digitalmorocco.net',
     port: 465,
     secure: true,
+    // host: "smtp.gmail.com",
+    // port: 587,
+    // secure: false,
     auth: {
       user: process.env.email,
       pass: process.env.password,
@@ -77,6 +80,8 @@ async function sendEmail(userEmail, subject, emailContent, isHTML) {
     tls: {
       rejectUnauthorized: false,
     },
+    //  logger: true, 
+    // debug: true
   });
 
   const emailOptions = {
@@ -92,7 +97,7 @@ async function sendEmail(userEmail, subject, emailContent, isHTML) {
 
 async function sendContactFromWeb( email, subject, emailContent, isHTML) {
   const transporter = nodemailer.createTransport({
-    host: 'digitalmorocco.net',
+    host: 'mail.digitalmorocco.net',
     port: 465,
     secure: true,
     auth: {

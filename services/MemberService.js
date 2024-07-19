@@ -603,7 +603,7 @@ const createTestProject = async (memberId, infos, documents) => {
     return project;
 };
 
-async function createProject(ownerId, projectData , pitchDeck, businessPlan , financialProjection, documentsFiles) {
+async function createProject(ownerId, projectData , pitchDeck, businessPlan , financialProjection, documentsFiles , logo) {
     try {
 
       const member = await Member.findById(ownerId);
@@ -611,6 +611,11 @@ async function createProject(ownerId, projectData , pitchDeck, businessPlan , fi
         throw new Error("Member not found");
     }
       const project = new Project({ owner: ownerId, ...projectData });
+
+      if (logo) {
+        let logoLink = await uploadService.uploadFile(logo, "Members/" + member.owner + "/Project_logos", logo.originalname)
+        project.logo = logoLink
+    }
 
     let Docs = [];
 

@@ -223,7 +223,7 @@ const confirmVerification = async (req, res) => {
   try {
     const result = await EmailingService.VerifyUser(req.params.token);
     const log = await UserLogService.createUserLog('Verified', result?._id);
-    res.redirect(`${process.env.FRONTEND_URL}/ChooseRole?user_id=${result?._id}&redirectFromVerify=${true}`);
+    res.redirect(`${process.env.FRONTEND_URL}/SuccessSignUp?user_id=${result?._id}&redirectFromVerify=${true}&lang=${getLanguageIdByLabel(result?.language)}`);
     // res.status(200).json(result)
   } catch (error) {
     res.status(500).json(error);
@@ -366,6 +366,20 @@ const sendContactEmail = async (req, res) => {
   }
 };
 
+const getUserByID = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
 module.exports = { updateUserLanguageRegion,changePassword,updateUserProfile, updateUser,addUser, approveUser, rejectUser, deleteUser, getUsers, 
   complete_signup, sendVerification, confirmVerification , sendForgotPassword , deleteOneOfUser ,
-  resetPassword , getUserByEmail , deleteOneUser , updateFullName , sendContactEmail , verifyPasswordToken}
+  resetPassword , getUserByEmail , deleteOneUser , updateFullName , sendContactEmail , verifyPasswordToken , 
+getUserByID}

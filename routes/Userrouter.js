@@ -141,6 +141,28 @@ router.route("/complete_signup/:userid").post(UserService.checkUserVerification,
  */
 router.route("/AllUsers").get(AuthController.AllUsers)
 
+/**
+ * @swagger
+ * /users/ById/{id}:
+ *   get:
+ *     summary: Get a user by ID
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The user ID
+ *     responses:
+ *       200:
+ *         description: The user description by ID
+ *       404:
+ *         description: The user was not found
+ *       500:
+ *         description: Some server error
+ */
+router.get('/ById/:id', UserController.getUserByID);
 
 router.get('/auth/linkedin', passport.authenticate('linkedin'));
 router.get('/auth/linkedin/callback', (req, res, next) => {

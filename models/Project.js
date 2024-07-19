@@ -11,6 +11,9 @@ const ProjectSchema = new mongoose.Schema({
     totalRaised: Number,
     country: String,
     sector: String,
+    website: String,
+    contactEmail: String,
+    logo: String,
     currency: {
         type: String,
         enum: ['MAD','€','$', "USD"],
