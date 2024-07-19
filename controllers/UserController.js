@@ -362,7 +362,7 @@ const sendContactEmail = async (req, res) => {
       await EmailingService.sendContactEmailConfirm(req.body?.firstName, req.body?.lastName, req.body?.email, req.body?.message , req.body?.language);
       res.status(200).send({message: 'Email sent successfully'});
   } catch (error) {
-      res.status(500).send(error);
+      res.status(500).send({message: error.message});
   }
 };
 
