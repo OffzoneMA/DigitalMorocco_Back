@@ -104,6 +104,9 @@ async function sendContactFromWeb( email, subject, emailContent, isHTML) {
       user: process.env.email,
       pass: process.env.password,
     },
+    tls: {
+      rejectUnauthorized: false,
+    },
     // logger: true, 
     // debug: true
   });
