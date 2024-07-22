@@ -22,6 +22,7 @@ const ProjectRouter = require("./routes/ProjectRouter")
 const FileRouter = require('./routes/FileRouter')
 const VerifyRouter = require('./routes/VerifyRouter')
 const NewsletterRouter = require('./routes/NewsletterRouter')
+const contactRequestRoutes = require('./routes/contactRequestRoutes');
 const session = require('express-session');
 const { passport } = require("./config/passport-setup");
 const { checkSubscriptionStatus } = require("./services/MemberService");
@@ -482,6 +483,7 @@ app.use("/users/otp", OtpRouter);
 app.use("/projects", ProjectRouter);
 app.use("/files", FileRouter);
 app.use("/newsletter" , NewsletterRouter)
+app.use('/contact-requests', contactRequestRoutes);
 
 
 const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css";

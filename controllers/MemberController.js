@@ -301,6 +301,7 @@ const createProject= async (req, res) => {
             const businessPlan = req.files['businessPlan'];
             const financialProjection = req.files['financialProjection'];
             const files = req.files['files']; 
+            const logo = req.files['logo'];
             // console.log("pitchDeck",pitchDeck)
             // console.log("businessPlan",businessPlan)
 
@@ -308,7 +309,7 @@ const createProject= async (req, res) => {
 
             // console.log("files",files)
 
-            const result = await MemberService.createProject(req.memberId, data, pitchDeck?.[0], businessPlan?.[0] , financialProjection?.[0], files);
+            const result = await MemberService.createProject(req.memberId, data, pitchDeck?.[0], businessPlan?.[0] , financialProjection?.[0], files , logo?.[0]);
             const member = await MemberService.getMemberById(req.memberId);
             const log = await UserLogService.createUserLog('Project Creation', member.owner);
             res.status(200).json(result);
@@ -325,9 +326,10 @@ const updateProject= async (req, res) => {
         const pitchDeck = req.files['pitchDeck'];
         const businessPlan = req.files['businessPlan'];
         const financialProjection = req.files['financialProjection'];
-        const files = req.files['files']; 
+        const files = req.files['files'];
+        const logo = req.files['logo']; 
 
-        const result = await MemberService.updateProject(req.params.projectId, data, pitchDeck?.[0], businessPlan?.[0] , financialProjection?.[0], files);
+        const result = await MemberService.updateProject(req.params.projectId, data, pitchDeck?.[0], businessPlan?.[0] , financialProjection?.[0], files , logo?.[0]);
         const member = await MemberService.getMemberById(result.owner);
         const log = await UserLogService.createUserLog('Project Edition', member.owner);
         res.status(200).json(result);
@@ -368,7 +370,6 @@ const contactRequest = async (req, res) => {
 
 const getContactRequests = async (req, res) => {
     try {
-        console.log("all q" ,req.query )
         const result = await InvestorContactService.getAllContactRequest(req.query,"member",req.memberId)
         res.status(200).json(result);
     } catch (error) {

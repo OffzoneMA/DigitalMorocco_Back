@@ -661,7 +661,7 @@ async function createProject(ownerId, projectData , pitchDeck, businessPlan , fi
     }
 }
 
-async function updateProject(projectId, newData, pitchDeck, businessPlan, financialProjection , documentsFiles) {
+async function updateProject(projectId, newData, pitchDeck, businessPlan, financialProjection , documentsFiles , logo) {
     try {
         const project = await Project.findById(projectId);
         if (!project) {
@@ -677,6 +677,8 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
         project.visbility = newData.visbility|| project.visbility;
         project.country = newData.country|| project.country;
         project.sector = newData.sector|| project.sector;
+        project.website = newData.website || project.website;
+        project.contactEmail = newData.contactEmail || project.contactEmail;
         console.log(newData.stage)
         if (newData.milestones) {
             const existingMilestoneNames = project.milestones.map(milestone => milestone.name);
@@ -721,7 +723,10 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
            
           }
         
-
+          if (logo) {
+            let logoLink = await uploadService.uploadFile(logo, "Members/" + project.owner + "/Project_logos", logo.originalname)
+            project.logo = logoLink
+        }
 
         if (pitchDeck) {
             const pitchDeckLink = await uploadService.uploadFile(pitchDeck, "Members/" + project.owner + "/Project_documents", pitchDeck.originalname);
@@ -833,7 +838,13 @@ const getMemberById = async (id) => {
     return await Member.findById(id);
 }
 const getMemberByUserId = async (userId) => {
-    return await Member.findOne({ owner: userId });
+    const member = await Member.findOne({ owner: userId }, 'owner companyName legalName website contactEmail desc address city country companyType taxNbr corporateNbr visbility credits subStatus');
+    return member;
+}
+
+const getMemberInfoByUserId = async (userId) => {
+    const member = await Member.findOne({ owner: userId });
+    return member;
 }
 
 const getMemberByName = async (name) => {
@@ -1227,10 +1238,12 @@ const checkMemberStatus = async (memberId) => {
 
   };
 
-  module.exports = {checkMemberStatus,editLegalDocument,deleteLegalDocument, addLegalDocumentToMember, createCompany, updateEmployeeToMember, addEmployee, getAllEmployees, deleteMember, getContacts, getAllMembers, createProject, checkSubscriptionStatus, 
+  module.exports = {checkMemberStatus,editLegalDocument,deleteLegalDocument, addLegalDocumentToMember, 
+    createCompany, updateEmployeeToMember, addEmployee, getAllEmployees, deleteMember, 
+    getContacts, getAllMembers, createProject, checkSubscriptionStatus, 
     CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, 
     SubscribeMember, getMemberByUserId, checkMemberSubscription, checkSubscriptionStatus ,
     createCompany , createEmployee, createLegalDocument , getTestAllMembers , createTestProject , 
     getInvestorsForMember ,cancelSubscriptionForMember,renewSubscription, upgradePlan ,
     updateEmployee , deleteEmployee, updateLegalDocument, getAllProjectsForMember ,
-    updateProject , updateMember , createTestCompany , updateMember} 
+    updateProject , updateMember , createTestCompany , updateMember , getMemberInfoByUserId} 

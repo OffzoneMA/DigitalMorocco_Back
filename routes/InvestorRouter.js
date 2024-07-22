@@ -71,7 +71,7 @@ router.route("/").get(AuthController.AuthenticateSubMemberOrAdmin, InvestorContr
  *             schema:
  *               $ref: '#/components/schemas/Investor'
  */
-router.route("/all").get(AuthController.AuthenticateSubMemberOrAdmin, InvestorController.getAllInvestors)
+router.route("/all").get(InvestorController.getAllInvestors)
 
 
 /**

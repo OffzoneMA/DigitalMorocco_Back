@@ -100,6 +100,38 @@ const generateUserInfos = async (user) => {
     return { accessToken: accessToken, user: result }
 }
 
+const generateUserInfosAll = async (user) => {
+  const accessToken = await generateAccessToken(user)
+  let data
+  let projectCount;
+  let eventCount;
+ 
+  if (user?.role?.toLowerCase() == "member"){
+      let member = await MemberService.getMemberInfoByUserId(user._id)
+      projectCount = await ProjectService.countProjectsByMemberId(member?._id);
+      data = {
+          ...member?._doc ? member._doc : member,
+          projectCount
+      };
+
+  }
+  if (user?.role?.toLowerCase() == "partner") {
+      let partner = await PartnerService.getPartnerByUserId(user._id)
+      data = partner?._doc ? partner?._doc : partner
+  }
+  if (user?.role?.toLowerCase() == "investor") {
+      let investor = await InvestorService.getInvestorByUserId(user._id)
+      data = investor?._doc ? investor?._doc : investor
+  }
+
+  eventCount = await EventService.countEventsByUserId(user?._id);
+  const result = user?._doc 
+  ? { ...user._doc, [user?.role?.toLowerCase()]: data, eventCount } 
+  : { ...user, [user?.role?.toLowerCase()]: data, eventCount };    
+  
+  return { accessToken: accessToken, user: result }
+}
+
  const generateAccessToken = async (user) => {
     const payload = user?.role
   ? { user: { _id: user?._id, email: user?.email, role: user?.role } }
@@ -108,4 +140,4 @@ const generateUserInfos = async (user) => {
 }
 
 
-module.exports = {signInUser, createUser, generateAccessToken, generateUserInfos , getAllUsers}
+module.exports = {signInUser, createUser, generateAccessToken, generateUserInfos , generateUserInfosAll , getAllUsers}

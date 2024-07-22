@@ -471,6 +471,12 @@ router.route("/name/:name").get(MemberController.getByName)
  *                 description: The currency of the funding amount.
  *               stage:
  *                 type: string
+ *               sector:
+ *                 type: string
+ *               website:
+ *                 type: string
+ *               contactEmail:
+ *                 type: string
  *               listMembers:
  *                 type: array
  *                 description: List of team members working on the project.
@@ -523,6 +529,9 @@ router.route("/name/:name").get(MemberController.getByName)
  *                 type: string
  *                 format: binary
  *               financialProjection:
+ *                 type: string
+ *                 format: binary
+ *               logo:
  *                 type: string
  *                 format: binary
  *               files:
@@ -668,7 +677,7 @@ router.route("/name/:name").get(MemberController.getByName)
  *       500:
  *         description: Internal Server Error
  */
-router.route("/project").post(AuthController.AuthenticateMember, upload.fields([{ name: 'businessPlan', maxCount: 1 },{ name: 'financialProjection', maxCount: 1 },{ name: 'pitchDeck', maxCount: 1 },{ name: 'files', maxCount: 8 }]), MemberController.createProject)
+router.route("/project").post(AuthController.AuthenticateMember, upload.fields([{ name: 'businessPlan', maxCount: 1 },{ name: 'financialProjection', maxCount: 1 },{ name: 'pitchDeck', maxCount: 1 }, { name: 'logo', maxCount: 1 },{ name: 'files', maxCount: 8 }]), MemberController.createProject)
 
 /**
  * @swagger
@@ -707,6 +716,12 @@ router.route("/project").post(AuthController.AuthenticateMember, upload.fields([
  *                 enum: [MAD, €, $]
  *                 description: The currency of the funding amount.
  *               stage:
+ *                 type: string
+ *               sector:
+ *                 type: string
+ *               website:
+ *                 type: string
+ *               contactEmail:
  *                 type: string
  *               listMembers:
  *                 type: array
@@ -755,6 +770,9 @@ router.route("/project").post(AuthController.AuthenticateMember, upload.fields([
  *               financialProjection:
  *                 type: string
  *                 format: binary
+ *               logo:
+ *                 type: string
+ *                 format: binary
  *               documents:
  *                 type: array
  *                 items:
@@ -777,9 +795,7 @@ router.route("/project").post(AuthController.AuthenticateMember, upload.fields([
  *       500:
  *         description: Internal Server Error
  */
-router.put("/project/:projectId", AuthController.AuthenticateMember, upload.fields([{ name: 'businessPlan', maxCount: 1 },{ name: 'financialProjection', maxCount: 1 },{ name: 'pitchDeck', maxCount: 1 },{ name: 'files', maxCount: 8 }]), MemberController.updateProject);
-
-router.route("/project").post(AuthController.AuthenticateMember, upload.fields([{ name: 'businessPlan', maxCount: 1 },{ name: 'financialProjection', maxCount: 1 },{ name: 'pitchDeck', maxCount: 1 },{ name: 'files', maxCount: 8 }]), MemberController.createProject)
+router.put("/project/:projectId", AuthController.AuthenticateMember, upload.fields([{ name: 'businessPlan', maxCount: 1 },{ name: 'financialProjection', maxCount: 1 },{ name: 'pitchDeck', maxCount: 1 } , { name: 'logo', maxCount: 1 },{ name: 'files', maxCount: 8 }]), MemberController.updateProject);
 
 /**
  * @swagger

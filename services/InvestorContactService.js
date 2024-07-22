@@ -11,8 +11,6 @@ const uploadService = require('./FileService')
 
 const User = require("../models/User");
 
-
-
 const CreateInvestorContactReq = async (memberId, investorId) => {
     const cost = process.env.credits || 3
     const delay = process.env.Contact_Delay_After_Reject_by_days || 180
@@ -263,8 +261,10 @@ const getAllContactRequest = async (args, role, id) => {
 
     const totalCount = await ContactRequest.countDocuments(query);
     const totalPages = Math.ceil(totalCount / pageSize);
-    const ContactsHistory = await ContactRequest.find(query).sort({ dateCreated: 'desc' })
-        .populate(role == "member" ? { path: 'investor', select: 'name linkedin_link' } : { path: 'member', select: '_id companyName website city contactEmail logo country' })
+    const ContactsHistory = await ContactRequest.find(query)
+        .populate(role == "member" ? { path: 'investor' , model: 'Investor', select: '_id name image linkedin_link' } : { path: 'member' , model: 'Member', select: '_id companyName website city contactEmail logo country' })
+        .select('status communicationStatus')
+        .sort({ dateCreated: 'desc' })
         .skip(skip)
         .limit(pageSize);
     return { ContactsHistory, totalPages }
@@ -272,7 +272,7 @@ const getAllContactRequest = async (args, role, id) => {
 
 }
 
-async function getAllContactRequests() {
+async function getAllContactRequestsAll() {
     try {
         const contactRequests = await ContactRequest.find();
         return contactRequests;
@@ -310,8 +310,28 @@ async function getContactRequestsForMember(memberId) {
     }
 }
 
+const getContactRequestById = async (id) => {
+    return await ContactRequest.findById(id)
+        .populate('member', '_id companyName website city contactEmail logo country')
+        .populate('investor', 'name linkedin_link');
+};
 
-module.exports = { CreateInvestorContactReq, getAllContactRequest ,getAllContactRequest,
-    getContactRequestsForInvestor , getContactRequestsForMember , getAllContactRequest , 
-    shareProjectWithInvestors , CreateInvestorContactReqForProject
+const createContactRequest = async (data) => {
+    const contactRequest = new ContactRequest(data);
+    return await contactRequest.save();
+};
+
+const updateContactRequest = async (id, data) => {
+    return await ContactRequest.findByIdAndUpdate(id, data, { new: true });
+};
+
+const deleteContactRequest = async (id) => {
+    return await ContactRequest.findByIdAndDelete(id);
+};
+
+
+module.exports = { CreateInvestorContactReq, getAllContactRequest ,
+    getContactRequestsForInvestor , getContactRequestsForMember  , 
+    shareProjectWithInvestors , CreateInvestorContactReqForProject ,
+    getContactRequestById, createContactRequest, updateContactRequest, deleteContactRequest , getAllContactRequestsAll
  }

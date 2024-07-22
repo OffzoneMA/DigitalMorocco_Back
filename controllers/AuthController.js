@@ -38,7 +38,7 @@ const userInfo=async(req,res)=>{
   
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => { 
       const u = await UserService.getUserByID(user?.user?._id);
-      const result= await AuthService.generateUserInfos(u)
+      const result= await AuthService.generateUserInfosAll(u)
       res.status(200).json(result?.user? result?.user : u)
     })
   }catch(error){
