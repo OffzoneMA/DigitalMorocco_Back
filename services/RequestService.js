@@ -30,11 +30,11 @@ const createRequest = async (data, id, role,file) => {
 
 const createRequestTest = async (data, id, role) => {
     if (role == "investor") {
-        return await Investor.create({ linkedin_link: data?.linkedin_link, user: id })
+        return await Investor.create({user: id })
             .then(async(res) => await User.findByIdAndUpdate(id, {status:'pending',role}))
     }
     else if (role == "partner") {
-        return await Partner.create({ num_rc: data?.num_rc, user: id })
+        return await Partner.create({ user: id })
             .then(async (res) => await User.findByIdAndUpdate(id, { status: 'pending', role }))
     }
     else if (role == "member") {

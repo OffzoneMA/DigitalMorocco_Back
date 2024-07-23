@@ -26,8 +26,12 @@ const getAllPartners = async (args) => {
         .skip(skip)
         .limit(pageSize);
     return { partners, totalPages }
+}
 
-
+const getAllPartnersAll = async () => {
+    const totalCount = await Partner.countDocuments();
+    const partners = await Partner.find();
+    return { partners, totalCount }
 }
 
 const createEnterprise = async (partnerId, infos, documents, logo) => {
@@ -70,7 +74,6 @@ const createEnterprise = async (partnerId, infos, documents, logo) => {
     }
 }
 
-
 const CreatePartner = async (partner) => {
     return await Partner.create(partner);
 }
@@ -97,6 +100,10 @@ const getProjects = async () => {
     return projects;
 }
 
+async function updatePartner(id, data) {
+    return Partner.findByIdAndUpdate(id, data, { new: true });
+  }
+
 const deletePartner = async (userId) => {
     const partner = await getPartnerByUserId(userId)
     if (partner) {
@@ -112,4 +119,5 @@ const deletePartner = async (userId) => {
 }
 
 
-module.exports = { deletePartner,CreatePartner, getPartnerById, partnerByNameExists, createEnterprise, getAllPartners,getProjects, getPartnerByUserId }
+module.exports = { deletePartner,CreatePartner, getPartnerById, partnerByNameExists, 
+    createEnterprise, getAllPartners,getProjects, getPartnerByUserId , updatePartner , getAllPartnersAll}

@@ -59,14 +59,14 @@ const createUser = async (u) => {
      return { accessToken: accessToken, user: user }
 }
 
-const getAllUsers= async()=> {
-    try {
-      const users = await User.find();
-      return users;
-    } catch (error) {
-      throw new Error(`Error getting list of users : ${error.message}`);
-    }
+const getAllUsers = async () => {
+  try {
+    const users = await User.find({ isDeleted: false });
+    return users;
+  } catch (error) {
+    throw new Error(`Error getting list of users: ${error.message}`);
   }
+}
  
 const generateUserInfos = async (user) => {
     const accessToken = await generateAccessToken(user)

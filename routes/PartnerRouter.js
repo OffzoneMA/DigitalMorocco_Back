@@ -4,43 +4,143 @@ const PartnerController = require("../controllers/PartnerController")
 const AuthController = require("../controllers/AuthController")
 const upload = require("../middelware/multer")
 
-
 /**
  * @swagger
  * components:
  *   schemas:
- *     Patner:
+ *     Partner:
  *       type: object
  *       required:
- *         - _id
+ *         - owner
  *         - companyName
- *         - desc
- *         - logo
- *         - website
  *       properties:
- *         id:
+ *         owner:
  *           type: string
- *           description: The auto-generated id of the partner(entreprise)
+ *           description: The user ID who owns the partner
  *         companyName:
  *           type: string
- *           description: the name of the partner(entreprise)
+ *           description: The company name
+ *         legalName:
+ *           type: string
+ *           description: The legal name
+ *         website:
+ *           type: string
+ *           description: The website URL
+ *         contactEmail:
+ *           type: string
+ *           description: The contact email
  *         desc:
  *           type: string
- *           description: The description of the partner(entreprise)
+ *           description: Description of the company
+ *         address:
+ *           type: string
+ *           description: The address of the company
+ *         country:
+ *           type: string
+ *           description: The country
+ *         city:
+ *           type: string
+ *           description: The city
+ *         state:
+ *           type: string
+ *           description: The state
+ *         companyType:
+ *           type: string
+ *           description: The type of company
+ *         taxNbr:
+ *           type: string
+ *           description: The tax number
+ *         corporateNbr:
+ *           type: string
+ *           description: The corporate number
  *         logo:
  *           type: string
- *           description: the logo of the partner(entreprise)
- *         website: 
+ *           description: The URL of the company logo
+ *         listEmployee:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               fullName:
+ *                 type: string
+ *               workEmail:
+ *                 type: string
+ *               personalEmail:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               country:
+ *                 type: string
+ *               department:
+ *                 type: string
+ *               cityState:
+ *                 type: string
+ *               startDate:
+ *                 type: string
+ *                 format: date
+ *               jobTitle:
+ *                 type: string
+ *               type:
+ *                 type: string
+ *               personalTaxIdentifierNumber:
+ *                 type: string
+ *                 pattern: '^\d{4} - \d{4} - \d{4}$'
+ *               level:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *               image:
+ *                 type: string
+ *         legalDocument:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               cityState:
+ *                 type: string
+ *               link:
+ *                 type: string
+ *               date:
+ *                 type: string
+ *                 format: date
+ *               type:
+ *                 type: string
+ *         visbility:
  *           type: string
- *           description: the website of the partner(entreprise)
- *         
- *       example:
- *         id: 64e0b85a9c819e682229ca82
- *         companyName: D&K
- *         desc: Enhancing health care through digital patient-provider connectivity.
- *         logo: https://firebasestorage.googleapis.com/v0/b/digital-morocco-806c5.appspot.com/o/Members%2F64d0fd3f4ad21c95e8456f69%2Flogo?alt=media&token=4e609d74-43a4-4f8b-926f-3b8c19a70d37
- *         website: D$K.net
+ *           enum: [public, private]
+ *         num_rc:
+ *           type: string
+ *         dateCreated:
+ *           type: string
+ *           format: date
+ *           description: The date the partner was created
  */
+
+/**
+ * @swagger
+ * tags:
+ *   name: Partners
+ *   description: Managing API of the Partner
+ * /partners/all:
+ *   get:
+ *     summary: Get all partners from the DB
+ *     description: list of all the exited partners
+ *     tags: [Partners]
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Partner'
+ */
+router.route("/all").get(PartnerController.getpartnersAll)
+
+
 /**
  * @swagger
  * tags:
@@ -92,5 +192,109 @@ router.route("/").get(PartnerController.getpartners).post(AuthController.Authent
  *         description: Internal server error
  */
 router.route("/Projects").get(/*AuthController.AuthenticatePartner, */PartnerController.getProjects)
+
+/**
+ * @swagger
+ * /partners/add:
+ *   post:
+ *     summary: Create a new partner
+ *     tags: [Partners]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Partner'
+ *     responses:
+ *       201:
+ *         description: The partner was successfully created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Partner'
+ *       400:
+ *         description: Bad request
+ */
+router.post('/add', PartnerController.addPartner);
+
+
+/**
+ * @swagger
+ * /partners/{id}:
+ *   get:
+ *     summary: Get a partner by ID
+ *     tags: [Partners]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The partner ID
+ *     responses:
+ *       200:
+ *         description: The partner description by id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Partner'
+ *       404:
+ *         description: The partner was not found
+ */
+router.get('/:id', PartnerController.getPartnerById);
+
+/**
+ * @swagger
+ * /partners/{id}:
+ *   put:
+ *     summary: Update a partner by ID
+ *     tags: [Partners]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The partner ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Partner'
+ *     responses:
+ *       200:
+ *         description: The partner was successfully updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Partner'
+ *       404:
+ *         description: The partner was not found
+ *       400:
+ *         description: Bad request
+ */
+router.put('/:id', PartnerController.updatePartner);
+
+/**
+ * @swagger
+ * /partners/{id}:
+ *   delete:
+ *     summary: Delete a partner by ID
+ *     tags: [Partners]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The partner ID
+ *     responses:
+ *       204:
+ *         description: The partner was successfully deleted
+ *       404:
+ *         description: The partner was not found
+ */
+router.delete('/:id', PartnerController.deletePartner);
 
 module.exports = router

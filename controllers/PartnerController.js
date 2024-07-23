@@ -11,6 +11,15 @@ const getpartners = async (req, res) => {
     }
 };
 
+const getpartnersAll = async (req, res) => {
+    try {
+        const result = await PartnerService.getAllPartnersAll();
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 
 const addPartner = async (req, res) => {
     try {
@@ -42,6 +51,42 @@ const getProjects = async (req, res) => {
     }
 }
 
+async function getPartnerById(req, res) {
+    try {
+      const partner = await PartnerService.getPartnerById(req.params.id);
+      if (!partner) {
+        return res.status(404).json({ error: 'Partner not found' });
+      }
+      res.status(200).json(partner);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  }
+
+  async function updatePartner(req, res) {
+    try {
+      const partner = await PartnerService.updatePartner(req.params.id, req.body);
+      if (!partner) {
+        return res.status(404).json({ error: 'Partner not found' });
+      }
+      res.status(200).json(partner);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  }
+
+  async function deletePartner(req, res) {
+    try {
+      const partner = await PartnerService.deletePartner(req.params.id);
+      if (!partner) {
+        return res.status(404).json({ error: 'Partner not found' });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  }
+
 function isJsonString(str) {
     try {
         JSON.parse(str);
@@ -53,4 +98,6 @@ function isJsonString(str) {
 
 
 
-module.exports = { addPartner, createEnterprise, getpartners, getProjects }
+module.exports = { addPartner, createEnterprise, getpartners, getProjects , updatePartner , 
+    getPartnerById , deletePartner , getpartnersAll
+ }
