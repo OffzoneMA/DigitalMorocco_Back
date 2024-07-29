@@ -704,7 +704,7 @@ function getTimezoneOffset(time) {
 
 
 function generateVerificationToken(userId) {
-  const expiresIn = '5m'; // Set token to expire in 15 minutes
+  const expiresIn = '15m'; // Set token to expire in 15 minutes
   const payload = {
     userId: userId,
   };
@@ -713,7 +713,7 @@ function generateVerificationToken(userId) {
 }
 
 function generateForgotPassworToken(userId) {
-  const expiresIn = '5m';
+  const expiresIn = '15m';
   const payload = { userId };
   return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn });
 }
