@@ -135,7 +135,7 @@ async function checkUserVerification(req, res, next) {
     }
 }
 
-const resetPassword = async (token, newPassword, confirmPassword) => {
+const resetPassword = async (token, newPassword, confirmPassword, language) => {
     try {
       const user = await EmailingService.verifyResetToken(token);
   
@@ -152,7 +152,11 @@ const resetPassword = async (token, newPassword, confirmPassword) => {
 
       await EmailingService.markTokenAsUsed(token);
 
-      return await User.findByIdAndUpdate(user._id, user)
+      const result = await User.findByIdAndUpdate(user._id, user)
+
+      await EmailingService.sendResetPasswordConfirmation(user._id, language);
+
+     return result;
   
     } catch (error) {
         throw new Error(error);

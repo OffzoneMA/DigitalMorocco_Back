@@ -26,6 +26,7 @@
     "note2": "Vous pouvez en toute sécurité ignorer ce message.",
     "footer": "Copyright © 2023 Digital Morocco. Tous droits réservés. Propulsé par",
     "contact": "Contactez-nous : support@digitalmorocco.net",
+    "confirmTitle":"Réinitialisation du mot de passe réussie",
     "confirm":"Votre mot de passe a été réinitialisé",
     "confirmMsg": "Vous pouvez désormais utiliser votre nouveau mot de passe pour vous connecter en cliquant sur le bouton ci-dessous.",
     "signIn":"Se connecter",

@@ -153,7 +153,7 @@ async function sendVerificationEmail(userId , language) {
 
     const saved = await saveShortCodeToTokenMapping(shortCode, token ,userId );
 
-    const verificationLink = `${process.env.BACKEND_URL}/verify/${saved?._id}`;
+    const verificationLink = `${process.env.BACKEND_URL}/verify/${saved?._id}?lang=${userLanguage}`;
 
     const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate1.ejs');
     // const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
@@ -275,7 +275,7 @@ async function sendForgotPasswordEmail(userId , language) {
       const tokenEntry = new TokenShortCode({ shortCode , userId, token });
       await tokenEntry.save();
 
-      const resetPasswordLink = `${process.env.BACKEND_URL}/users/verify-reset-token?token=${tokenEntry._id}`;
+      const resetPasswordLink = `${process.env.BACKEND_URL}/users/verify-reset-token?token=${tokenEntry._id}&lang=${userLanguage}`;
       
       const resetPasswordPath = path.join(__dirname, '..', 'templates', 'resetPassword1.ejs');
       const resetPasswordContent = await ejs.renderFile(resetPasswordPath, {t: i18n.t.bind(i18n),title , resetPasswordLink });
@@ -287,6 +287,32 @@ async function sendForgotPasswordEmail(userId , language) {
       console.log(error)
       throw error;
     }
+
+}
+
+async function sendResetPasswordConfirmation(userId , language) {
+  try {
+    const user = await User.findById(userId);
+    const userLanguage = language || getLanguageIdByLabel(user?.language) ;
+
+    if(userLanguage) {
+      await i18n.changeLanguage(userLanguage);
+    }
+    const title = i18n.t('reset_password.confirmTitle');
+
+
+    const resetPasswordSignIn = `${process.env.FRONTEND_URL}/SignIn?lang=${userLanguage}`;
+    
+    const resetPasswordPath = path.join(__dirname, '..', 'templates', 'resetPasswordSuccess.ejs');
+    const resetPasswordContent = await ejs.renderFile(resetPasswordPath, {t: i18n.t.bind(i18n),title , resetPasswordSignIn });
+
+    const messageId = await sendEmail(user.email, title, resetPasswordContent, true);
+    return messageId;
+
+  } catch (error) {
+    console.log(error)
+    throw error;
+  }
 
 }
 
@@ -707,5 +733,5 @@ module.exports = { sendEmail, generateVerificationToken, isTokenExpired, generat
   sendVerificationEmail, sendVerificationOtpEmail, VerifyUser, sendRejectedEmail,sendAcceptedEmail,
   sendUnderReviewEmail,sendForgotPasswordEmail,verifyResetToken , sendTicketToUser , sendContactEmail ,
 getTokenFromShortCode , generateShortCodeFromToken , saveShortCodeToTokenMapping , sendContactEmailConfirm , 
-sendNewProjectShareRequestEmail , getLanguageIdByLabel , markTokenAsUsed}
+sendNewProjectShareRequestEmail , getLanguageIdByLabel , markTokenAsUsed ,sendResetPasswordConfirmation}
 

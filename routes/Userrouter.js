@@ -395,6 +395,10 @@ router.route("/sendverify/:userid").get(UserController.sendVerification);
  *           type: string
  *         required: true
  *         description: The reset password token.
+ *       - in: query
+ *         name: lang
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Token is valid, redirecting to the reset password page.
@@ -450,6 +454,8 @@ router.route("/forgot-password").post(UserController.sendForgotPassword);
  *               newPassword:
  *                 type: string
  *               confirmPassword:
+ *                 type: string
+ *               language:
  *                 type: string
  *     responses:
  *       200:

@@ -16,6 +16,10 @@ const UserController = require('../controllers/UserController');
  *         required: true
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: lang
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Email verification confirmed successfully

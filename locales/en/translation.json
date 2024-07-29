@@ -26,6 +26,7 @@
       "note2": "You can safely ignore this message.",
       "footer": "Copyright © 2023 Digital Morocco, All rights reserved. Powred By ",
       "contact": "Contact us: support@digitalmorocco.net",
+      "confirmTitle":"Password Reset Successful",
       "confirm":"Your password has been reset",
       "confirmMsg": "You can now use your new password to log in by clicking the button below.",
       "signIn":"Sign in",

@@ -177,9 +177,9 @@ const sendForgotPassword = async (req, res) => {
 
 const resetPassword = async (req , res) => {
   try {
-    const { token, password, confirmPassword } = req.body;
+    const { token, password, confirmPassword , language} = req.body;
 
-    const result = await UserService.resetPassword(token, password , confirmPassword);
+    const result = await UserService.resetPassword(token, password , confirmPassword , language);
     res.status(200).json(result);
 
   } catch (error) {
@@ -224,7 +224,7 @@ const confirmVerification = async (req, res) => {
   try {
     const result = await EmailingService.VerifyUser(req.params.token);
     const log = await UserLogService.createUserLog('Verified', result?._id);
-    res.redirect(`${process.env.FRONTEND_URL}/SuccessSignUp?user_id=${result?._id}&redirectFromVerify=${true}&lang=${getLanguageIdByLabel(result?.language)}`);
+    res.redirect(`${process.env.FRONTEND_URL}/SuccessSignUp?user_id=${result?._id}&redirectFromVerify=${true}&lang=${req?.query?.lang}`);
     // res.status(200).json(result)
   } catch (error) {
     console.error(error);
@@ -233,9 +233,9 @@ const confirmVerification = async (req, res) => {
     const user = await User.findById(tokenEntry?.userId);
     if (user) {
       // Redirect to a page to request a new verification link
-      res.redirect(`${process.env.FRONTEND_URL}/VerifyFailure?err=${error?.message}&user_id=${user._id}&email=${user.email}`);
+      res.redirect(`${process.env.FRONTEND_URL}/VerifyFailure?err=${error?.message}&user_id=${user._id}&email=${user.email}&lang=${req?.query?.lang}`);
     } else {
-      res.redirect(`${process.env.FRONTEND_URL}/VerifyFailure?err=${error?.message}`);
+      res.redirect(`${process.env.FRONTEND_URL}/VerifyFailure?err=${error?.message}&lang=${req?.query?.lang}`);
 
     }
   }
@@ -245,7 +245,7 @@ const verifyPasswordToken = async (req, res) => {
   try {
     const result = await EmailingService.verifyResetToken(req.query.token);
     // If the token is valid, redirect to the reset password page
-    res.redirect(`${process.env.FRONTEND_URL}/ResetPassword?token=${req.query.token}`);
+    res.redirect(`${process.env.FRONTEND_URL}/ResetPassword?token=${req.query.token}&lang=${req?.query?.lang}`);
   } catch (error) {
     console.error('Error verifying token:', error.message);
     // Redirect to the sign-in page with an error message if the token is invalid or expired
