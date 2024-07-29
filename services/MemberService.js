@@ -152,7 +152,8 @@ const createCompany = async (userId, companyData) => {
             existingMember.contactEmail = companyData.contactEmail;
             existingMember.desc = companyData.desc;
             existingMember.country = companyData.country;
-            existingMember.city = companyData.city.name;
+            existingMember.city = companyData.city?.name;
+            existingMember.address = companyData.address,
             existingMember.companyType = companyData.companyType;
             existingMember.taxNbr = companyData.taxIdentfier;
             existingMember.corporateNbr = companyData.corporateNbr;

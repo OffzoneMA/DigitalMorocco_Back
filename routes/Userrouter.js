@@ -383,6 +383,30 @@ router.route("/sendverify/:userid").get(UserController.sendVerification);
 
 /**
  * @swagger
+ * /api/verify-reset-token:
+ *   get:
+ *     summary: Verify password reset token
+ *     description: Verify if the password reset token is valid, unused, and not expired. Redirects the user based on the token status.
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: query
+ *         name: token
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The reset password token.
+ *     responses:
+ *       200:
+ *         description: Token is valid, redirecting to the reset password page.
+ *       400:
+ *         description: Invalid or expired token, redirecting to the sign-in page.
+ *       500:
+ *         description: Internal server error.
+ */
+router.get('/verify-reset-token', UserController.verifyPasswordToken);
+
+/**
+ * @swagger
  * /users/forgot-password:
  *   post:
  *     summary: Request to send forgot password email

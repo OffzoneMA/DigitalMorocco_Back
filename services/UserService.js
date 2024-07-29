@@ -150,6 +150,8 @@ const resetPassword = async (token, newPassword, confirmPassword) => {
       const hashedPassword = await bcrypt.hash(newPassword, salt);
       user.password = hashedPassword;
 
+      await EmailingService.markTokenAsUsed(token);
+
       return await User.findByIdAndUpdate(user._id, user)
   
     } catch (error) {

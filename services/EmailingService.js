@@ -41,17 +41,24 @@ function getLanguageIdByLabel(label) {
   return language ? language.id : null;
 }
 
-async function saveShortCodeToTokenMapping(shortCode, token) {
-  const shortCodeEntry = new TokenShortCode({ shortCode, token });
+async function saveShortCodeToTokenMapping(shortCode, token , userId) {
+  const shortCodeEntry = new TokenShortCode({ shortCode, token , userId});
   return await shortCodeEntry.save();
 }
 
 async function getTokenFromShortCode(shortCode) {
-  const shortCodeEntry = await TokenShortCode.findById(shortCode);
+  const shortCodeEntry = await TokenShortCode.findOne({ _id: shortCode, used: false });
+  // const shortCodeEntry = await TokenShortCode.findById(shortCode );
+
+  console.log("shortCodeEntry" ,shortCodeEntry)
   if (shortCodeEntry) {
-    return shortCodeEntry.token;
+    return shortCodeEntry;
   }
   return null;
+}
+
+async function markTokenAsUsed(shortCode) {
+  await TokenShortCode.findByIdAndUpdate( shortCode ,{ used: true });
 }
 
 const SHORT_CODE_SECRET = process.env.SHORT_CODE_SECRET || '28103bclqaponul71gjqkjpomllaxwvi';
@@ -128,7 +135,6 @@ async function sendContactFromWeb( email, subject, emailContent, isHTML) {
 
 }
 
-
 //Users
 async function sendVerificationEmail(userId , language) {
   try {
@@ -145,7 +151,7 @@ async function sendVerificationEmail(userId , language) {
 
     const shortCode = generateShortCodeFromToken(token , userId);
 
-    const saved = await saveShortCodeToTokenMapping(shortCode, token);
+    const saved = await saveShortCodeToTokenMapping(shortCode, token ,userId );
 
     const verificationLink = `${process.env.BACKEND_URL}/verify/${saved?._id}`;
 
@@ -264,7 +270,12 @@ async function sendForgotPasswordEmail(userId , language) {
 
       const token = generateForgotPassworToken(userId);
 
-      const resetPasswordLink = `${process.env.FRONTEND_URL}/ResetPassword?token=${token}`;
+      const shortCode = generateShortCodeFromToken(token , userId);
+
+      const tokenEntry = new TokenShortCode({ shortCode , userId, token });
+      await tokenEntry.save();
+
+      const resetPasswordLink = `${process.env.BACKEND_URL}/users/verify-reset-token?token=${tokenEntry._id}`;
       
       const resetPasswordPath = path.join(__dirname, '..', 'templates', 'resetPassword1.ejs');
       const resetPasswordContent = await ejs.renderFile(resetPasswordPath, {t: i18n.t.bind(i18n),title , resetPasswordLink });
@@ -366,35 +377,99 @@ async function sendRejectedEmail(userId) {
 //   }
 // }
 
+// async function VerifyUser(shortCode) {
+//   try {
+//     const token = await getTokenFromShortCode(shortCode);
+//     if (!token) {
+//       throw new Error('Invalid code');
+//     }
+
+//     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+//     if (decoded?.userId && !isTokenExpired(decoded)) {
+//       return await User.findByIdAndUpdate(decoded.userId, { status: 'verified' });
+//     }
+//   } catch (err) {
+//     throw err;
+//   }
+// }
+
 async function VerifyUser(shortCode) {
   try {
-    const token = await getTokenFromShortCode(shortCode);
-    if (!token) {
-      throw new Error('Invalid code');
+    // Get the token entry from the database
+    const tokenEntry = await getTokenFromShortCode(shortCode);
+    if (!tokenEntry) {
+      throw new Error('Invalid Token');
     }
 
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    if (decoded?.userId && !isTokenExpired(decoded)) {
-      return await User.findByIdAndUpdate(decoded.userId, { status: 'verified' });
-      // return await User.findById(userId);
+    const { token, userId } = tokenEntry;
+
+    // Fetch the user to check their status
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Check the user's current status
+    switch (user.status) {
+      case 'verified':
+        throw new Error('Account already verified');
+      case 'rejected':
+        throw new Error('Account already verified');
+      case 'accepted':
+        throw new Error('Account already verified');
+      case 'notVerified':
+        // Proceed to verify the token only if the status is 'notVerified'
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        
+        // Check if the token is expired
+        if (decoded.exp && Date.now() >= decoded.exp * 1000) {
+          throw new Error('Token has expired');
+        }
+
+        // Mark the token as used and update user status
+        await markTokenAsUsed(shortCode);
+        return await User.findByIdAndUpdate(userId, { status: 'verified' }, { new: true });
+      default:
+        throw new Error('Invalid user status');
     }
   } catch (err) {
-    throw err;
+    throw new Error(err.message);
   }
 }
 
-async function verifyResetToken(token) {
+// async function verifyResetToken(token) {
+//   try {
+//       const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+//       if(decoded.userId) {
+//         return await User.findById(decoded.userId);
+//       }
+//   } catch (error) {
+//       throw new Error({error : 'Invalid Token'});
+//   }
+// }
+
+async function verifyResetToken(tokenId) {
   try {
-      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-      if(decoded.userId) {
-        return await User.findById(decoded.userId);
-      }
+    const tokenEntry = await TokenShortCode.findOne({ _id: tokenId, used: false });
+    if (!tokenEntry) {
+      throw new Error('Invalid or expired token');
+    }
+
+    const decoded = jwt.verify(tokenEntry.token, process.env.ACCESS_TOKEN_SECRET);
+    if (!decoded || !decoded.userId) {
+      throw new Error('Invalid token');
+    }
+
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    return user;
   } catch (error) {
-      throw new Error({error : 'Invalid Token'});
+    throw new Error(error.message);
   }
 }
-
-
 
 //Investors
 async function sendNewContactRequestEmail(userId, companyName,country) {
@@ -429,7 +504,6 @@ async function sendNewContactRequestEmail(userId, companyName,country) {
     throw err;
   }
 }
-
 
 const sendNewProjectShareRequestEmail = async (userId, companyName, country, project) => {
   const user = await User.findById(userId);
@@ -604,22 +678,19 @@ function getTimezoneOffset(time) {
 
 
 function generateVerificationToken(userId) {
-  const expiresIn = '1h';
+  const expiresIn = '5m'; // Set token to expire in 15 minutes
   const payload = {
     userId: userId,
-    exp: Math.floor(Date.now() / 1000) + 60 * 60,
   };
-  return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET);
+
+  return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn });
 }
 
 function generateForgotPassworToken(userId) {
-  const expiresIn = '30min';
-  const payload = {
-    userId: userId
-  };
-  return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET , {expiresIn: expiresIn});
+  const expiresIn = '5m';
+  const payload = { userId };
+  return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn });
 }
-
 function isTokenExpired(decoded) {
   try {
     if (Date.now() >= decoded.exp * 1000) {
@@ -636,5 +707,5 @@ module.exports = { sendEmail, generateVerificationToken, isTokenExpired, generat
   sendVerificationEmail, sendVerificationOtpEmail, VerifyUser, sendRejectedEmail,sendAcceptedEmail,
   sendUnderReviewEmail,sendForgotPasswordEmail,verifyResetToken , sendTicketToUser , sendContactEmail ,
 getTokenFromShortCode , generateShortCodeFromToken , saveShortCodeToTokenMapping , sendContactEmailConfirm , 
-sendNewProjectShareRequestEmail , getLanguageIdByLabel}
+sendNewProjectShareRequestEmail , getLanguageIdByLabel , markTokenAsUsed}
 

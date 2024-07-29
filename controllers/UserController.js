@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const { ObjectId } = require('mongodb');
 const bcrypt = require('bcrypt');
 const NewsletterService = require('../services/NewsletterService');
+const TokenShortCode = require('../models/TokenShortCode')
 
 const languages = [
   { id: 'en', label: 'English' },
@@ -226,16 +227,29 @@ const confirmVerification = async (req, res) => {
     res.redirect(`${process.env.FRONTEND_URL}/SuccessSignUp?user_id=${result?._id}&redirectFromVerify=${true}&lang=${getLanguageIdByLabel(result?.language)}`);
     // res.status(200).json(result)
   } catch (error) {
-    res.status(500).json(error);
+    console.error(error);
+    // In case of an expired token, retrieve the user information
+    const tokenEntry = await TokenShortCode.findOne({ _id: req.params.token, used: false });
+    const user = await User.findById(tokenEntry?.userId);
+    if (user) {
+      // Redirect to a page to request a new verification link
+      res.redirect(`${process.env.FRONTEND_URL}/VerifyFailure?err=${error?.message}&user_id=${user._id}&email=${user.email}`);
+    } else {
+      res.redirect(`${process.env.FRONTEND_URL}/VerifyFailure?err=${error?.message}`);
+
+    }
   }
 };
 
 const verifyPasswordToken = async (req, res) => {
   try {
     const result = await EmailingService.verifyResetToken(req.query.token);
-    res.status(200).json(result);
+    // If the token is valid, redirect to the reset password page
+    res.redirect(`${process.env.FRONTEND_URL}/ResetPassword?token=${req.query.token}`);
   } catch (error) {
-    res.status(500).json(error);
+    console.error('Error verifying token:', error.message);
+    // Redirect to the sign-in page with an error message if the token is invalid or expired
+    res.redirect(`${process.env.FRONTEND_URL}/SignIn?error=${encodeURIComponent(error.message)}`);
   }
 };
 

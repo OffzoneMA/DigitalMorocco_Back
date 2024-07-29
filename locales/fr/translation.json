@@ -25,7 +25,12 @@
     "note1": "N'avez-vous pas demandé de réinitialisation de mot de passe ?",
     "note2": "Vous pouvez en toute sécurité ignorer ce message.",
     "footer": "Copyright © 2023 Digital Morocco. Tous droits réservés. Propulsé par",
-    "contact": "Contactez-nous : support@digitalmorocco.net"
+    "contact": "Contactez-nous : support@digitalmorocco.net",
+    "confirm":"Votre mot de passe a été réinitialisé",
+    "confirmMsg": "Vous pouvez désormais utiliser votre nouveau mot de passe pour vous connecter en cliquant sur le bouton ci-dessous.",
+    "signIn":"Se connecter",
+    "confirmFooter": "Si vous n'avez pas initié cette demande, veuillez contacter notre support immédiatement. Merci !",
+    "confirmFooter1":" Thank you!"
   },
   "ack_request": {
     "email_subject": "Accusé de réception de votre demande !",

@@ -6,6 +6,10 @@ const TokenShortCodeSchema = new mongoose.Schema({
       required: true,
       unique: true
     },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",    
+    },
     token: {
       type: String,
       required: true
@@ -13,8 +17,9 @@ const TokenShortCodeSchema = new mongoose.Schema({
     createdAt: {
       type: Date,
       default: Date.now,
-      expires: '30m' 
-    }
+      expires: '5m' 
+    },
+    used: { type: Boolean, default: false }
   });
 
 const TokenShortCode = mongoose.model("TokenShortCode", TokenShortCodeSchema)

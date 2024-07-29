@@ -8,9 +8,17 @@ const InvestorSchema = new mongoose.Schema({
         required: true
     },
     name:  String,
+    companyName: String,
     legalName:String,
+    website: String,
+    contactEmail: String,
+    desc:String,
+    address: String,
+    country: String,
+    city: String,
+    taxNbr: String,
+    corporateNbr: String,
     companyType: String,
-    description: String,
     foundedDate: String,
     headquarter: String,
     investmentStage: String,
@@ -20,7 +28,6 @@ const InvestorSchema = new mongoose.Schema({
     investmentCapacity: Number,
     image: String,
     investorType: String,
-    website: String,
     fund: Number,
     fundingRound : String,
     acquisitions : Number,
@@ -67,8 +74,6 @@ const InvestorSchema = new mongoose.Schema({
             ref: "Member"
         }
     ],*/
-
-    
 
 })
 
