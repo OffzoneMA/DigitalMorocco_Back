@@ -7,9 +7,8 @@ async function checkUserRole(userId) {
         if (!user) {
             throw new Error('User not found');
         }
-        const userRole = user.role;
 
-        const isAdmin = userRole === 'admin';
+        const isAdmin = user?.role?.toLowerCase() === 'admin';
 
         return isAdmin;
     } catch (error) {

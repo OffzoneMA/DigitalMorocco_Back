@@ -34,11 +34,14 @@ const AuthController = require("../controllers/AuthController")
  *             type: string
  *         price:
  *           type: number
+ *         annualPrice: 
+ *           type: number
+ *         annualDiscountRate: 
+ *           type: number
  *         duration:
  *           type: number
  *         planType:
  *           type: string
- *           enum: [Basic, Pro, Enterprise]
  *         credits:
  *           type: number
  *         hasTrial:
@@ -48,6 +51,10 @@ const AuthController = require("../controllers/AuthController")
  *         trialEndDate:
  *           type: string
  *           format: date-time
+ *         forUser:
+ *           type: string
+ *           enum: [Member, Investor]
+ *           description: Specifies if the plan is for Members or Investors
  *       required:
  *         - name
  *         - creator
@@ -56,7 +63,7 @@ const AuthController = require("../controllers/AuthController")
 
 /**
  * @swagger
- * /subscription-plans/:
+ * /subscription-plans/{userId}:
  *   post:
  *     summary: Create a new subscription plan
  *     tags: [Subscription Plan]
@@ -67,12 +74,11 @@ const AuthController = require("../controllers/AuthController")
  *         description: ID of the admin user creating the plan
  *         schema:
  *           type: string
- *       - in: body
- *         name: planData
- *         required: true
- *         description: Plan data
- *         schema:
- *           $ref: '#/components/schemas/SubscriptionPlan'
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/SubscriptionPlan'
  *     responses:
  *       '201':
  *         description: Created
@@ -85,7 +91,7 @@ const AuthController = require("../controllers/AuthController")
  *       '500':
  *         description: Internal server error
  */
-router.post('/',AuthController.AuthenticateAdmin ,  SubscriptionPlanController.createSubscriptionPlan);
+router.post('/:userId', /*AuthController.AuthenticateAdmin ,*/  SubscriptionPlanController.createSubscriptionPlan);
 
 
 /**
@@ -111,7 +117,7 @@ router.get('/', SubscriptionPlanController.getAllSubscriptionPlans);
 /**
  * @swagger
  * /subscription-plans/{planId}:
- *   get:
+ *   put:
  *     summary: Get subscription plan by ID
  *     tags: [Subscription Plan]
  *     parameters:
@@ -121,6 +127,12 @@ router.get('/', SubscriptionPlanController.getAllSubscriptionPlans);
  *         description: ID of the subscription plan
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/SubscriptionPlan'
  *     responses:
  *       '200':
  *         description: Success

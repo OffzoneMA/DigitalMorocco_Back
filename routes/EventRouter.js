@@ -714,4 +714,74 @@ router.post('/:eventId/attendeesuser', EventController.addConnectedAttendee);
 
 router.delete('/supprimer-collection', EventController.supprimerCollection);
 
+/**
+ * @swagger
+ * /events/distinct/{field}:
+ *   get:
+ *     summary: Get distinct values for a specific field
+ *     tags: [Events]
+ *     parameters:
+ *       - in: path
+ *         name: field
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The field to get distinct values for
+ *     responses:
+ *       200:
+ *         description: List of distinct values
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ *       500:
+ *         description: Server error
+ */
+router.get('/distinct/:field', EventController.getDistinctFieldValues);
+
+/**
+ * @swagger
+ * /events/past/participate:
+ *   get:
+ *     summary: Get past events with user participation status
+ *     tags: [Events]
+ *     responses:
+ *       200:
+ *         description: List of past events with user participation status
+ *       500:
+ *         description: Server error
+ */
+router.get('/past/participate', AuthController.AuthenticateUser, EventController.getPastEventsForUserParticipate);
+
+/**
+ * @swagger
+ * /events/distinct/user/{field}:
+ *   get:
+ *     summary: Get distinct values of a specific field from events attended by the user
+ *     tags: [Events]
+ *     parameters:
+ *       - in: path
+ *         name: field
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The field to get distinct values from
+ *     responses:
+ *       200:
+ *         description: List of distinct values
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Server error
+ */
+router.get('/distinct/user/:field', AuthController.AuthenticateUser, EventController.getDistinctValuesForUser);
+
 module.exports = router

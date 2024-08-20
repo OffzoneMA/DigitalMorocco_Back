@@ -3,13 +3,25 @@ const mongoose = require("mongoose");
 const ActivityHistorySchema  = new mongoose.Schema({
     eventType: {
         type: String,
-        enum: ['document_shared', 'contact_request_sent', 'event_registered', 
-        'project_created', 'event_attended', 'document_uploaded', 'project_completed', 
-        'legal_document_uploaded', 'other'],
+        enum: [
+            'project_created', 'project_updated', 'project_deleted', 
+            'project_shared', 'milestone_add_to_project' , 'company_created', 
+            'company_updated' , 'document_created', 
+            'document_updated', 'document_deleted', 'document_shared', 
+            'profile_updated', 'employee_added', 'employee_removed',
+            'employee_updated', 'legal_document_created', 'legal_document_updated', 
+            'legal_document_deleted' , 'legal_document_download' ,  'contact_sent',
+            'event_ticket_download' , 'event_ticket_view' , 'event_registered' ,
+            'event_attended' , 'password_changed', 'account_deleted', 'password_reset',
+            'new_subscription' , 'subscription_upgrade', 'subscription_renew' ,
+            'subscription_canceled' ,'profile_update_lang_reg' , 'profile_update_password'
+        ],
         required: true
     },
-    eventDetails: {
-        type: String
+    eventData: {
+        type: Map,
+        of: mongoose.Schema.Types.Mixed, // Permet de stocker des données variées
+        required: true
     },
     timestamp: {
         type: Date,
@@ -18,26 +30,8 @@ const ActivityHistorySchema  = new mongoose.Schema({
     },
     user: {
         type: mongoose.Types.ObjectId,
-        ref: 'User' 
-    },
-    finalDetails: {
-        type: String
-        //exp : For project  (Save as Draft)
-    },
-    actionTargetType: {
-        type: String ,
-        default: ''
-    },
-    actionTarget: {
-        type: String /** exp : Id document , ID projet , ID event , ID blog */,
-        default: ''
-    },
-    targetUser: {
-        usertype: {
-            type:String , 
-            enum:['Member' , 'Investor' , 'Partner' , 'User']
-        } , 
-        userId: String, /*ID Investor , ID partner , ID user etc ...*/
+        ref: 'User',
+        required: true
     }
 })
 

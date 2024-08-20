@@ -1343,30 +1343,58 @@ router.delete('/:documentId/legal-document',AuthController.AuthenticateMember,  
  * @swagger
  * /members/{userId}:
  *   post:
- *     summary: Create a member
+ *     summary: Create a company for a member
  *     tags: [Members]
+ *     consumes:
+ *       - multipart/form-data
  *     parameters:
  *       - in: path
  *         name: userId
  *         schema:
  *           type: string
  *         required: true
- *         description: The ID of the user who owns the member
+ *         description: The ID of the member
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
- *               visbility:
+ *               companyName:
  *                 type: string
- *               credits:
- *                 type: number
- *               
+ *               legalName:
+ *                 type: string
+ *               website:
+ *                 type: string
+ *               contactEmail:
+ *                 type: string
+ *               desc:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               country:
+ *                 type: string
+ *               city:
+ *                 type: string
+ *               stage:
+ *                 type: string
+ *               state:
+ *                 type: string
+ *               companyType:
+ *                 type: string
+ *               taxNbr:
+ *                 type: string
+ *               corporateNbr:
+ *                 type: string
+ *               logo:
+ *                 type: string
+ *                 format: binary
+ *       produces:
+ *          - multipart/form-data
  *     responses:
- *       201:
- *         description: Member created successfully
+ *       200:
+ *         description: Company created successfully
  *         content:
  *           application/json:
  *             schema:
@@ -1374,7 +1402,7 @@ router.delete('/:documentId/legal-document',AuthController.AuthenticateMember,  
  *       400:
  *         description: Bad request, check the request body
  */
-router.post("/:userId", MemberController.createMember);
+router.post("/:userId", upload.single('logo'), MemberController.CreateMemberWithLogo);
 
 /**
  * @swagger
@@ -1801,5 +1829,22 @@ router.post('/:userId/create-test-company', upload.single('logo'), MemberControl
  *         description: Member not found
  */
 router.put("/:id", MemberController.updateMember);
+
+
+/**
+ * @swagger
+ * /members/my-investors:
+ *   get:
+ *     summary: Get investors for a member
+ *     description: Retrieve a list of investors associated with a specific member.
+ *     tags:
+ *       - Members
+ *     responses:
+ *       200:
+ *         description: A list of investors
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/my-investors', AuthController.AuthenticateMember , MemberController.getInvestorsForMember);
 
 module.exports = router;

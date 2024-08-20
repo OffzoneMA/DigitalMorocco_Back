@@ -5,6 +5,7 @@ const InvestorService = require('../services/InvestorService');
 const requestServive = require('../services/RequestService');
 const FileService = require('../services/FileService');
 const EmailingService = require('../services/EmailingService');
+const ActivityHistoryService = require('../services/ActivityHistoryService');
 const bcrypt = require('bcrypt');
 const UserLog = require('../models/UserLog');
 const salt=10
@@ -74,7 +75,7 @@ const updateUserLanguageRegionService = async(userId, updates) => {
     }
   
     await user.save();
-  
+    await ActivityHistoryService.createActivityHistory(userId, 'profile_update_lang_reg', { targetName : '' , targetDesc: '' });
     return user;
 }
 
@@ -155,7 +156,7 @@ const resetPassword = async (token, newPassword, confirmPassword, language) => {
       const result = await User.findByIdAndUpdate(user._id, user)
 
       await EmailingService.sendResetPasswordConfirmation(user._id, language);
-
+      await ActivityHistoryService.createActivityHistory(user._id, 'password_reset', { targetDesc:'From SignIn' });
      return result;
   
     } catch (error) {

@@ -194,6 +194,18 @@ async function createMember(req, res) {
     }
 }
 
+async function CreateMemberWithLogo(req, res) {
+    try {
+        const userId = req.params.userId;
+        const memberData = req.body;
+        const logo = req.file;
+        const result = await MemberService.CreateMemberWithLogo(userId, memberData , logo);
+        res.status(201).json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
 const createCompany = async (req, res)=> {
     try {
         const memberId = req.memberId;
@@ -532,4 +544,5 @@ module.exports = { checkSubscriptionStatus,editLegalDocument, getLegalDocuments,
     contactRequest, getContactRequests , createCompany , createEmployee , createLegalDocument ,createMember ,
 getTestAllMembers , getInvestorsForMember , getContactRequestsForMember ,updateEmployee ,
 deleteEmployee ,updateLegalDocument, deleteLegalDocument , getAllProjectsForMember , updateProject , updateMember ,
-getUniqueCountries , getUniqueStages , getUniqueCompanyTypes , createTestCompany , updateMember , shareProject}
+getUniqueCountries , getUniqueStages , getUniqueCompanyTypes , createTestCompany , updateMember , shareProject , 
+CreateMemberWithLogo}

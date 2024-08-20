@@ -34,7 +34,7 @@ const InvestorSchema = new mongoose.Schema({
     linkedin_link: String,
     type: String,
     location: String,
-    PreferredInvestmentIndustry: String,
+    PreferredInvestmentIndustry: [String],
     dateCreated: { type: Date, default: Date.now },
     numberOfInvestment: { type : Number, default:0},
     numberOfExits: { type : Number, default:0},
@@ -42,8 +42,6 @@ const InvestorSchema = new mongoose.Schema({
         name: String,
         link: String,
     }],
-    numberofInvestment : Number,
-    numberofExits :Number,
     location :String,
     investments: [
         {

@@ -63,7 +63,6 @@ const updateUserProfile = async (req, res) => {
 
     const user = await User.findByIdAndUpdate(userId, updatedFields, { new: true, runValidators: true });
     const log = await UserLogService.createUserLog('Profile Info Update', userId);
-    console.log(user)
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }

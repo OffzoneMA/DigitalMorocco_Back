@@ -56,7 +56,6 @@ const getInvestorRequests = async (req, res) => {
     }
   };
   
-
 const addInvestor = async (req, res) => {
     try {
         const result = await InvestorService.CreateInvestor(req.body);
@@ -94,10 +93,11 @@ const getProjects = async (req, res) => {
 }
 
 const updateContactStatus = async (req, res) => {
-
+    console.log(req.params.requestId)
+    console.log(req.params.status)
     try {
-        const result = await InvestorService.updateContactStatus(req.investorId,req.params.requestId , req.body.response);
-        res.status(200).json(req.body.response);
+        const result = await InvestorService.updateContactStatus(req.params.requestId , req.params.status);
+        res.status(200).json(result);
     } catch (error) {
         console.log(error)
         res.status(500).json(error);
@@ -127,6 +127,33 @@ const updateInvestor = async (req, res) => {
     }
 };
 
+const getDistinctInvestorData = async (req, res) => {
+    const { field } = req.params;
+    
+    if (!field) {
+        return res.status(400).json({ error: 'Field parameter is required' });
+    }
+
+    try {
+        const distinctValues = await InvestorService.getDistinctValues(field);
+        res.json(distinctValues);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+const getInvestorById = async (req, res) => {
+    try {
+        const investor = await InvestorService.getInvestorById(req.params.id);
+        if (!investor) {
+            return res.status(404).json({ message: 'Investor not found' });
+        }
+        res.status(200).json(investor);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+};
+
 module.exports = { getInvestorRequests,updateContactStatus, addInvestor, getInvestors, 
     getContactRequests, getContacts, getProjects , getContactRequestsForInvestor , updateInvestor , 
-    getAllInvestors}
+    getAllInvestors , getDistinctInvestorData , getInvestorById}

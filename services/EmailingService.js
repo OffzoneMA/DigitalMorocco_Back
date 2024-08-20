@@ -579,7 +579,7 @@ async function sendContactAcceptToMember(userId, InvestorName, linkedin_link, ev
       link,
       InvestorName: InvestorName ? InvestorName : "No Name Specified",
       linkedin_link,
-      eventDate: new Date(eventDate).toLocaleDateString('en-US', {
+      reqDate: new Date(eventDate).toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',

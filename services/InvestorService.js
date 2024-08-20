@@ -78,19 +78,19 @@ const getProjects = async () => {
     return projects;
 }
 
-const updateContactStatus=async(investorId,requestId,response)=>{
+const updateContactStatus=async(requestId , response)=>{
         const request = await ContactRequest.findById(requestId)
         console.log('Response received:', response);
         if (!request) {
             throw new Error('Request doesn t exist')
         }
-        if (response == "accepted") return await acceptContact(investorId, requestId, request.member);
-        if (response == "rejected") return await rejectContact(investorId, requestId, request.member);
+        if (response == "accepted") return await acceptContact(request?.investor,requestId, request.member);
+        if (response == "rejected") return await rejectContact(request?.investor, requestId, request.member);
 
 }
 
 const acceptContact = async (investorId, requestId, memberId) => {
-   const request = await ContactRequest.findByIdAndUpdate(requestId, { status:"accepted" })
+   const request = await ContactRequest.findByIdAndUpdate(requestId, { status:"Accepted" })
    const member = await Member.findByIdAndUpdate(memberId, {
         $push: { investorsRequestsAccepted:  investorId  },
         $pull: { investorsRequestsPending: investorId },
@@ -134,6 +134,15 @@ const updateInvestor = async (id, data) => {
     return await Investor.findByIdAndUpdate(id, data, { new: true });
 };
 
+const getDistinctValues = async (field) => {
+    try {
+        const distinctValues = await Investor.distinct(field);
+        return distinctValues;
+    } catch (error) {
+        throw new Error(`Error fetching distinct ${field}: ${error.message}`);
+    }
+};
+
 module.exports = { deleteInvestor,getContacts, getProjects, CreateInvestor, 
     getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, 
-    updateContactStatus , updateInvestor , getInvestors}
+    updateContactStatus , updateInvestor , getInvestors  , getDistinctValues}

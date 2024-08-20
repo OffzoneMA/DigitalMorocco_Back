@@ -3,18 +3,29 @@ const mongoose = require("mongoose");
 const DocumentsSchema = new mongoose.Schema({
     owner: {
         type: mongoose.Types.ObjectId,
-        ref: "Member",
+        ref: "User",
     },
-    uploadDate :Date,
+    uploadDate: {
+        type: Date,
+        default: Date.now
+    },
+    title: String ,
     documentName: String,
-    uploadBy: {
-        type: mongoose.Types.ObjectId,
-        ref: "User"
-    },
     link: {type:String},
     docType: String,
-    shareWith: String,
-    shareWithUsers : String
+    shareWith: {
+        type: String,
+        // enum: ["all", "Investors", "Partners","Marketing Team" , "group", "individual"],
+        default: "Individual"
+    },
+    // shareWithUser: {
+    //     type: mongoose.Types.ObjectId,
+    //     ref: "User"
+    // },
+    shareWithUsers: [{
+        type: mongoose.Types.ObjectId,
+        ref: "User"
+    }]
    
 })
 

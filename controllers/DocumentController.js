@@ -1,14 +1,24 @@
 const DocumentService = require("../services/DocumentService");
 
-async function getDocumentsForMember(req, res) {
+async function getDocumentsForUser(req, res) {
     try {
-        const memberId = req.params.memberId;
-        const documents = await DocumentService.getDocumentsForMember(memberId);
+        const userId = req.userId;
+        const documents = await DocumentService.getDocumentsForUser(userId);
         res.status(200).json(documents);
     } catch (error) {
+        console.log(error)
         res.status(400).json({ error: error.message });
     }
 }
+
+const getAllDocuments = async (req, res) => {
+    try {
+        const documents = await DocumentService.getAllDocuments();
+        res.status(200).json({ success: true, data: documents });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
 
 async function getDocumentsByUploader(req, res) {
     try {
@@ -23,11 +33,14 @@ async function getDocumentsByUploader(req, res) {
 async function updateDocument(req, res) {
     try {
         const documentId = req.params.documentId;
-        const updateData = req.body;
-        const docFile = req.file;
-        const updatedDocument = await DocumentService.updateDocument(documentId, updateData, docFile);
+        const updateData = isJsonString(req?.body.documentData) ? JSON.parse(req?.body.documentData) : req?.body.documentData;
+        const shareWithUsers = req?.body?.shareWithUsers;
+        const docFile = req.files['docFile'];
+        console.log(updateData)
+        const updatedDocument = await DocumentService.updateDocument(documentId, updateData, docFile?.[0]);
         res.status(200).json(updatedDocument);
     } catch (error) {
+        console.log(error)
         res.status(400).json({ error: error.message });
     }
 }
@@ -52,17 +65,38 @@ async function getDocumentById(req, res) {
     }
 }
 
+function isJsonString(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+
 async function createDocument(req, res) {
     try {
-        const { memberId, userId } = req.params; 
-        const documentData = req.body;
-        const docFile = req.file;
-        const document = await DocumentService.createDocument(memberId, userId, documentData, docFile);
+        const userId = req.userId; 
+        const documentData = isJsonString(req?.body.documentData) ? JSON.parse(req?.body.documentData) : req?.body.documentData;
+        const docFile = req.files['docFile'];
+        console.log(documentData)
+        const document = await DocumentService.createDocument(userId, documentData, docFile?.[0]);
         res.status(201).json(document);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 }
 
-module.exports = {getDocumentsByUploader, getDocumentsForMember ,updateDocument,
-deleteDocument, getDocumentById, createDocument}
+const shareDocument = async (req, res) => {
+    try {
+        const document = await DocumentService.shareDocument(req.params.id, req.body.userIds, req.body.shareWith );
+        res.status(200).json({ success: true, data: document });
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+
+module.exports = {getDocumentsByUploader, getDocumentsForUser ,updateDocument, shareDocument ,
+deleteDocument, getDocumentById, createDocument , getAllDocuments}

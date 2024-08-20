@@ -8,20 +8,26 @@ const SubscriptionPlanSchema = new mongoose.Schema({
     },
     creator: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+        ref: 'User'
     },
     description: { type: String },
     dateCreated: { type: Date, default: Date.now },
     isAvailable: { type: Boolean, default: true }, 
     featureDescriptions: [String],
     price: Number,
+    annualPrice: Number, 
+    annualDiscountRate: Number,
     duration:Number,
-    planType: { type: String, enum: ['Basic', 'Pro', 'Enterprise'], required: true },
+    planType: { type: String, required: true },
     credits: { type: Number, default: 0 },
     hasTrial: { type: Boolean, default: false }, 
     trialDays: { type: Number },
     trialEndDate: { type: Date },
+    forUser : {
+        type: String ,
+        enum : ["Member" , "Investor"],
+        default: "Member"
+    }
 })
 
 

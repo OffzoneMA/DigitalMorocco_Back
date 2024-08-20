@@ -73,7 +73,6 @@ router.route("/").get(AuthController.AuthenticateSubMemberOrAdmin, InvestorContr
  */
 router.route("/all").get(InvestorController.getAllInvestors)
 
-
 /**
  * @swagger
  * /investors:
@@ -320,7 +319,7 @@ router.route("/ContactRequest").get(AuthController.AuthenticateInvestor, Investo
 
 /**
  * @swagger
- * /investors/ContactRequest/{requestId}:
+ * /investors/ContactRequest/{requestId}/{status}:
  *   put:
  *     summary: Update contact request status
  *     description: Update the status of a contact request based on the requestId.
@@ -335,7 +334,7 @@ router.route("/ContactRequest").get(AuthController.AuthenticateInvestor, Investo
  *         schema:
  *           type: string
  *       - name: status
- *         in: body
+ *         in: path
  *         description: The new status for the contact request (accepted or rejected).
  *         required: true
  *         schema:
@@ -353,7 +352,7 @@ router.route("/ContactRequest").get(AuthController.AuthenticateInvestor, Investo
  *       500:
  *         description: Internal Server Error
  */
-router.route("/ContactRequest/:requestId").put(AuthController.AuthenticateInvestor, InvestorController.updateContactStatus);
+router.route("/ContactRequest/:requestId/:status").put(AuthController.AuthenticateInvestor , InvestorController.updateContactStatus);
 /**
  * @swagger
  * /investors/Contacts:
@@ -431,6 +430,31 @@ router.route("/Contacts").get(AuthController.AuthenticateInvestor, InvestorContr
 router.get('/investors/:investorId/contact-requests', InvestorController.getContactRequestsForInvestor);
 
 router.route("/Projects").get(AuthController.AuthenticateInvestor, InvestorController.getProjects)
+
+/**
+ * @swagger
+ * /investors/byId/{id}:
+ *   get:
+ *     summary: Récupérer les détails d'un investisseur par ID
+ *     tags: [Investors]
+ *     description: Récupère les informations d'un investisseur spécifique à l'aide de son ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Détails de l'investisseur récupérés avec succès
+ *       404:
+ *         description: Investisseur non trouvé
+ *       500:
+ *         description: Erreur serveur
+ */
+router.put("/byId/:id", InvestorController.getInvestorById);
+
 
 /**
  * @swagger
@@ -530,5 +554,36 @@ router.route("/Projects").get(AuthController.AuthenticateInvestor, InvestorContr
  *         description: Investor not found
  */
 router.put("/:id", InvestorController.updateInvestor);
+
+
+/**
+ * @swagger
+ * /investors/distinct/{field}:
+ *   get:
+ *     summary: Get distinct values of a specified field from investors
+ *     tags: [Investors]
+ *     parameters:
+ *       - in: path
+ *         name: field
+ *         required: true
+ *         description: The field for which to get distinct values (e.g., type, location, companyType)
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: A list of distinct values
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ *       400:
+ *         description: Bad Request
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get('/distinct/:field', InvestorController.getDistinctInvestorData);
+
 
 module.exports = router

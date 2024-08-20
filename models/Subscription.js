@@ -5,20 +5,44 @@ const SubscriptionSchema = new mongoose.Schema({
         ref: 'SubscriptionPlan', 
         required: true 
     },
+    user: {
+        type: mongoose.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
     billing: { type: String, default: 'month' },
     paymentMethodType: 
     {   type: String, 
         default: 'Card' 
     },
+    totalCredits: Number,
     paymentMethod: { type: String },
     cardLastFourDigits: { type: Number },
     cardexpiration: { type: String },
-    subscriptionStatus: { type: String, enum: ['active', 'cancelled', 'paused'], default: 'active' } ,
-    dateCreated: { type: Date, default: Date.now },
-    dateExpired: { type: Date },
-    dateStopped: { type: Date },
-    discountCode: { type: String },
-    metadata: { },
+    subscriptionStatus: { type: String, enum: ['active', 'cancelled', 'paused' , 'notActive'], default: 'notActive' } ,
+    autoRenew: {
+        type: Boolean,
+        default: true
+    },
+    nextBillingDate: {
+        type: Date
+    },
+    dateCreated: { 
+        type: Date, 
+        default: Date.now 
+    },
+    dateExpired: { 
+        type: Date 
+    },
+    dateStopped: { 
+        type: Date 
+    },
+    discountCode: { 
+        type: String 
+    },
+    metadata: { 
+        type: mongoose.Schema.Types.Mixed 
+    }
 })
 
 

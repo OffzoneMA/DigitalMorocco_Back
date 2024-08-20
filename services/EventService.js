@@ -287,9 +287,70 @@ cron.schedule('0 0 * * *', async () => {
   }
 });
 
+const getDistinctValues = async (field) => {
+  try {
+      const distinctValues = await Event.distinct(field);
+      return distinctValues;
+  } catch (error) {
+      throw new Error(error.message);
+  }
+};
+
+const getPastEventsWithUserParticipation = async (userId) => {
+  try {
+      // Date actuelle pour filtrer les événements passés
+      const currentDate = new Date();
+
+      // Requête pour obtenir les événements passés
+      const pastEvents = await Event.find({ endDate: { $lt: currentDate } })
+          .populate('attendeesUsers.userId', 'displayName email image'); // Populate pour obtenir les détails de l'utilisateur
+
+      // Transformation des données pour inclure l'indicateur de participation
+      const eventsWithParticipation = pastEvents.map(event => {
+          const userParticipated = event.attendeesUsers.some(user => user.userId.equals(userId));
+          return {
+              ...event.toObject(),
+              userParticipated
+          };
+      });
+
+      return eventsWithParticipation;
+  } catch (error) {
+      throw new Error(error.message);
+  }
+};
+
+// const getDistinctValuesByUser = async (userId, field) => {
+//   try {
+//     const userEvents = await Event.find({ 'attendeesUsers.userId': mongoose.Types.ObjectId(userId) });
+
+//     // Extraire les valeurs du champ spécifié pour chaque événement
+//     const fieldValues = userEvents.map(event => event[field]);
+
+//     // Extraire les valeurs distinctes
+//     const distinctValues = [...new Set(fieldValues.flat())];
+
+//     return distinctValues;
+//   } catch (error) {
+//     throw new Error(error.message);
+//   }
+// };
+
+const getDistinctValuesByUser = async (field, userId) => {
+  try {
+      // Filtrer les événements auxquels l'utilisateur est inscrit
+      const distinctValues = await Event.distinct(field, { 'attendeesUsers.userId': userId });
+      return distinctValues;
+  } catch (error) {
+      throw new Error(error.message);
+  }
+};
+
+
 
 module.exports = {
     createEvent, getAllEvents, getEventById, updateEvent, deleteEvent, getAllEventsByUser, addAttendeeToEvent,
     supprimerCollection , addConnectedAttendee , updateConnectedAttendee , deleteConnectedAttendee , addPromoCode ,
-    countEventsByUserId , getEventsForUser
+    countEventsByUserId , getEventsForUser , getDistinctValues , getPastEventsWithUserParticipation ,
+    getDistinctValuesByUser
 };

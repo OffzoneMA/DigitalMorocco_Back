@@ -132,7 +132,11 @@ const addEmployee = async (userId, newEmployeeData) => {
         });
 
         await member.save();
-
+        await ActivityHistoryService.createActivityHistory(
+            userId,
+            'employee_added',
+            { targetName: newEmployeeData.fullName, targetDesc: `To team members` }
+        );
         return {
             employee: newEmployeeData,
         };
@@ -145,6 +149,7 @@ const addEmployee = async (userId, newEmployeeData) => {
 const createCompany = async (userId, companyData) => {
     try {
         const existingMember = await Member.findOne({ owner: userId });
+        const actionType = existingMember?.companyName ? 'company_updated' : 'company_created';
         if (existingMember) {
             existingMember.companyName = companyData.companyName;
             existingMember.legalName = companyData.legalName;
@@ -160,7 +165,11 @@ const createCompany = async (userId, companyData) => {
             existingMember.logo = companyData.logo;
 
             const savedMember = await existingMember.save();
-
+            await ActivityHistoryService.createActivityHistory(
+                userId,
+                actionType,
+                { targetName: companyData.companyName, targetDesc: `` }
+            );
             return {
                 message: 'Nouvelle entreprise ajoutée avec succès',
                 company: savedMember,
@@ -175,6 +184,7 @@ const createCompany = async (userId, companyData) => {
 const createTestCompany = async (userId, companyData , logo) => {
     try {
         const existingMember = await Member.findOne({ owner: userId });
+        const actionType = existingMember?.companyName ? 'company_updated' : 'company_created';
         if (existingMember) {
             existingMember.companyName = companyData.companyName;
             existingMember.legalName = companyData.legalName;
@@ -194,6 +204,11 @@ const createTestCompany = async (userId, companyData , logo) => {
             }
 
             const savedMember = await existingMember.save();
+            await ActivityHistoryService.createActivityHistory(
+                userId,
+                actionType,
+                { targetName: companyData.companyName, targetDesc: `` }
+            );
 
             return {
                 message: 'Nouvelle entreprise ajoutée avec succès',
@@ -223,6 +238,11 @@ const addLegalDocumentToMember = async (memberId, documentData) => {
       };
       member.legalDocument.push(newDocument);
       await member.save();
+      await ActivityHistoryService.createActivityHistory(
+        memberId,
+        'legal_document_added',
+        { targetName: documentData.name, targetDesc: `` }
+    );
       return member;
     } catch (error) {
       throw error;
@@ -240,7 +260,12 @@ const deleteLegalDocument = async (documentId) => {
         if (!deletedDocument) {
           throw new Error("Document not found");
         }
-    
+        
+        await ActivityHistoryService.createActivityHistory(
+            deletedDocument.owner,
+            'legal_document_deleted',
+            { targetName: documentId, targetDesc: `` }
+        );
         return deletedDocument;
       } catch (error) {
         console.error("Error deleting document:", error);
@@ -271,7 +296,11 @@ const editLegalDocument = async (documentId,userId, updatedDocumentData) => {
         documentIndex.type = updatedDocumentData.type;
 
         await member.save();
-        
+        await ActivityHistoryService.createActivityHistory(
+            userId,
+            'legal_document_updated',
+            { targetName: document.name, targetDesc: `` }
+        ); 
     } catch (error) {
         console.error("Erreur lors de la mise à jour du document :", error);
         throw new Error("Erreur lors de la mise à jour du document ");
@@ -315,6 +344,11 @@ const updateEmployeeToMember = async (memberId, employeeId, updatedEmployeeData)
         if (updatedEmployeeData.department) employee.department = updatedEmployeeData.department;
 
         await member.save();
+        await ActivityHistoryService.createActivityHistory(
+            memberId,
+            'employee_updated',
+            { targetName: employee.fullName, targetDesc: `` }
+        );
         return employee;
     } catch (error) {
         console.error("Erreur lors de la mise à jour de l'employé :", error);
@@ -323,8 +357,29 @@ const updateEmployeeToMember = async (memberId, employeeId, updatedEmployeeData)
 }
 
 const CreateMember = async (userId, member) => {
-    return await Member.create({ ...member, owner: userId });
+    try {
+        return await Member.create({ ...member, owner: userId });
+    } catch (error) {
+        throw new Error(`Error creating member: ${error.message}`);
+    }
 };
+
+const CreateMemberWithLogo = async (userId, member, logo) => {
+    try {
+        // Initialisation de l'objet pour le nouveau membre
+        const newMember = { ...member, owner: userId };
+
+        if (logo) {
+            const logoLink = await uploadService.uploadFile(logo, `Members/${userId}`, 'logo');
+            newMember.logo = logoLink;
+        }
+
+        return await Member.create(newMember);
+    } catch (error) {
+        throw new Error(`Error creating member: ${error.message}`);
+    }
+};
+
 
 const createEnterprise = async (memberId, infos, documents, logo) => {
     try {
@@ -360,7 +415,15 @@ const createEnterprise = async (memberId, infos, documents, logo) => {
             let logoLink = await uploadService.uploadFile(logo[0], "Members/" + member.owner + "", 'logo')
             entreprise.logo = logoLink
         }
-        return await Member.findByIdAndUpdate(memberId, entreprise);
+        const updatedMember = await Member.findByIdAndUpdate(memberId, entreprise);
+
+        await ActivityHistoryService.createActivityHistory(
+            member.owner,
+            'company_created',
+            { targetName: entreprise.companyName, targetDesc: `` }
+        );
+
+        return updatedMember;
     }
     catch (err) {
         throw new Error('Something went wrong !')
@@ -400,6 +463,11 @@ const createEmployee = async (memberId, employeeData , photo)=> {
         }
         member.listEmployee.push(employeeData);
         const savedEmployee = await member.save();
+        await ActivityHistoryService.createActivityHistory(
+            member.owner,
+            'employee_added',
+            { targetName: employeeData?.fullName, targetDesc: `` }
+        );
         return savedEmployee.listEmployee[savedEmployee.listEmployee.length - 1];
     } catch (error) {
         console.log(error);
@@ -435,7 +503,6 @@ async function updateEmployee(memberId, employeeId, updatedEmployeeData, photo) 
             member.listEmployee[employeeIndex] = { ...member.listEmployee[employeeIndex], ...filteredEmployeeData };
         }
 
-        
         // member.listEmployee[employeeIndex] = { ...member.listEmployee[employeeIndex], ...filteredEmployeeData };
 
         if (photo && photo !== '') {
@@ -444,6 +511,11 @@ async function updateEmployee(memberId, employeeId, updatedEmployeeData, photo) 
         }
 
         const savedMember = await member.save();
+        await ActivityHistoryService.createActivityHistory(
+            member.owner,
+            'employee_updated',
+            { targetName: member?.listEmployee[employeeIndex]?.fullName, targetDesc: `` }
+        );
         return savedMember.listEmployee[employeeIndex];
     } catch (error) {
         throw new Error('Error updating employee: ' + error.message);
@@ -465,6 +537,11 @@ async function deleteEmployee(memberId, employeeId) {
 
         const deletedEmployee = member.listEmployee.splice(employeeIndex, 1);
         await member.save();
+        await ActivityHistoryService.createActivityHistory(
+            member.owner,
+            'employee_removed',
+            { targetName: deletedEmployee?.[0]?.fullName, targetDesc: `` }
+        );
         return deletedEmployee;
     } catch (error) {
         throw new Error('Error deleting employee: ' + error.message);
@@ -487,19 +564,14 @@ const createLegalDocument = async (memberId, documentData , docFile)=> {
         const savedDocument = await member.save();
 
         // Récupération de l'ID du dernier document ajouté
-        const documentId = savedDocument.legalDocument[savedDocument.legalDocument.length - 1]._id;
+        const document = savedDocument.legalDocument[savedDocument.legalDocument.length - 1];
 
         // Enregistrement de l'action dans l'historique
-        const historyData = {
-            eventType: 'legal_document_uploaded',
-            timestamp: new Date(),
-            user: member.owner,
-            actionTargetType: 'Legal document',
-            actionTarget: documentId,
-        };
-
-        await ActivityHistoryService.createActivityHistory(historyData);
-
+        await ActivityHistoryService.createActivityHistory(
+            userId,
+            'legal_document_created',
+            { targetName: document.name, targetDesc: `` }
+        );
         return savedDocument.legalDocument[savedDocument.legalDocument.length - 1];
     } catch (error) {
         throw new Error('Error creating legal document');
@@ -527,6 +599,11 @@ async function updateLegalDocument(memberId, documentId, updatedDocumentData, do
 
         member.legalDocument[documentIndex] = { ...member.legalDocument[documentIndex], ...updatedDocumentData };
         await member.save();
+        await ActivityHistoryService.createActivityHistory(
+            userId,
+            'legal_document_updated',
+            { targetName: updatedDocumentData?.name, targetDesc: `` }
+        );
         return member.legalDocument[documentIndex];
     } catch (error) {
         throw new Error('Error updating legal document: ' + error.message);
@@ -577,8 +654,14 @@ const createTestProject = async (memberId, infos, documents) => {
 
         // Save the project
         await project.save();
+        await ActivityHistoryService.createActivityHistory(
+            member.owner,
+            'project_created',
+            { targetName: project?.name, targetDesc: `and save as Draft` }
+        );
     } else {
         // If project exists, update its fields
+        const projectfirstName = project?.name;
         project.name = infos.name;
         project.funding = infos.fundingAmount;
         project.currency = infos.currency;
@@ -599,6 +682,11 @@ const createTestProject = async (memberId, infos, documents) => {
 
         // Save the updated project
         await project.save();
+        await ActivityHistoryService.createActivityHistory(
+            member.owner,
+            'project_updated',
+            { targetName: project?.name, targetDesc: `` , to: projectfirstName }
+        );
     }
 
     return project;
@@ -646,16 +734,11 @@ async function createProject(ownerId, projectData , pitchDeck, businessPlan , fi
       const savedProject = await project.save();
 
       // Enregistrement de l'action dans l'historique
-      const historyData = {
-        eventType: 'project_created',
-        eventDetails: 'Created Project',
-        timestamp: new Date(),
-        user: member.owner,
-        finalDetails: 'and save as Draft',
-        actionTarget: savedProject._id,
-    };
-
-    await ActivityHistoryService.createActivityHistory(historyData);
+      await ActivityHistoryService.createActivityHistory(
+        member.owner,
+        'project_created',
+        { targetName: project.name, targetDesc: `` }
+      );
       return savedProject;
     } catch (error) {
       throw error;
@@ -668,7 +751,7 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
         if (!project) {
             throw new Error("Project not found");
         }
-        
+        const projectFirstName = project?.name;
         project.name = newData.name || project.name;
         project.funding = newData.funding || project.funding;
         project.totalRaised = newData.totalRaised || project.totalRaised;
@@ -698,7 +781,6 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
         //         }
         //     }
         // }
-        console.log(newData.listMember)
         if (newData.listMember) {
             // Create a map of new members by personalEmail and workEmail
             const newMembersMap = new Map(newData.listMember.map(member => [member.personalEmail + member.workEmail, member]));
@@ -776,8 +858,13 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
             }
           }
           
-
         const updatedProject = await project.save();
+        const member = await Member.findById(project?.owner)
+        await ActivityHistoryService.createActivityHistory(
+            member.owner,
+            'project_updated',
+            { targetName: projectFirstName, targetDesc: `Project updated for projectId ${projectId}` , to: project?.name }
+        );
         return updatedProject;
     } catch (error) {
         console.log(error)
@@ -929,16 +1016,11 @@ const SubscribeMember = async (memberId, planId) => {
             subscriptionExpireDate: savedSubscription.dateExpired,
         });
 
-        const historyData = {
-            eventType: 'Subscribe_to_plan',
-            eventDetails: 'Subscribe to ',
-            timestamp: new Date(),
-            user: updatedMember.owner,
-            actionTargetType: 'Subscribe',
-            actionTarget: subscriptionPlan._id,
-        };
-
-        await ActivityHistoryService.createActivityHistory(historyData);
+        await ActivityHistoryService.createActivityHistory(
+            updatedMember.owner,
+            'new_subscription',
+            { targetName: subscriptionPlan.name, targetDesc: `Member subscribed to plan ${planId}` }
+        );
 
         return updatedMember;
     } catch (error) {
@@ -978,6 +1060,12 @@ async function cancelSubscriptionForMember(memberId) {
             { subStatus: 'notActive' ,
             $inc: { 'credits': -subscription.credits }
         });
+        const subsPlan = await SubscriptionPlanService.getSubscriptionPlanById(subscription?.plan)
+        await ActivityHistoryService.createActivityHistory(
+            member.owner,
+            'subscription_canceled',
+            { targetName: subsPlan.name, targetDesc: `Subscription canceled for member ${memberId}` }
+        );
 
         return { member: updatedMember, subscription: updatedSubscription };
     } catch (error) {
@@ -1034,7 +1122,11 @@ async function upgradePlan(memberId, newPlanId) {
                 expireDate: newExpirationDate
             });
         }
-
+        await ActivityHistoryService.createActivityHistory(
+            member.owner,
+            'subscription_upgraded',
+            { targetName: newPlan.name, targetDesc: `Subscription upgraded for member ${memberId}` }
+        );
         return updatedSubscription;
     } catch (error) {
         throw new Error('Error upgrading plan: ' + error.message);
@@ -1080,7 +1172,7 @@ async function renewSubscription(memberId) {
             throw new Error('Subscription not found');
         }
 
-        const plan = await SubscriptionPlan.findById(subscription.plan);
+        const plan = await SubscriptionPlanService.getSubscriptionPlanById(subscription.plan);
         if (!plan) {
             throw new Error('Subscription plan not found');
         }
@@ -1108,7 +1200,11 @@ async function renewSubscription(memberId) {
             subscriptionExpireDate: newExpirationDate,
             type: 'Renew'
         })
-
+        await ActivityHistoryService.createActivityHistory(
+            member.owner,
+            'subscription_renew',
+            { targetName: plan.name, targetDesc: `Subscription renewed for member ${memberId}` }
+        );
         return { updatedMember, updatedSubscription };
     } catch (error) {
         throw new Error('Error renewing subscription: ' + error.message);
@@ -1219,12 +1315,12 @@ const checkMemberStatus = async (memberId) => {
         if (!member) {
         return false;
         }
-        // const subscriptionLog = await SubscriptionLogs.findOne({ member: member._id });
-        // if (!subscriptionLog) {
+        // const subscription = await Subscription.findOne({ member: member._id });
+        // if (!subscription) {
         //     return false;
         // }
         // const currentDate = new Date();
-        // const expirationDate = new Date(subscriptionLog.subscriptionExpireDate); 
+        // const expirationDate = new Date(subscription.dateExpired); 
         // console.log("currentDate",currentDate)
         // console.log("expirationDate",expirationDate)
         // if (currentDate > expirationDate) {
@@ -1247,4 +1343,5 @@ const checkMemberStatus = async (memberId) => {
     createCompany , createEmployee, createLegalDocument , getTestAllMembers , createTestProject , 
     getInvestorsForMember ,cancelSubscriptionForMember,renewSubscription, upgradePlan ,
     updateEmployee , deleteEmployee, updateLegalDocument, getAllProjectsForMember ,
-    updateProject , updateMember , createTestCompany , updateMember , getMemberInfoByUserId} 
+    updateProject , updateMember , createTestCompany , updateMember , getMemberInfoByUserId , 
+    CreateMemberWithLogo} 

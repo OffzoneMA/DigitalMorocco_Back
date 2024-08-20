@@ -711,6 +711,13 @@ router.put('/update',AuthController.AuthenticateUser, UserController.updateUser)
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - name: userId
+ *         in: path
+ *         description: ID of the user to approve
+ *         required: true
+ *         schema:
+ *           type: string
  *     requestBody:
  *       required: true
  *       content:

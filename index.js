@@ -13,6 +13,7 @@ const InvestorRouter = require("./routes/InvestorRouter");
 const Adminrouter = require("./routes/Adminrouter");
 const Requestouter = require("./routes/Requestrouter");
 const SubscriptionRouter = require("./routes/SubscriptionRouter");
+const SubscriptionPlanRouter = require("./routes/SubscriptionPlanRouter")
 const UserLogRouter = require("./routes/UserLogRouter");
 const SubscriptionLogRouter = require("./routes/SubscriptionLogRouter");
 const EventRouter = require("./routes/EventRouter")
@@ -23,6 +24,8 @@ const FileRouter = require('./routes/FileRouter')
 const VerifyRouter = require('./routes/VerifyRouter')
 const NewsletterRouter = require('./routes/NewsletterRouter')
 const contactRequestRoutes = require('./routes/contactRequestRoutes');
+const DocumentRouter = require('./routes/DocumentRouter');
+
 const session = require('express-session');
 const { passport } = require("./config/passport-setup");
 const { checkSubscriptionStatus } = require("./services/MemberService");
@@ -475,6 +478,7 @@ app.use("/investors", InvestorRouter);
 app.use("/admin", Adminrouter);
 app.use("/requests", Requestouter);
 app.use("/subscriptions", SubscriptionRouter);
+app.use("/subscription-plans" , SubscriptionPlanRouter)
 app.use("/logs", UserLogRouter);
 app.use("/Sublogs", SubscriptionLogRouter);
 app.use("/events", EventRouter);
@@ -483,6 +487,7 @@ app.use("/users/otp", OtpRouter);
 app.use("/projects", ProjectRouter);
 app.use("/files", FileRouter);
 app.use("/newsletter" , NewsletterRouter)
+app.use("/documents" , DocumentRouter)
 app.use('/contact-requests', contactRequestRoutes);
 
 

@@ -1,4 +1,6 @@
 const Project = require("../models/Project");
+const ActivityHistoryService = require('../services/ActivityHistoryService');
+const MemberService = require('../services/MemberService');
 
 const CreateProject = async (p) => {
     return await Project.create(p);
@@ -31,9 +33,16 @@ async function addMilestone(projectId, milestoneData) {
       if (!project) {
         throw new Error("Project not found");
       }
+
+      const member = await MemberService.getMemberById(project?.owner)
   
       project.milestones.push(milestoneData);
       const updatedProject = await project.save();
+      await ActivityHistoryService.createActivityHistory(
+        member?.owner,
+        'milestone_add_to_project',
+        { targetName: milestoneData.name, targetDesc: `Milestone added to project ${project._id}` , to: updatedProject?.name }
+    );
       return updatedProject;
     } catch (error) {
       throw new Error('Error adding milestone to project', error);
@@ -42,27 +51,47 @@ async function addMilestone(projectId, milestoneData) {
 
   async function removeMilestone(projectId, milestoneId) {
     try {
-      const project = await Project.findById(projectId);
-      if (!project) {
-        throw new Error("Project not found");
-      }
-        project.milestones = project.milestones.filter(
-        (milestone) => milestone._id != milestoneId
+      const project = await Project.findByIdAndUpdate(
+        projectId,
+        { $pull: { milestones: { _id: milestoneId } } },
+        { new: true }
       );
-  
-      const updatedProject = await project.save();
-      return updatedProject;
+
+      if (!project) {
+          return res.status(404).json({ message: "Project not found." });
+      }
+      const member = await MemberService.getMemberById(project?.owner)
+
+      await ActivityHistoryService.createActivityHistory(
+        member.owner,
+        'milestone_removed',
+        { targetName: milestoneId, targetDesc: `Milestone removed from project ${project._id}` }
+    );
+      return project;
     } catch (error) {
       throw new Error('Error removing milestone from project', error);
     }
   }
   
-async function deleteProject(projectId) {
+  async function deleteProject(projectId) {
     try {
+        const project = await Project.findById(projectId);
+        if (!project) {
+            throw new Error('Project not found');
+        }
+        const member = await MemberService.getMemberById(project?.owner)
+
         await Project.findByIdAndDelete(projectId);
+
+        await ActivityHistoryService.createActivityHistory(
+          member?.owner,
+            'project_deleted',
+            { targetName: project.name, targetDesc: `Project deleted with ID ${projectId}` }
+        );
+
         return 'Project deleted successfully';
     } catch (error) {
-        throw new Error('Error deleting project' , error);
+        throw new Error('Error deleting project', error);
     }
 }
 
@@ -120,6 +149,14 @@ async function updateProjectStatus(projectId, newStatus) {
   if (!project) {
     throw new Error('Project not found');
   }
+
+  const member = await MemberService.getMemberById(project?.owner)
+
+  await ActivityHistoryService.createActivityHistory(
+    member?.owner,
+      'project_status_updated',
+      { targetName: project.name, targetDesc: `Project status updated to ${newStatus} for project ${projectId}` , to: newStatus }
+  );
 
   return project;
 }

@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
 
 const SubscriptionLogsSchema = new mongoose.Schema({
-    member: {
+    user: {
         type: mongoose.Types.ObjectId,
-        ref: "Member",
+        ref: "User",
     },
-    subscriptionId: {
+    subscription: {
         type: mongoose.Types.ObjectId,
         ref: "Subscription",
     },
@@ -15,9 +15,17 @@ const SubscriptionLogsSchema = new mongoose.Schema({
     subscriptionExpireDate: Date,
     type:{
         type: String,
-        enum: ['Renew', 'Initial Purchase' ,'Cancel' ,'Upgrade'],
+        enum: ['Renew', 'Initial Purchase' ,'Cancel' ,'Upgrade' , 'Add Payment Method' , 'Change Payment Method'],
         default: 'Initial Purchase',
 
+    },
+    transactionId: {
+        type: String,
+        description: 'Identifiant de la transaction de paiement'
+    },
+    notes: {
+        type: String,
+        description: 'Commentaires ou notes supplémentaires concernant l’abonnement'
     }
 })
 

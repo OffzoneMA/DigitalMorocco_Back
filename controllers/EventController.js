@@ -156,8 +156,39 @@ async function getEventsForUser(req, res) {
   }
 }
 
+const getDistinctFieldValues = async (req, res) => {
+  try {
+      const field = req.params.field;
+      const distinctValues = await EventService.getDistinctValues(field);
+      res.status(200).json(distinctValues);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+};
+
+// Contrôleur pour obtenir les événements passés avec participation de l'utilisateur
+const getPastEventsForUserParticipate = async (req, res) => {
+  try {
+      const userId = req.userId;
+      const events = await EventService.getPastEventsWithUserParticipation(userId);
+      res.status(200).json(events);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+};
+
+const getDistinctValuesForUser = async (req, res) => {
+  try {
+      const distinctValues = await EventService.getDistinctValuesByUser(req.params.field, req.userId);
+      res.status(200).json(distinctValues);
+  } catch (error) {
+    console.log(error)
+      res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
     createEvent, getEvents, getEventById, updateEvent, deleteEvent, getAllEventsByUser, addAttendeeToEvent,
     sendTicketToUser, supprimerCollection , addConnectedAttendee , updateConnectedAttendee , deleteConnectedAttendee ,
-    addPromoCode , getEventsForUser
+    addPromoCode , getEventsForUser , getDistinctFieldValues , getPastEventsForUserParticipate , getDistinctValuesForUser
 };

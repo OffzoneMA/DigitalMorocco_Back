@@ -1,29 +1,24 @@
 const Document = require("../models/Document");
+const User = require("../models/User");
 const MemberService = require("../services/MemberService");
 const UserService = require("../services/UserService");
 const uploadService = require('./FileService')
 
-async function createDocument(memberId , userId, documentData, docFile) {
+async function createDocument(userId , documentData, docFile) {
     try {
-        const member = await MemberService.getMemberById(memberId);
-        if (!member) {
-            throw new Error('Member not found');
-        }
-
         const user = await UserService.getUserByID(userId);
         if (!user) {
             throw new Error('User not found');
         }
         if (docFile) {
-            const docURL = await uploadService.uploadFile(docFile, 'Documents/'+ member._id +"/uploadBy/" +user._id, docFile.originalname);
+            const docURL = await uploadService.uploadFile(docFile, 'Documents/'+ user._id +"/uploadBy/" +user._id, docFile.originalname);
             documentData.link = docURL;
             documentData.docType = docFile.mimetype;
             documentData.documentName = docFile.originalname;
         }
         const document = new Document(documentData);
-        document.owner = member._id;
-        document.uploadBy = user._id;
-        document.uploadDate = new Date();
+        document.owner = user._id;
+      
         await document.save();
         return document;
     } catch (error) {
@@ -31,7 +26,7 @@ async function createDocument(memberId , userId, documentData, docFile) {
     }
 }
 
-async function updateDocument(documentId, updateData, docFile) {
+async function updateDocument(documentId, updateData, docFile ) {
     try {
         const document = await Document.findById(documentId);
         if (!document) {
@@ -39,8 +34,8 @@ async function updateDocument(documentId, updateData, docFile) {
         }
 
         if (docFile) {
-            await uploadService.deleteFile(document.documentName , 'Documents/'+ document.owner +"/uploadBy/" + document.uploadBy)
-            const docURL = await uploadService.uploadFile(docFile, 'Documents/'+ document.owner +"/uploadBy/" + document.uploadBy, docFile.originalname);
+            await uploadService.deleteFile(document.documentName , 'Documents/'+ document.owner +"/uploadBy/" + document.owner)
+            const docURL = await uploadService.uploadFile(docFile, 'Documents/'+ document.owner +"/uploadBy/" + document.owner, docFile.originalname);
             updateData.link = docURL;
             updateData.docType = docFile.mimetype;
             updateData.documentName = docFile.originalname;
@@ -55,7 +50,7 @@ async function updateDocument(documentId, updateData, docFile) {
     }
 }
 
-async function shareDocument(documentId, userIds) {
+async function shareDocument(documentId, userIds , shareWithType) {
     try {
         const document = await Document.findById(documentId);
         if (!document) {
@@ -67,7 +62,8 @@ async function shareDocument(documentId, userIds) {
             throw new Error('One or more users not found');
         }
 
-        // document.shareWith = userIds;
+        document.shareWith = shareWithType;
+        document.shareWithUsers = userIds;
 
         await document.save();
         return document;
@@ -79,7 +75,7 @@ async function shareDocument(documentId, userIds) {
 
 async function getAllDocuments() {
     try {
-        const documents = await Document.find();
+        const documents = await Document.find().populate('owner');
         return documents;
     } catch (error) {
         throw new Error('Error getting all documents: ' + error.message);
@@ -98,9 +94,9 @@ async function getDocumentById(documentId) {
     }
 }
 
-async function getDocumentsForMember(memberId) {
+async function getDocumentsForUser(userId) {
     try {
-        const documents = await Document.find({ owner: memberId });
+        const documents = await Document.find({ owner: userId }).populate('owner');
         return documents;
     } catch (error) {
         throw new Error('Error getting documents for member: ' + error.message);
@@ -132,4 +128,4 @@ async function deleteDocument(documentId) {
 
 
 module.exports = {createDocument , updateDocument , getAllDocuments, getDocumentById,
-getDocumentsForMember , getDocumentsByUploader, deleteDocument}
+getDocumentsForUser , getDocumentsByUploader, deleteDocument , shareDocument}
