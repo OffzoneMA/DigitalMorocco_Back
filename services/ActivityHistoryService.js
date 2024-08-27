@@ -81,22 +81,47 @@ async function createActivityHistory(userId, eventType, eventData) {
 
 async function getAllActivityHistories() {
     try {
-        const activityHistories = await ActivityHistory.find();
+        const activityHistories = await ActivityHistory.find()
+            .populate({
+                path: 'user'
+            })
+            .exec();
+
         return activityHistories;
     } catch (error) {
         throw new Error('Error getting all activity histories: ' + error.message);
     }
 }
 
+
 async function getAllActivityHistoriesByUser(userId) {
     try {
-        const events = await ActivityHistory.find({ user: userId }).sort({ timestamp: -1 }).exec();
+        const events = await ActivityHistory.find({ user: userId })
+            .sort({ timestamp: -1 })
+            .populate({
+                path: 'user'
+            })
+            .exec();
+        
         return events;
     } catch (err) {
-        throw new Error('Error retrieving user history:', err);
+        throw new Error('Error retrieving user history: ' + err.message);
     }
 }
 
 
+async function deleteActivityHistory(id) {
+    try {
+        const activityHistory = await ActivityHistory.findByIdAndDelete(id);
+        if (!activityHistory) {
+            throw new Error('Activity history not found');
+        }
+        return activityHistory;
+    } catch (error) {
+        throw new Error('Error deleting activity history: ' + error.message);
+    }
+}
 
-module.exports = {createActivityHistory ,getAllActivityHistories ,  getAllActivityHistoriesByUser }
+module.exports = {createActivityHistory ,getAllActivityHistories ,  getAllActivityHistoriesByUser , 
+    deleteActivityHistory 
+ }

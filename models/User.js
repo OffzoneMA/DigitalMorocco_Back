@@ -6,7 +6,7 @@ const UserSchema = new mongoose.Schema({
     phoneNumber: String,
     website: String,
     address: String,
-    Country: String,
+    country: String,
     cityState: String,
     region: String,
     image: String,
@@ -41,7 +41,14 @@ const UserSchema = new mongoose.Schema({
     },
     deletionDate: {
     type: Date,
+    }, 
+    subscription: {
+        type: mongoose.Types.ObjectId,
+        ref: "Subscription",
     },
+    metadata: {
+        type: mongoose.Schema.Types.Mixed
+    }
 })
 
 

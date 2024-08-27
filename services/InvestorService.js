@@ -5,7 +5,7 @@ const ContactRequest = require("../models/ContactRequest");
 const InvestorReq = require("../models/Requests/Investor");
 const EmailingService = require("../services/EmailingService");
 const UserLogService = require('../services/UserLogService');
-
+const ActivityHistoryService = require('../services/ActivityHistoryService');
 
 const getAllInvestors = async (args) => {
     const page = args?.page || 1;
@@ -91,6 +91,7 @@ const updateContactStatus=async(requestId , response)=>{
 
 const acceptContact = async (investorId, requestId, memberId) => {
    const request = await ContactRequest.findByIdAndUpdate(requestId, { status:"Accepted" })
+   const project = await Project.findById(request?.project)
    const member = await Member.findByIdAndUpdate(memberId, {
         $push: { investorsRequestsAccepted:  investorId  },
         $pull: { investorsRequestsPending: investorId },
@@ -102,24 +103,27 @@ const acceptContact = async (investorId, requestId, memberId) => {
     
         const logMessage ='Contact request with ID '+request._id+' is accepted';
             
-        const log = await UserLogService.createUserLog(logMessage, investor.owner);
-        const logMember = await UserLogService.createUserLog(logMessage, member.owner);
+    const log = await UserLogService.createUserLog(logMessage, investor.owner);
+    const logMember = await UserLogService.createUserLog(logMessage, member.owner);
     const mail = await EmailingService.sendContactAcceptToMember(member.owner, investor?.name, investor?.linkedin_link, request.dateCreated);
-
+    await ActivityHistoryService.createActivityHistory(
+        investor.owner,
+        'contact_request_accepted',
+        { targetName: `${project?.name}`, targetDesc: `Contact request accepted by investor ${investorId}` , from: member?.companyName }
+    );
     return request
-
-
 }
 
 const rejectContact= async (investorId, requestId, memberId) => {
 
      const request = await ContactRequest.findByIdAndUpdate(requestId, { status:"rejected"})
+     const project = await Project.findById(request?.project)
     const member = await Member.findByIdAndUpdate(memberId, {
-       // $push: { investorsRequestsRejected: investorId },
+       $push: { investorsRequestsRejected: investorId },
         $pull: { investorsRequestsPending: investorId },
     })
      const investor = await Investor.findByIdAndUpdate(investorId, {
-        //$push: { membersRequestsRejected: memberId },
+        $push: { membersRequestsRejected: memberId },
         $pull: { membersRequestsPending: memberId },
     })
      const logMessage = 'Contact request with ID '+request._id+' is rejected';
@@ -127,6 +131,11 @@ const rejectContact= async (investorId, requestId, memberId) => {
      const logMember = await UserLogService.createUserLog(logMessage, member.owner);
 
      const mail = await EmailingService.sendContactRejectToMember(member.owner, investor?.name, investor?.linkedin_link, request.dateCreated);
+     await ActivityHistoryService.createActivityHistory(
+        investor.owner,
+        'contact_request_rejected',
+        { targetName: `${project?.name}`, targetDesc: `Contact request rejected by investor ${investorId}` , from: member?.campanyName}
+    );
     return request
 }
 

@@ -6,7 +6,7 @@ const InvestorService = require('../services/InvestorService');
 const ProjectService = require('../services/ProjectService');
 const AuthService = require('../services/AuthService');
 const UserLogService =require('../services/UserLogService');
-
+const SusbcriptionService = require('../services/SubscriptionService');
 
 
 const login=async(req,res)=>{
@@ -161,10 +161,10 @@ const AuthenticateSubMember = async (req, res, next) => {
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
     if (err) { return res.sendStatus(403) }
     const userMember = await UserService.getUserByID(user?.user?._id)
-    const member = await MemberService.getMemberByUserId(userMember?._id)
+    const subscription = await SusbcriptionService.getSubscriptionsByUser(userMember?._id)
 
-    if (member && member.subStatus =="active") {
-      req.memberId = member._id
+    if (subscription && subscription.subscriptionStatus =="active") {
+      req.userId = subscription.user
       next()
     }
     else {
@@ -205,9 +205,10 @@ const AuthenticateSubMemberOrAdmin = async (req, res, next) => {
       next()
     }
     const userMember = await UserService.getUserByID(user?.user?._id)
-    const member = await MemberService.getMemberByUserId(userMember?._id)
+    const subscription = await SusbcriptionService.getSubscriptionsByUser(userMember?._id)
 
-    if (member?.subStatus =="active") {
+    if (subscription && subscription.subscriptionStatus === "active") {
+      req.userId = subscription.user
       next()
     }
     else {

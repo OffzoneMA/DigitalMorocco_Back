@@ -2,10 +2,12 @@ const EmailingService = require("./EmailingService");
 const Investor = require("../models/Investor");
 const Member = require("../models/Member");
 const ContactRequest = require("../models/ContactRequest");
+const Subscription = require('../models/Subscription');
 const MemberService = require("./MemberService");
 const InvestorService = require("./InvestorService");
 const UserService = require("./UserService");
 const ProjectService = require("./ProjectService");
+const SubscriptionService = require('../services/SubscriptionService');
 const ActivityHistoryService = require('../services/ActivityHistoryService');
 const uploadService = require('./FileService')
 
@@ -16,6 +18,7 @@ const CreateInvestorContactReq = async (memberId, investorId) => {
     const delay = process.env.Contact_Delay_After_Reject_by_days || 180
     const member = await MemberService.getMemberById(memberId)
     const investor = await InvestorService.getInvestorById(investorId)
+    const subscription = await SubscriptionService.getSubscriptionsByUser(member.owner)
 
     if (!member || !investor) {
         throw new Error("member Or Investor doesn't exist")
@@ -40,18 +43,16 @@ const CreateInvestorContactReq = async (memberId, investorId) => {
        
     }
 
-    if (member?.subStatus == "notActive") {
+    if (subscription?.subscriptionStatus !== "active") {
         throw new Error('Must Subscribe !')
     }
-    if (member?.credits < cost) {
+    if (subscription?.totalCredits < cost) {
         throw new Error('Not Enough Credits!')
     }
     const contact = await ContactRequest.create({ member: memberId, investor: investorId, cost: cost })
 
-
     const updateMember = {
-        $push: { investorsRequestsPending: investorId },
-        $inc: { credits: -cost },
+        $push: { investorsRequestsPending: investorId }
     };
     const updateInvestor = {
         $push: { membersRequestsPending: memberId },
@@ -60,20 +61,21 @@ const CreateInvestorContactReq = async (memberId, investorId) => {
     const updatedInvestor = await Investor.findByIdAndUpdate(investorId, updateInvestor)
     const updatedMember = await Member.findByIdAndUpdate(memberId, updateMember)
 
-    const historyData = {
-        member: updatedMember._id,
-        eventType: 'contact_request_sent',
-        eventDetails: 'Send Contact Request to',
-        timestamp: new Date(),
-        user: updatedMember.owner,
-        actionTargetType: 'Subscribe',
-        targetUser: {
-            usertype: 'Investor',
-            userId: updatedInvestor._id
-        }    
-    };
+    await Subscription.findByIdAndUpdate(subscription._id, {
+        $inc: { totalCredits: -cost }
+    });
 
-    await ActivityHistoryService.createActivityHistory(historyData);
+    const historyData = {
+        targetName: `${investor.name}`, 
+        targetDesc: `Sent a contact request to investor ${investor._id}`
+    };
+    
+    // Log the activity in the history
+    await ActivityHistoryService.createActivityHistory(
+        member.owner,
+        'contact_request_sent', 
+        historyData 
+    );
 
     //Send Email Notification to the investor
     await EmailingService.sendNewContactRequestEmail(investor.owner, member?.companyName, member?.country);
@@ -88,6 +90,7 @@ const CreateInvestorContactReqForProject = async (memberId, investorId , project
     const member = await MemberService.getMemberById(memberId)
     const investor = await InvestorService.getInvestorById(investorId)
     const project = await ProjectService.getProjectById(projectId) 
+    const subscription = await SubscriptionService.getSubscriptionsByUser(member.owner);
 
     if (!member || !investor || !project) {
         throw new Error("member Or Investor Or Project doesn't exist")
@@ -112,10 +115,10 @@ const CreateInvestorContactReqForProject = async (memberId, investorId , project
        
     }
 
-    if (member?.subStatus == "notActive") {
+    if (subscription?.subscriptionStatus !== "active") {
         throw new Error('Must Subscribe !')
     }
-    if (member?.credits < cost) {
+    if (subscription?.totalCredits < cost) {
         throw new Error('Not Enough Credits!')
     }
 
@@ -141,8 +144,7 @@ const CreateInvestorContactReqForProject = async (memberId, investorId , project
     await contact.save();
 
     const updateMember = {
-        $push: { investorsRequestsPending: investorId },
-        $inc: { credits: -cost },
+        $push: { investorsRequestsPending: investorId }
     };
 
     const updateInvestor = {
@@ -151,26 +153,25 @@ const CreateInvestorContactReqForProject = async (memberId, investorId , project
 
     const updatedInvestor = await Investor.findByIdAndUpdate(investorId, updateInvestor)
     const updatedMember = await Member.findByIdAndUpdate(memberId, updateMember)
+    
+    await Subscription.findByIdAndUpdate(subscription._id, {
+        $inc: { totalCredits: -cost }
+    });
 
-    const historyData = {
-        member: updatedMember._id,
-        eventType: 'contact_request_sent',
-        eventDetails: 'Send Contact Request to',
-        timestamp: new Date(),
-        user: updatedMember.owner,
-        actionTargetType: 'Project',
-        actionTarget: projectId,
-        targetUser: {
-            usertype: 'Investor',
-            userId: updatedInvestor._id
-        }    
-    };
+    await ActivityHistoryService.createActivityHistory(
+        member.owner,
+        'contact_sent',
+        { targetName: `${investor?.companyName || investor?.name}`, targetDesc: `Contact request from member ${req.memberId} to investor ${investorId} for project ${projectId}` , for: project?.name }
+    );
 
-    await ActivityHistoryService.createActivityHistory(historyData);
+    await ActivityHistoryService.createActivityHistory(
+        investor.owner,
+        'contact_request_received',
+        { targetName: `${project?.name}`, targetDesc: `Contact request received from member ${req.memberId} for project ${projectId}` , from: member?.companyName }
+    );
 
     //Send Email Notification to the investor
     await EmailingService.sendNewContactRequestEmail(investor.owner, member?.companyName, member?.country);
-
 
     return contact
 }
@@ -186,14 +187,16 @@ const shareProjectWithInvestors = async (projectId, memberId, investorIds) => {
         throw new Error("Member doesn't exist");
     }
 
+    const subscription = await SubscriptionService.getSubscriptionsByUser(member.owner);
+
     const cost = process.env.Share_Project_Cost || 100;
     const delay = process.env.Contact_Delay_After_Reject_by_days || 180;
 
-    if (member.subStatus === "notActive") {
+    if (subscription?.subscriptionStatus !== "active") {
         throw new Error('Must Subscribe!');
     }
 
-    if (member.credits < cost * investorIds.length) {
+    if (subscription?.totalCredits < cost * investorIds.length) {
         throw new Error('Not Enough Credits!');
     }
 
@@ -222,8 +225,12 @@ const shareProjectWithInvestors = async (projectId, memberId, investorIds) => {
         }
 
         const contact = await ContactRequest.create({ member: memberId, investor: investorId, cost , project: projectId});
-        await Member.findByIdAndUpdate(memberId, { $push: { investorsRequestsPending: investorId }, $inc: { credits: -cost } });
+        await Member.findByIdAndUpdate(memberId, { $push: { investorsRequestsPending: investorId }});
         await Investor.findByIdAndUpdate(investorId, { $push: { membersRequestsPending: memberId } });
+        
+        await Subscription.findByIdAndUpdate(subscription._id, {
+            $inc: { totalCredits: -cost }
+        });
 
         const historyData = {
             member: memberId,
@@ -244,6 +251,12 @@ const shareProjectWithInvestors = async (projectId, memberId, investorIds) => {
 
         results.push({ investorId, status: 'Request sent successfully' });
     }
+
+    await ActivityHistoryService.createActivityHistory(
+        member?.owner,
+        'project_shared',
+        { targetName: `${project?.name}`, targetDesc: `Project ${projectId} shared with investors` }
+    );
 
     return results;
 };

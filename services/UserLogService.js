@@ -4,11 +4,26 @@ const createUserLog = async (type,owner) => {
         try {
        return await UserLog.create({
         type,
-        owner
+        owner,
+        envStatus: process.env.NODE_ENV === 'development' ? 'dev' : 'prod'
        })}
        catch(err){
                 throw new Error('Something went wrong !');
        }
+}
+
+async function addUserLog(userId, data) {
+        try {
+                const userLog = await UserLog.create({
+                        type: data.type,
+                        owner: userId,
+                        notes: data.notes,
+                        envStatus: process.env.NODE_ENV === 'development' ? 'dev' : 'prod'
+                });
+                return userLog;
+        } catch (err) {
+                throw err;
+        }
 }
 
 const getAllUsersLogs = async (args) => {
@@ -28,4 +43,6 @@ const getAllUsersLogsByUser = async (userId,args) => {
 }
 
 
-module.exports = { createUserLog, getAllUsersLogs, getAllUsersLogsByUser }
+module.exports = { createUserLog, getAllUsersLogs, getAllUsersLogsByUser ,
+        addUserLog
+}

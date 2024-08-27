@@ -80,8 +80,20 @@ const updateUserLanguageRegionService = async(userId, updates) => {
 }
 
 const getUserByID = async (id) => {
-    return await User.findById(id);
-}
+    try {
+        const user = await User.findById(id)
+            .populate('subscription') 
+            .exec(); 
+
+        if (!user) {
+            throw new Error('User not found');
+        }
+        return user;
+    } catch (error) {
+        throw new Error(`Error retrieving user by ID: ${error.message}`);
+    }
+};
+
 
 const getUserByEmail = async (email) => {
     return await User.findOne({ email });

@@ -25,10 +25,15 @@ const VerifyRouter = require('./routes/VerifyRouter')
 const NewsletterRouter = require('./routes/NewsletterRouter')
 const contactRequestRoutes = require('./routes/contactRequestRoutes');
 const DocumentRouter = require('./routes/DocumentRouter');
+const PaymentMethodRouter = require('./routes/PaymentMethodRouter');
+const ActivityHistoryRouter = require('./routes/ActivityHistoryRouter');
+const EmployeeRouter = require('./routes/EmployeeRouter');
+const LegalDocumentRouter = require('./routes/LegalDocumentRouter');
 
 const session = require('express-session');
 const { passport } = require("./config/passport-setup");
 const { checkSubscriptionStatus } = require("./services/MemberService");
+const {autoCancelExpiredSubscriptions} = require("./services/SubscriptionService");
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const Event = require('./models/Event');
@@ -97,6 +102,7 @@ mongoose.connect(process.env.MONGO_URL ,{ useNewUrlParser: true, useUnifiedTopol
             //Checking the subscription expire date (For all members) every 24Hr
             const taskInterval = 24 * 60 * 60 * 1000; 
             setInterval(checkSubscriptionStatus, taskInterval);
+            setInterval(autoCancelExpiredSubscriptions, taskInterval);
             // const events = [
             //   {
             //     title: "Past Tech Summit",
@@ -489,7 +495,10 @@ app.use("/files", FileRouter);
 app.use("/newsletter" , NewsletterRouter)
 app.use("/documents" , DocumentRouter)
 app.use('/contact-requests', contactRequestRoutes);
-
+app.use('/activity-history', ActivityHistoryRouter);
+app.use('/payment-methods', PaymentMethodRouter);
+app.use('/employee', EmployeeRouter);
+app.use('/legal-documents', LegalDocumentRouter);
 
 const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css";
 

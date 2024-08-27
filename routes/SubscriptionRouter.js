@@ -1,6 +1,7 @@
 const express = require("express")
 const router = express.Router()
 const SubscriptionController = require("../controllers/SubscriptionController")
+const AuthController = require("../controllers/AuthController")
 
 /**
  * @swagger
@@ -96,16 +97,26 @@ router.get('/', SubscriptionController.getSubscriptions);
 
 /**
  * @swagger
- * /subscriptions/user/{userId}/plan/{planId}:
+ * /subscriptions/forUser:
+ *   get:
+ *     summary: Get subscription for a specific user
+ *     tags: [Subscription]
+ *     responses:
+ *       200:
+ *         description: User subscription
+ *       500:
+ *         description: Server error
+ */
+router.get('/forUser', AuthController.AuthenticateUser, SubscriptionController.getSubscriptionsByUser);
+
+
+/**
+ * @swagger
+ * /subscriptions/user/plan/{planId}:
  *   post:
  *     summary: Create a new subscription for a user
  *     tags: [Subscription]
  *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
- *         schema:
- *           type: string
  *       - in: path
  *         name: planId
  *         required: true
@@ -123,7 +134,7 @@ router.get('/', SubscriptionController.getSubscriptions);
  *       500:
  *         description: Server error
  */
-router.post('/user/:userId/plan/:planId', SubscriptionController.createSubscriptionForUser);
+router.post('/user/plan/:planId',AuthController.AuthenticateUser, SubscriptionController.createSubscriptionForUser);
 
 /**
  * @swagger
@@ -159,7 +170,7 @@ router.post('/user/:userId/plan/:planId', SubscriptionController.createSubscript
  *       500:
  *         description: Internal server error
  */
-router.post('/subscriptions/:subscriptionId/upgrade', SubscriptionController.upgradeSubscription);
+router.post('/:subscriptionId/upgrade', SubscriptionController.upgradeSubscription);
 
 /**
  * @swagger
@@ -220,7 +231,7 @@ router.patch('/:id/cancel', SubscriptionController.cancelSubscription);
  *       500:
  *         description: Internal server error
  */
-router.post('/subscriptions/auto-cancel', SubscriptionController.autoCancelExpiredSubscriptions);
+router.post('/auto-cancel', SubscriptionController.autoCancelExpiredSubscriptions);
 
 /**
  * @swagger
@@ -244,96 +255,6 @@ router.patch('/:id/pause', SubscriptionController.pauseSubscription);
 
 /**
  * @swagger
- * /subscriptions/user/{userId}/payment-method:
- *   post:
- *     summary: Add a payment method to a user's subscription
- *     tags: [Subscription]
- *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               paymentMethodType:
- *                 type: string
- *               paymentMethod:
- *                 type: string
- *               cardLastFourDigits:
- *                 type: number
- *               cardExpiration:
- *                 type: string
- *     responses:
- *       201:
- *         description: Payment method added
- *       500:
- *         description: Server error
- */
-router.post('/user/:userId/payment-method', SubscriptionController.addPaymentMethod);
-
-/**
- * @swagger
- * /subscriptions/{id}/change-payment-method:
- *   patch:
- *     summary: Change the payment method of a subscription
- *     tags: [Subscription]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               paymentMethodType:
- *                 type: string
- *               paymentMethod:
- *                 type: string
- *               cardLastFourDigits:
- *                 type: number
- *               cardExpiration:
- *                 type: string
- *     responses:
- *       200:
- *         description: Payment method changed
- *       500:
- *         description: Server error
- */
-router.patch('/:id/change-payment-method', SubscriptionController.changePaymentMethod);
-
-/**
- * @swagger
- * /subscriptions/user/{userId}:
- *   get:
- *     summary: Get all subscriptions for a specific user
- *     tags: [Subscription]
- *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: List of subscriptions
- *       500:
- *         description: Server error
- */
-router.get('/user/:userId', SubscriptionController.getSubscriptionsByUser);
-
-/**
- * @swagger
  * /subscriptions/{subscriptionId}/renew:
  *   post:
  *     summary: Renew a subscription
@@ -354,7 +275,7 @@ router.get('/user/:userId', SubscriptionController.getSubscriptionsByUser);
  *       500:
  *         description: Internal server error
  */
-router.post('/subscriptions/:subscriptionId/renew', SubscriptionController.renewSubscription);
+router.post('/:subscriptionId/renew', SubscriptionController.renewSubscription);
 
 
 module.exports = router

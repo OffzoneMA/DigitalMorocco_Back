@@ -22,14 +22,23 @@ async function getAllActivityHistoriesController(req, res) {
 
 const getAllActivityHistoriesByUser = async (req, res) => {
     try {
-        const memberId = req.params.memberId;
-        const activityHistories = await ActivityHistoryService.getAllActivityHistoriesByUser(memberId);
+        const userId = req.userId;
+        const activityHistories = await ActivityHistoryService.getAllActivityHistoriesByUser(userId);
         res.status(200).json(activityHistories);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
+async function deleteActivity(req, res) {
+    try {
+        const id = req.params.id;
+        await ActivityHistoryService.deleteActivityHistory(id);
+        res.status(204).send();
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting activity history: ' + error.message });
+    }
+}
 
 module.exports = { createActivityHistoryController, getAllActivityHistoriesController ,
-getAllActivityHistoriesByUser };
+getAllActivityHistoriesByUser , deleteActivity };

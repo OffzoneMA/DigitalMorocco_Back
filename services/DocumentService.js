@@ -3,6 +3,7 @@ const User = require("../models/User");
 const MemberService = require("../services/MemberService");
 const UserService = require("../services/UserService");
 const uploadService = require('./FileService')
+const ActivityHistoryService = require('../services/ActivityHistoryService');
 
 async function createDocument(userId , documentData, docFile) {
     try {
@@ -20,6 +21,11 @@ async function createDocument(userId , documentData, docFile) {
         document.owner = user._id;
       
         await document.save();
+        await ActivityHistoryService.createActivityHistory(
+            user._id,
+            'document_created',
+            { targetName: document.documentName, targetDesc: `Document created with ID ${document._id}` }
+        );
         return document;
     } catch (error) {
         throw new Error('Error creating document: ' + error.message);
@@ -43,7 +49,11 @@ async function updateDocument(documentId, updateData, docFile ) {
 
         Object.assign(document, updateData); 
         await document.save();
-        
+        await ActivityHistoryService.createActivityHistory(
+            document.owner,
+            'document_updated',
+            { targetName: document.documentName, targetDesc: `Document updated with ID ${document._id}` }
+        );
         return document;
     } catch (error) {
         throw new Error('Error updating document: ' + error.message);
@@ -66,6 +76,11 @@ async function shareDocument(documentId, userIds , shareWithType) {
         document.shareWithUsers = userIds;
 
         await document.save();
+        await ActivityHistoryService.createActivityHistory(
+            document.owner,
+            'document_shared',
+            { targetName: document.documentName, targetDesc: `Document shared with users: ${userIds.join(', ')}` , to: shareWithType}
+        );
         return document;
     } catch (error) {
         throw new Error('Error sharing document: ' + error.message);
@@ -118,12 +133,21 @@ async function deleteDocument(documentId) {
         if (!document) {
             throw new Error('Document not found');
         }
-        await uploadService.deleteFile(document.documentName , 'Documents/'+ document.owner +"/uploadBy/" + document.uploadBy)
+
+        await uploadService.deleteFile(document.documentName, 'Documents/' + document.owner + "/uploadBy/" + document.owner);
+
+        await ActivityHistoryService.createActivityHistory(
+            document.owner,
+            'document_deleted',
+            { targetName: document.documentName, targetDesc: `Document deleted with ID ${documentId}` }
+        );
+
         return document;
     } catch (error) {
         throw new Error('Error deleting document: ' + error.message);
     }
 }
+
 
 
 

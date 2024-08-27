@@ -11,15 +11,8 @@ const SubscriptionSchema = new mongoose.Schema({
         required: true
     },
     billing: { type: String, default: 'month' },
-    paymentMethodType: 
-    {   type: String, 
-        default: 'Card' 
-    },
     totalCredits: Number,
-    paymentMethod: { type: String },
-    cardLastFourDigits: { type: Number },
-    cardexpiration: { type: String },
-    subscriptionStatus: { type: String, enum: ['active', 'cancelled', 'paused' , 'notActive'], default: 'notActive' } ,
+    subscriptionStatus: { type: String, enum: ['active', 'cancelled', 'paused' , 'notActive'], default: 'active' } ,
     autoRenew: {
         type: Boolean,
         default: true

@@ -1,7 +1,5 @@
 const SubscriptionService = require("../services/SubscriptionService");
 
-
-
 const getSubscriptions = async (req, res) => {
     try {
         const result = await SubscriptionService.getSubscriptions();
@@ -12,7 +10,9 @@ const getSubscriptions = async (req, res) => {
 }
 
 const createSubscriptionForUser = async (req, res) => {
-    const { userId, planId } = req.params;
+    const planId = req.params.planId;
+    const userId = req.userId;
+    console.log(req.params.planId)
     try {
         const subscription = await SubscriptionService.createSubscriptionForUser(userId, planId, req.body);
         res.status(201).json(subscription);
@@ -70,33 +70,13 @@ const pauseSubscription = async (req, res) => {
     }
 };
 
-const addPaymentMethod = async (req, res) => {
-    const { userId } = req.params;
-    const {paymentMethodType, paymentMethod, cardLastFourDigits, cardExpiration } = req.body;
-    try {
-        const subscription = await SubscriptionService.addPaymentMethod(userId, paymentMethodType, paymentMethod, cardLastFourDigits, cardExpiration);
-        res.json(subscription);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-const changePaymentMethod = async (req, res) => {
-    const { subscriptionId } = req.params;
-    const { paymentMethodType, paymentMethod, cardLastFourDigits, cardExpiration } = req.body;
-    try {
-        const subscription = await SubscriptionService.changePaymentMethod(subscriptionId, paymentMethodType, paymentMethod, cardLastFourDigits, cardExpiration);
-        res.json(subscription);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
 const getSubscriptionsByUser = async (req, res) => {
     try {
-        const subscriptions = await subscriptionService.getSubscriptionsByUser(req.params.userId);
+        const subscriptions = await SubscriptionService.getSubscriptionsByUser(req.userId);
+        console.log(subscriptions)
         res.status(200).json(subscriptions);
     } catch (err) {
+        console.log(err)
         res.status(500).json({ error: err.message });
     }
 };
@@ -111,6 +91,17 @@ const renewSubscription = async (req, res) => {
     }
 };
 
+async function checUserkSubscription(req, res) {
+    try {
+        const userId = req.userId;
+        const isValid = await SubscriptionService.checkUserSubscription(userId);
+        
+        return res.status(200).json({ valid: isValid });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
+
 module.exports = { getSubscriptions, createSubscriptionForUser, upgradeSubscription, getSubscriptionById,
-    cancelSubscription, autoCancelExpiredSubscriptions, pauseSubscription, addPaymentMethod, changePaymentMethod,
-    getSubscriptionsByUser, renewSubscription }
+    cancelSubscription, autoCancelExpiredSubscriptions, pauseSubscription,
+    getSubscriptionsByUser, renewSubscription  , checUserkSubscription}

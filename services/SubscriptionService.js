@@ -2,6 +2,7 @@ const Subscription = require('../models/Subscription');
 const User = require('../models/User');
 const SubscriptionPlan = require('../models/SubscriptionPlan');
 const SubscriptionLogService = require('../services/SubscriptionLogService');
+const ActivityHistoryService = require('../services/ActivityHistoryService');
 
 const getSubscriptions = async () => {
     return await Subscription.find()
@@ -34,10 +35,13 @@ async function createSubscriptionForUser(userId, planId, data) {
         const newSubscription = await Subscription.create({
             ...data,
             user: userId,
-            plan: planId,
+            plan: plan?._id,
             totalCredits: plan?.credits,
             dateExpired: dateExpired
         });
+
+        user.subscription = newSubscription._id;
+        await user.save();
 
         const logData = {
             credits: plan?.credits,  
@@ -50,9 +54,15 @@ async function createSubscriptionForUser(userId, planId, data) {
 
         // Appel à la fonction pour créer un log de souscription
         await SubscriptionLogService.createSubscriptionLog(newSubscription._id, logData);
+        await ActivityHistoryService.createActivityHistory(
+            userId,
+            'new_subscription',
+            { targetName: `${plan.name}`, targetDesc: `User subscribed to plan ${planId}` }
+        );
 
         return newSubscription;
     } catch (error) {
+        console.log(error)
         throw new Error('Error creating subscription: ' + error.message);
     }
 }
@@ -93,9 +103,13 @@ async function upgradeSubscription(subscriptionId, newPlanId , newBilling) {
             transactionId: 'TXN234567890', 
             notes: `User upgraded to a higher plan and changed billing to ${newBilling}`,
         };
-        await SubscriptionLogService.createSubscriptionLog(subscription._id, logData);
-
         await subscription.save();
+        await SubscriptionLogService.createSubscriptionLog(subscription._id, logData);
+        await ActivityHistoryService.createActivityHistory(
+            subscription.user,
+            'subscription_upgraded',
+            { targetName: `${newPlan.name}`, targetDesc: `User upgraded to plan ${newPlanId}` }
+        );
 
         return subscription;
     } catch (error) {
@@ -117,6 +131,12 @@ async function cancelSubscription(subscriptionId) {
         if (!subscription) {
             throw new Error('Subscription not found');
         }
+        const user = await User.findById(subscription.user);
+        if (user) {
+            user.subscription = null;
+            await user.save();
+        }
+
 
         const logData = {
             credits: subscription.totalCredits,
@@ -127,7 +147,11 @@ async function cancelSubscription(subscriptionId) {
             notes: 'User cancelled the subscription',
         };
         await SubscriptionLogService.createSubscriptionLog(subscription._id, logData);
-
+        await ActivityHistoryService.createActivityHistory(
+            subscription.user,
+            'subscription_canceled',
+            { targetName: `Subscription canceled`, targetDesc: `User canceled subscription ${subscriptionId}` }
+        );
         return subscription;
     } catch (error) {
         throw new Error('Error cancelling subscription: ' + error.message);
@@ -152,9 +176,13 @@ async function autoCancelExpiredSubscriptions() {
                 transactionId: null, 
                 notes: 'Subscription automatically cancelled due to expiration',
             };
-            await SubscriptionLogService.createSubscriptionLog(subscription._id, logData);
-
             await subscription.save();
+            await SubscriptionLogService.createSubscriptionLog(subscription._id, logData);
+            // await ActivityHistoryService.createActivityHistory(
+            //     subscription.user,
+            //     'subscription_auto_canceled',
+            //     { targetName: `Subscription auto-canceled`, targetDesc: `Subscription ${subscription._id} auto-canceled due to expiration` }
+            // );
             canceledSubscriptions.push(subscription);
         }
 
@@ -182,6 +210,11 @@ async function pauseSubscription(subscriptionId) {
             notes: 'User paused the subscription',
         };
         await SubscriptionLogService.createSubscriptionLog(subscription._id, logData);
+        await ActivityHistoryService.createActivityHistory(
+            subscription.user,
+            'subscription_paused',
+            { targetName: `Subscription paused`, targetDesc: `User paused subscription ${subscriptionId}` }
+        );
 
         return subscription;
     } catch (error) {
@@ -189,73 +222,13 @@ async function pauseSubscription(subscriptionId) {
     }
 }
 
-
-async function addPaymentMethod(userId, paymentMethodType, paymentMethod, cardLastFourDigits, cardExpiration) {
-    try {
-        // Vérifier si l'utilisateur existe
-        const user = await User.findById(userId);
-        if (!user) {
-            throw new Error('User not found.');
-        }
-
-        // Créer la souscription avec la méthode de paiement
-        const newSubscription = await Subscription.create({
-            user: userId,
-            paymentMethodType: paymentMethodType,
-            paymentMethod: paymentMethod,
-            cardLastFourDigits: cardLastFourDigits,
-            cardExpiration: cardExpiration
-        });
-
-        const logData = {
-            type: 'Add Payment Method',
-            transactionId: null, 
-            notes: `User added a payment method: ${paymentMethodType}`,
-        };
-        await SubscriptionLogService.createSubscriptionLog(newSubscription._id, logData);
-
-        return newSubscription;
-    } catch (error) {
-        throw new Error('Error adding payment method: ' + error.message);
-    }
-}
-
-async function changePaymentMethod(subscriptionId, paymentMethodType, paymentMethod, cardLastFourDigits, cardExpiration) {
-    try {
-        const subscription = await Subscription.findById(subscriptionId);
-        if (!subscription) {
-            throw new Error('Subscription not found');
-        }
-
-        subscription.paymentMethodType = paymentMethodType;
-        subscription.paymentMethod = paymentMethod;
-        subscription.cardLastFourDigits = cardLastFourDigits;
-        subscription.cardexpiration = cardExpiration;
-
-        await subscription.save();
-
-        const logData = {
-            credits: subscription?.totalCredits,
-            totalCredits: subscription?.totalCredits,
-            subscriptionExpireDate: subscription?.dateExpired,
-            type: 'Change Payment Method',
-            transactionId: null, 
-            notes: `User changed the payment method to: ${paymentMethodType}`,
-        };
-        await SubscriptionLogService.createSubscriptionLog(subscription._id, logData);
-
-        return subscription;
-    } catch (error) {
-        throw new Error('Error changing payment method: ' + error.message);
-    }
-}
-
 // Récupérer toutes les souscriptions pour un utilisateur spécifique
 async function getSubscriptionsByUser(userId) {
     try {
-        const subscriptions = await Subscription.find({ user: userId }).populate('plan');
-        return subscriptions;
+        const subscription = await Subscription.findOne({ user: userId }).populate('plan');
+        return subscription;
     } catch (error) {
+        console.log(error)
         throw new Error('Error retrieving subscriptions for user: ' + error.message);
     }
 }
@@ -288,18 +261,67 @@ async function renewSubscription(subscriptionId) {
             transactionId: 'TXN987654321', 
             notes: 'User renewed the subscription',
         };
-        await SubscriptionLogService.createSubscriptionLog(subscription._id, logData);
-
         await subscription.save();
 
+        const user = await User.findById(subscription.user);
+        if (user) {
+            user.subscription = subscription._id; 
+            await user.save();
+        }
+
+        await SubscriptionLogService.createSubscriptionLog(subscription._id, logData);
+        await ActivityHistoryService.createActivityHistory(
+            subscription.user,
+            'subscription_renew',
+            { targetName: `Subscription renewed`, targetDesc: `User renewed subscription ${subscriptionId}` }
+        );
         return subscription;
     } catch (error) {
         throw new Error('Error renewing subscription: ' + error.message);
     }
 }
 
+async function checkUserSubscription(userId) {
+    try {
+        const subscription = await Subscription.findOne({
+            user: userId,
+            subscriptionStatus: 'active',
+            dateExpired: { $gt: new Date() }  // Vérifie que la date d'expiration est dans le futur
+        }).populate('plan');
+        
+        return subscription ? true : false;
+    } catch (error) {
+        throw new Error('Error checking subscription: ' + error.message);
+    }
+}
+
+async function updateSubscription(subscriptionId, updateData) {
+    try {
+        const subscription = await Subscription.findByIdAndUpdate(subscriptionId, updateData);
+        if (!subscription) {
+            throw new Error('Subscription not found');
+        }
+        return subscription;
+    } catch (error) {
+        throw new Error('Error updating subscription: ' + error.message);
+    }
+}
+
+async function deleteSubscription(subscriptionId) {
+    try {
+        const subscription = await Subscription.findByIdAndDelete(subscriptionId);
+        if (!subscription) {
+            throw new Error('Subscription not found');
+        }
+        return subscription;
+    } catch (error) {
+        throw new Error('Error deleting subscription: ' + error.message);
+    }
+}
+
 
 module.exports = {  createSubscriptionForUser,  upgradeSubscription,  getSubscriptionById,
-    cancelSubscription,  autoCancelExpiredSubscriptions,  pauseSubscription,  addPaymentMethod,
-    changePaymentMethod,  getSubscriptionsByUser,  renewSubscription,  dateInDays,  dateIn1Month,
-    dateIn1Year,  getDateExpires}
+    cancelSubscription,  autoCancelExpiredSubscriptions,  pauseSubscription,  getSubscriptionsByUser,  renewSubscription,  dateInDays,  dateIn1Month,
+    dateIn1Year,  getDateExpires , checkUserSubscription , getSubscriptions , updateSubscription , 
+    deleteSubscription
+};

@@ -9,6 +9,7 @@ const { ObjectId } = require('mongodb');
 const bcrypt = require('bcrypt');
 const NewsletterService = require('../services/NewsletterService');
 const TokenShortCode = require('../models/TokenShortCode')
+const ActivityHistoryService = require('../services/ActivityHistoryService');
 
 const languages = [
   { id: 'en', label: 'English' },
@@ -62,12 +63,17 @@ const updateUserProfile = async (req, res) => {
     const updatedFields = req.body;
 
     const user = await User.findByIdAndUpdate(userId, updatedFields, { new: true, runValidators: true });
-    const log = await UserLogService.createUserLog('Profile Info Update', userId);
-    if (!user) {
+    if (user) {
+      await UserLogService.createUserLog('Profile Info Update', userId);
+      await ActivityHistoryService.createActivityHistory(
+        userId,
+        'profile_updated',
+        { targetName: 'User Profile', targetDesc: `User profile updated for userId ${userId}` }
+      );
+      res.json({ message: 'Profile updated successfully', user });
+    } else {
       return res.status(404).json({ message: 'User not found' });
     }
-
-    res.json({ message: 'Profile updated successfully', user });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
@@ -211,8 +217,13 @@ const changePassword = async (req,res) => {
 
     user.password = hashedPassword;
     await user.save();
-
-    res.status(200).json({ success: true, message: 'Password changed successfully' });
+    await UserLogService.createUserLog('Password Change', userId);
+    await ActivityHistoryService.createActivityHistory(
+      userId,
+      'password_changed',
+      { targetName: 'User Password', targetDesc: `User password changed for userId ${userId}` }
+    );
+    res.status(200).json({ success: true, user: user });
 } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: 'Server error' });

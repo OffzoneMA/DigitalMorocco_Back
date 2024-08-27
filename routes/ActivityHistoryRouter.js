@@ -3,6 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const ActivityHistoryController = require('../controllers/ActivityHistoryController');
+const AuthController = require('../controllers/AuthController');
 
 /**
  * @swagger
@@ -20,41 +21,43 @@ const ActivityHistoryController = require('../controllers/ActivityHistoryControl
  *       properties:
  *         eventType:
  *           type: string
- *           enum:
- *             - document_shared
- *             - contact_request_sent
- *             - event_registered
- *             - project_created
- *             - event_attended
- *             - document_uploaded
- *             - other
  *           required: true
- *         eventDetails:
- *           type: string
+ *         eventData:
+ *           type: object
+ *           additionalProperties: true
+ *           description: Contains additional data related to the event
+ *           example:
+ *             key: value
  *         timestamp:
  *           type: string
  *           format: date-time
  *         user:
  *           type: string
  *           description: ID of the user associated with this activity history
- *         finalDetails:
- *           type: string
- *         actionTarget:
- *           type: string
- *           description: ID of the action target (e.g., document, project, event)
- *         targetUser:
- *           type: object
- *           properties:
- *             usertype:
- *               type: string
- *               description: Type of the target user (e.g., Investor, Member, Partner, etc.)
- *             userId:
- *               type: string
- *               description: ID of the target user
- *       required:
- *         - eventType
- *         - timestamp
+ *           required: true
  */
+
+/**
+ * @swagger
+ * /activity-history/user:
+ *   get:
+ *     summary: Get all activity histories for a user
+ *     tags: [Activity History]
+ *     responses:
+ *       '200':
+ *         description: Successful operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/ActivityHistory'
+ *       '400':
+ *         description: Invalid request
+ *       '500':
+ *         description: Internal server error
+ */
+router.get('/user', AuthController.AuthenticateUser, ActivityHistoryController.getAllActivityHistoriesByUser);
 
 
 /**
@@ -93,32 +96,23 @@ router.get('/', ActivityHistoryController.getAllActivityHistoriesController);
 
 /**
  * @swagger
- * /activity-history/{memberId}/member:
- *   get:
- *     summary: Get all activity histories for a member
+ * /activity-history/{id}:
+ *   delete:
+ *     summary: Delete Activity History
  *     tags: [Activity History]
  *     parameters:
  *       - in: path
- *         name: memberId
+ *         name: id
+ *         required: true
+ *         description: ID of the activity history to delete
  *         schema:
  *           type: string
- *         required: true
- *         description: The ID of the member
  *     responses:
- *       '200':
- *         description: Successful operation
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/ActivityHistory'
- *       '400':
- *         description: Invalid request
- *       '500':
- *         description: Internal server error
+ *       204:
+ *         description: Activity history deleted successfully
+ *       500:
+ *         description: Error deleting activity history
  */
-router.get('/:memberId/member', ActivityHistoryController.getAllActivityHistoriesByUser);
-
+router.delete('/:id', ActivityHistoryController.deleteActivity);
 
 module.exports = router;

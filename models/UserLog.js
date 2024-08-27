@@ -11,6 +11,7 @@ const UserLogSchema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: "User",
     },
+    notes: String ,
     envStatus: {
         type: String,
         enum: ['dev', 'prod'],

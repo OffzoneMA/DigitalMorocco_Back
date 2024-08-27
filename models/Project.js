@@ -20,18 +20,8 @@ const ProjectSchema = new mongoose.Schema({
         default: "USD"
     },
     listMember: [{
-        employee: {
-            type: mongoose.Schema.Types.ObjectId,
-        },
-        fullName: { type: String },
-        personalEmail: { type: String },
-        workEmail: { type: String },
-        jobTitle: { type: String },
-        status: {
-            type: String,
-        },
-        image: {type : String} ,
-        photo: {type : String},
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Employee'
     }],
     details: String,
     milestones: [

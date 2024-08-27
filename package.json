@@ -40,6 +40,7 @@
     "passport-linkedin-oauth2": "github:auth0/passport-linkedin-oauth2",
     "passport-local": "^1.0.0",
     "passport-oauth2": "^1.8.0",
+    "paypal-rest-sdk": "^1.8.1",
     "stripe": "^16.2.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "4.3.0"
