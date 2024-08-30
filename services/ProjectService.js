@@ -65,7 +65,7 @@ async function addMilestone(projectId, milestoneData) {
       await ActivityHistoryService.createActivityHistory(
         member.owner,
         'milestone_removed',
-        { targetName: milestoneId, targetDesc: `Milestone removed from project ${project._id}` }
+        { targetName: milestoneId, targetDesc: `Milestone removed from project ${project._id}` , to: project?.name }
     );
       return project;
     } catch (error) {

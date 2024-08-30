@@ -277,5 +277,56 @@ router.patch('/:id/pause', SubscriptionController.pauseSubscription);
  */
 router.post('/:subscriptionId/renew', SubscriptionController.renewSubscription);
 
+/**
+ * @swagger
+ * /subscriptions/{id}:
+ *   put:
+ *     summary: Update a subscription by ID
+ *     tags: [Subscription]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The subscription ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Subscription'
+ *     responses:
+ *       200:
+ *         description: The updated subscription.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Subscription'
+ *       404:
+ *         description: Subscription not found
+ */
+router.put('/:id', SubscriptionController.updateSubscription);
+
+/**
+ * @swagger
+ * /subscriptions/{id}:
+ *   delete:
+ *     summary: Delete a subscription by ID
+ *     tags: [Subscription]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The subscription ID
+ *     responses:
+ *       200:
+ *         description: Subscription deleted successfully.
+ *       404:
+ *         description: Subscription not found
+ */
+router.delete('/:id', SubscriptionController.deleteSubscription);
 
 module.exports = router

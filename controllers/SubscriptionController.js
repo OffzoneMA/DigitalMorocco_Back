@@ -90,7 +90,6 @@ const renewSubscription = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-
 async function checUserkSubscription(req, res) {
     try {
         const userId = req.userId;
@@ -102,6 +101,32 @@ async function checUserkSubscription(req, res) {
     }
 }
 
+// Update a subscription by ID
+const updateSubscription = async (req, res) => {
+    try {
+        const subscription = await SubscriptionService.updateSubscription(req.params.id, req.body);
+        if (!subscription) {
+            return res.status(404).json({ message: 'Subscription not found' });
+        }
+        res.json(subscription);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
+// Delete a subscription by ID
+const deleteSubscription = async (req, res) => {
+    try {
+        const subscription = await SubscriptionService.deleteSubscription(req.params.id);
+        if (!subscription) {
+            return res.status(404).json({ message: 'Subscription not found' });
+        }
+        res.json({ message: 'Subscription deleted' });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
 module.exports = { getSubscriptions, createSubscriptionForUser, upgradeSubscription, getSubscriptionById,
-    cancelSubscription, autoCancelExpiredSubscriptions, pauseSubscription,
-    getSubscriptionsByUser, renewSubscription  , checUserkSubscription}
+    cancelSubscription, autoCancelExpiredSubscriptions, pauseSubscription, updateSubscription,
+    getSubscriptionsByUser, renewSubscription  , checUserkSubscription ,  deleteSubscription}
