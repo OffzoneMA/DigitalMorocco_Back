@@ -189,6 +189,8 @@ router.route("/name/:name").get(MemberController.getByName)
  *                 type: string
  *               sector:
  *                 type: string
+ *               status:
+ *                 type: string
  *               website:
  *                 type: string
  *               contactEmail:
@@ -348,6 +350,8 @@ router.route("/project").post(AuthController.AuthenticateMember, upload.fields([
  *                 type: string
  *               sector:
  *                 type: string
+ *               status:
+ *                 type: string
  *               website:
  *                 type: string
  *               contactEmail:
@@ -367,10 +371,6 @@ router.route("/project").post(AuthController.AuthenticateMember, upload.fields([
  *                     role:
  *                       type: string
  *                       description: Role of the team member.
- *                 required:
- *                   - firstName
- *                   - lastName
- *                   - role
  *               details:
  *                 type: string
  *                 description: Details about the project.

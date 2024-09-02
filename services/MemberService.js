@@ -398,6 +398,7 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
         project.website = newData.website || project.website;
         project.contactEmail = newData.contactEmail || project.contactEmail;
         project.listMember = newData.listMember || project.listMember;
+        project.status = newData.status || project.status;
 
         console.log(newData.stage)
         if (newData.milestones) {
