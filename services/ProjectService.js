@@ -161,6 +161,37 @@ async function updateProjectStatus(projectId, newStatus) {
   return project;
 }
 
+const getTopSectors = async () => {
+  // Get total number of projects
+  const totalProjects = await Project.countDocuments();
+
+  const sectors = await Project.aggregate([
+    {
+      $group: {
+        _id: "$sector",
+        count: { $sum: 1 }
+      }
+    },
+    {
+      $sort: { count: -1 }
+    },
+    {
+      $limit: 5
+    },
+    {
+      $project: {
+        sector: "$_id",
+        _id: 0,
+        count: 1,
+        percentage: { $multiply: [{ $divide: ["$count", totalProjects] }, 100] }
+      }
+    }
+  ]);
+
+  return sectors;
+};
+
 module.exports = { getProjects , CreateProject, getProjectById, ProjectByNameExists, 
     getProjectByMemberId , deleteProject, addMilestone , removeMilestone , 
-    countProjectsByMember , countProjectsByMemberId , updateProjectStatus} 
+    countProjectsByMember , countProjectsByMemberId , updateProjectStatus , 
+  getTopSectors }; 

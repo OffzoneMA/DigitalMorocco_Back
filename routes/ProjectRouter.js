@@ -4,6 +4,40 @@ const ProjectController = require('../controllers/ProjectController');
 
 /**
  * @swagger
+ * /projects/top-sectors:
+ *   get:
+ *     summary: Retrieve the top 5 sectors by project count with percentage
+ *     tags: [Projects]
+ *     responses:
+ *       200:
+ *         description: A list of the top 5 sectors with project counts and percentages
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 sectors:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       sector:
+ *                         type: string
+ *                         description: The sector name
+ *                       count:
+ *                         type: integer
+ *                         description: The number of projects in this sector
+ *                       percentage:
+ *                         type: number
+ *                         format: float
+ *                         description: The percentage of projects in this sector relative to the total
+ *       500:
+ *         description: Failed to retrieve top sectors
+ */
+router.get('/top-sectors', ProjectController.getTopSectors);
+
+/**
+ * @swagger
  * /projects/{projectId}:
  *   delete:
  *     summary: Delete a project

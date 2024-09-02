@@ -74,6 +74,15 @@ async function addMilestone(req, res) {
     }
   }
 
+  const getTopSectors = async (req, res) => {
+    try {
+      const sectors = await ProjectService.getTopSectors();
+      res.status(200).json({ sectors });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to retrieve top sectors", error: error.message });
+    }
+  };  
+
 module.exports = {  getprojects , deleteProject , getProjectById , addMilestone , removeMilestone ,
-  updateProjectStatus
+  updateProjectStatus , getTopSectors 
 }

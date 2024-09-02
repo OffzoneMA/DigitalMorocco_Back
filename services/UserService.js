@@ -96,7 +96,15 @@ const getUserByID = async (id) => {
 
 
 const getUserByEmail = async (email) => {
-    return await User.findOne({ email });
+    // First, try to find the user with a lowercased email
+    let user = await User.findOne({ email: email.toLowerCase() });
+
+    // If no user is found with the lowercased email, search with the original email
+    if (!user) {
+        user = await User.findOne({ email });
+    }
+
+    return user;
 }
 
 

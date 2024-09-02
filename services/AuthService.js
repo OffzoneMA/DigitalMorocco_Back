@@ -12,9 +12,17 @@ const EventService = require('../services/EventService');
 
 
 const signInUser = async (u) => {
-  const user = await User.findOne({ email: u.email })
-  .populate('subscription') // Populates the subscription field if it exists
-  .exec();    if (user &&!user?.password){
+  let user = await User.findOne({ email: u.email.toLowerCase() })
+    .populate('subscription') 
+    .exec();
+
+  // If no user is found with the lowercased email, search with the original email
+  if (!user) {
+    user = await User.findOne({ email: u.email })
+      .populate('subscription') 
+      .exec();
+  }   
+  if (user &&!user?.password){
         if(user.googleId)  { throw new Error("This email is registered through Google.");}
         if (user.linkedinId)  { throw new Error("This email is registered through Linkedin.");}
         if (user.facebookId)  { throw new Error("This email is registered through Facebook.");}
@@ -49,12 +57,15 @@ const signInUser = async (u) => {
 }
 
 const createUser = async (u) => {
-    if (await User.findOne({ email: u.email })) {
+    if (await User.findOne({ email: u.email.toLowerCase() })) {
         throw new Error('Email already exists!')
     }
+    const email = u.email.toLowerCase();
+
     const password = u.password;
     const hashedPassword = await bcrypt.hash(password, salt)
     u.password = hashedPassword
+    u.email = email;
      const user=await User.create(u)
      const accessToken = await generateAccessToken(user)
      return { accessToken: accessToken, user: user }
