@@ -84,7 +84,6 @@ const deleteLegalDocument = async (documentId) => {
         throw error;
     }
 };
-
 const getLegalDocumentById = async (documentId) => {
     try {
         const document = await LegalDocument.findById(documentId);
@@ -99,7 +98,8 @@ const getLegalDocumentById = async (documentId) => {
 
 const getLegalDocuments = async () => {
     try {
-        const documents = await LegalDocument.find({});
+        const documents = await LegalDocument.find({})
+            .populate('createdBy') 
         return documents;
     } catch (error) {
         throw error;
@@ -108,7 +108,8 @@ const getLegalDocuments = async () => {
 
 const getLegalDocumentsByUser = async (userId) => {
     try {
-        const documents = await LegalDocument.find({ createdBy: userId });
+        const documents = await LegalDocument.find({ createdBy: userId })
+            .populate('createdBy') 
         return documents;
     } catch (error) {
         throw error;
