@@ -98,5 +98,16 @@ const shareDocument = async (req, res) => {
 };
 
 
+const getShareWithData = async (req , res) => {
+    try {
+        const userId = req.userId;
+        const data = await DocumentService.getShareWithData(userId);
+        res.status(200).json(data);
+    } catch (error) {
+        res.status(400).json({ error: error });
+    }
+}
+
+
 module.exports = {getDocumentsByUploader, getDocumentsForUser ,updateDocument, shareDocument ,
-deleteDocument, getDocumentById, createDocument , getAllDocuments}
+deleteDocument, getDocumentById, createDocument , getAllDocuments , getShareWithData}

@@ -4,6 +4,9 @@ const MemberService = require("../services/MemberService");
 const UserService = require("../services/UserService");
 const uploadService = require('./FileService')
 const ActivityHistoryService = require('../services/ActivityHistoryService');
+const EmployeeService = require('../services/EmployeeService');
+const Employee = require('../models/Employees');
+const Investor = require('../models/Investor');
 
 async function createDocument(userId , documentData, docFile) {
     try {
@@ -21,10 +24,11 @@ async function createDocument(userId , documentData, docFile) {
         document.owner = user._id;
       
         await document.save();
+        const extension = document.documentName?.split('.')?.pop();
         await ActivityHistoryService.createActivityHistory(
             user._id,
             'document_created',
-            { targetName: document.documentName, targetDesc: `Document created with ID ${document._id}` }
+            { targetName: `${document?.title}.${extension}`, targetDesc: `Document created with ID ${document._id}` }
         );
         return document;
     } catch (error) {
@@ -49,10 +53,11 @@ async function updateDocument(documentId, updateData, docFile ) {
 
         Object.assign(document, updateData); 
         await document.save();
+        const extension = document.documentName?.split('.')?.pop();
         await ActivityHistoryService.createActivityHistory(
             document.owner,
             'document_updated',
-            { targetName: document.documentName, targetDesc: `Document updated with ID ${document._id}` }
+            { targetName: `${document?.title}.${extension}`, targetDesc: `Document updated with ID ${document._id}` }
         );
         return document;
     } catch (error) {
@@ -67,27 +72,34 @@ async function shareDocument(documentId, userIds , shareWithType) {
             throw new Error('Document not found');
         }
 
-        const existingUsers = await User.find({ _id: { $in: userIds } });
-        if (existingUsers.length !== userIds.length) {
-            throw new Error('One or more users not found');
+        const existingEmployees = await Employee.find({ _id: { $in: userIds } });
+        const existingInvestors = await Investor.find({ _id: { $in: userIds } });
+
+        // Combine employee and investor IDs
+        const foundUserIds = [
+        ...existingEmployees.map(employee => employee._id.toString()),
+        ...existingInvestors.map(investor => investor._id.toString()),
+        ];
+
+        if (foundUserIds.length !== userIds.length) {
+        throw new Error('One or more employees or investors not found');
         }
 
         document.shareWith = shareWithType;
         document.shareWithUsers = userIds;
 
         await document.save();
+        const extension = document?.documentName?.split('.')?.pop();
         await ActivityHistoryService.createActivityHistory(
             document.owner,
             'document_shared',
-            { targetName: document.documentName, targetDesc: `Document shared with users: ${userIds.join(', ')}` , to: shareWithType}
+            { targetName: `${document?.title}.${extension}`, targetDesc: `Document shared with users: ${userIds.join(', ')}` , to: shareWithType}
         );
         return document;
     } catch (error) {
         throw new Error('Error sharing document: ' + error.message);
     }
 }
-
-
 async function getAllDocuments() {
     try {
         const documents = await Document.find().populate('owner');
@@ -135,11 +147,11 @@ async function deleteDocument(documentId) {
         }
 
         await uploadService.deleteFile(document.documentName, 'Documents/' + document.owner + "/uploadBy/" + document.owner);
-
+        const extension = document?.documentName?.split('.')?.pop();
         await ActivityHistoryService.createActivityHistory(
             document.owner,
             'document_deleted',
-            { targetName: document.documentName, targetDesc: `Document deleted with ID ${documentId}` }
+            { targetName: `${document?.title}.${extension}`, targetDesc: `Document deleted with ID ${documentId}` }
         );
 
         return document;
@@ -148,8 +160,48 @@ async function deleteDocument(documentId) {
     }
 }
 
+async function getShareWithData(userId) {
+    try {
+        const user = await UserService.getUserByID(userId);
+        if (!user) {
+            throw new Error('User not found');
+        }
+    
+        let employees = [];
+        let investors = [];
 
+        employees = await EmployeeService.getAllEmployeesByUser(userId);
+
+        if (user.role?.toLocaleLowerCase() === 'member') {
+            const member = await MemberService.getMemberByUserId(userId);
+            investors = await MemberService.getInvestorsForMember(member?._id);
+        }
+
+        const result = [
+            ...employees.map(employee => ({
+              _id: employee._id,
+              type: 'Employee',
+              name: employee.fullName,
+              email: employee.workEmail,
+              phoneNumber: employee.phoneNumber,
+              image: employee.image,
+            })),
+            ...investors.map(investor => ({
+              _id: investor._id,
+              type: 'Investor',
+              name: investor.name,
+              email: investor.contactEmail,
+              phoneNumber: investor.phoneNumber,
+              image: investor.image,
+            })),
+        ];
+        return result;
+    } catch (error) {
+        throw new Error('Error fetching shared data');
+    }
+}
 
 
 module.exports = {createDocument , updateDocument , getAllDocuments, getDocumentById,
-getDocumentsForUser , getDocumentsByUploader, deleteDocument , shareDocument}
+getDocumentsForUser , getDocumentsByUploader, deleteDocument , shareDocument , 
+getShareWithData}

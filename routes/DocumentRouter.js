@@ -37,6 +37,22 @@ router.get('/all', DocumentController.getAllDocuments);
  */
 router.get('/user',AuthController.AuthenticateUser , DocumentController.getDocumentsForUser);
 
+
+/**
+ * @swagger
+ * /documents/shareWithData:
+ *   get:
+ *     summary: Retrieve a list of employees and investors.
+ *     tags: [Documents]
+ *     description: Fetch a certain number of employees and investors and return them in a combined format.
+ *     responses:
+ *       200:
+ *         description: A list of entities.
+ *       500:
+ *         description: Error fetching data.
+ */
+router.get('/shareWithData' , AuthController.AuthenticateUser , DocumentController.getShareWithData)
+
 /**
  * @swagger
  * /documents/new:

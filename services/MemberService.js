@@ -637,7 +637,6 @@ const getInvestorsForMember = async (memberId) => {
     }
 }
 
-
 const getContacts = async (memberId) => {
     const investors = await Member.findById(memberId).select("investorsRequestsAccepted").populate({
         path: 'investorsRequestsAccepted', select: '_id  name linkedin_link'

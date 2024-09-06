@@ -13,23 +13,22 @@ const createLegalDocument = async (userId, documentData , docFile) => {
         newDocument.createdBy = userId;
         newDocument.updatedBy = userId;
         if (docFile) {
-            const savedDocument = await newDocument.save();
             const docURL = await uploadService.uploadFile(
                 docFile,
-                `Users/${userId}/legalDocuments/${savedDocument._id}`,
+                `Users/${userId}/legalDocuments/${newDocument._id}`,
                 docFile.originalname
             );
-            savedDocument.link = docURL;
-            savedDocument.type = docFile.mimetype;
-            savedDocument.name = docFile.originalname;
-            await savedDocument.save();
-        } else {
-            await newDocument.save();
-        }
+            newDocument.link = docURL;
+            newDocument.type = docFile.mimetype;
+            newDocument.name = docFile.originalname;
+        } 
+        await newDocument.save();
+        const extension = newDocument.name?.split('.')?.pop();
+
         await ActivityHistoryService.createActivityHistory(
             userId,
             'legal_document_created',
-            { targetName: documentData.name, targetDesc: `` }
+            { targetName: `${newDocument?.title}.${extension}`, targetDesc: `` }
         );
         return newDocument;
     } catch (error) {
@@ -57,10 +56,12 @@ const updateLegalDocument = async (documentId, updateData, docFile) => {
         document.title = updateData.title;
         document.updatedBy = updateData.updatedBy;
         await document.save();
+
+        const extension = document.name?.split('.')?.pop();
         await ActivityHistoryService.createActivityHistory(
             document.updatedBy,
             'legal_document_updated',
-            { targetName: document.name, targetDesc: `` }
+            { targetName: `${document?.title}.${extension}`, targetDesc: `` }
         );
         return document;
     } catch (error) {
@@ -74,10 +75,12 @@ const deleteLegalDocument = async (documentId) => {
         if (!deletedDocument) {
             throw new Error("Document not found");
         }
+        const extension = deletedDocument?.name?.split('.')?.pop();
+
         await ActivityHistoryService.createActivityHistory(
             deletedDocument.updatedBy,
             'legal_document_deleted',
-            { targetName: deletedDocument.name, targetDesc: `` }
+            { targetName: `${deletedDocument?.title}.${extension}`, targetDesc: `` }
         );
         return deletedDocument;
     } catch (error) {
