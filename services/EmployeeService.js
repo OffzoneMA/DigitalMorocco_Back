@@ -5,7 +5,7 @@ const UserService = require('../services/UserService');
 
 async function createEmployee(userId, employeeData, image) {
     try {
-        const user = await UserService.getUserById(userId);
+        const user = await UserService.getUserByID(userId);
         if (!user) {
             throw new Error('User not found');
         }

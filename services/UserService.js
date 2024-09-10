@@ -93,8 +93,6 @@ const getUserByID = async (id) => {
         throw new Error(`Error retrieving user by ID: ${error.message}`);
     }
 };
-
-
 const getUserByEmail = async (email) => {
     // First, try to find the user with a lowercased email
     let user = await User.findOne({ email: email.toLowerCase() });
@@ -106,8 +104,6 @@ const getUserByEmail = async (email) => {
 
     return user;
 }
-
-
 const approveUserService = async (userId,role) => {
     
     if (!(await User.findById(userId))) {
@@ -193,15 +189,42 @@ const resetPassword = async (token, newPassword, confirmPassword, language) => {
     if(fullName) {
         user.displayName = fullName;
     }
-    if(image) {
-        user.image = image;
-    } 
+    // if(image) {
+    //     user.image = image;
+    // } 
     if(language){
         user.language = language;
     }
     await user.save();
     return user;
 };
+
+const updateUserProfile = async (userId, updatedFields , image) => {
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      if (image) {
+        const imageURL = await FileService.uploadFile(
+            image,
+            `Users/${userId}/userProfile`,
+            image.originalname
+        );
+        updatedFields.image = imageURL; 
+      }
+  
+        Object.assign(user, updatedFields);
+
+        const updatedUser = await user.save();
+
+        return updatedUser;
+    } catch (error) {
+      throw new Error(`Error updating user profile: ${error.message}`);
+    }
+};
   
 module.exports = { getUserByID, deleteUser, approveUserService, rejectUser, getUsers, checkUserVerification, 
-    updateUser , resetPassword , getUserByEmail , updateFullName,updateUserLanguageRegionService}
+    updateUser , resetPassword , getUserByEmail , updateFullName,updateUserLanguageRegionService , 
+updateUserProfile}

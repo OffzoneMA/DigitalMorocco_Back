@@ -61,8 +61,8 @@ const updateUserProfile = async (req, res) => {
   try {
     const userId = req.userId || req.params.userId;
     const updatedFields = req.body;
-
-    const user = await User.findByIdAndUpdate(userId, updatedFields, { new: true, runValidators: true });
+    const file = req.file;
+    const user = await UserService.updateUserProfile(userId, updatedFields, file);
     if (user) {
       await UserLogService.createUserLog('Profile Info Update', userId);
       await ActivityHistoryService.createActivityHistory(

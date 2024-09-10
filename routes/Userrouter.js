@@ -714,14 +714,14 @@ router.put('/update',AuthController.AuthenticateUser, UserController.updateUser)
  *     parameters:
  *       - name: userId
  *         in: path
- *         description: ID of the user to approve
+ *         description: ID of the user to update
  *         required: true
  *         schema:
  *           type: string
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -769,8 +769,8 @@ router.put('/update',AuthController.AuthenticateUser, UserController.updateUser)
  *                 example: "New York"
  *               image:
  *                 type: string
- *                 format: base64
- *                 example: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABVYAAAL..."
+ *                 format: binary
+ *                 description: Profile image file (jpg, png, etc.)
  *     responses:
  *       200:
  *         description: Profile updated successfully
@@ -789,7 +789,7 @@ router.put('/update',AuthController.AuthenticateUser, UserController.updateUser)
  *       500:
  *         description: Server error
  */
-router.put('/:userId/updateProfile', AuthController.AuthenticateUser, UserController.updateUserProfile);
+router.put('/:userId/updateProfile', AuthController.AuthenticateUser, upload.single('image') , UserController.updateUserProfile);
 
 /**
  * @swagger
