@@ -10,7 +10,7 @@ const getSubscriptions = async () => {
 
 const dateInDays = days => new Date(Date.now() + days * 24 * 60 * 60 * 1000).getTime();
 
-const dateIn1Month = () => dateInDays(30);
+const dateIn1Month = () => dateInDays(31);
 
 const dateIn1Year = () => dateInDays(365);
 
