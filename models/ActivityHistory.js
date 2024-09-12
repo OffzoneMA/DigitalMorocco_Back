@@ -13,7 +13,7 @@ const ActivityHistorySchema  = new mongoose.Schema({
             'legal_document_deleted' , 'legal_document_download' ,  'contact_sent',
             'event_ticket_download' , 'event_ticket_view' , 'event_registered' ,
             'event_attended' , 'password_changed', 'account_deleted', 'password_reset',
-            'new_subscription' , 'subscription_upgrade', 'subscription_renew' ,
+            'new_subscription' , 'subscription_upgraded', 'subscription_renew' ,
             'subscription_canceled' , 'subscription_auto_canceled' ,'profile_update_lang_reg' , 'profile_update_password',
             'profile_updated' ,'contact_request_accepted', 'contact_request_rejected'
         ],

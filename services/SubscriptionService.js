@@ -108,7 +108,7 @@ async function upgradeSubscription(subscriptionId, newPlanId , newBilling) {
         await ActivityHistoryService.createActivityHistory(
             subscription.user,
             'subscription_upgraded',
-            { targetName: `${newPlan.name}`, targetDesc: `User upgraded to plan ${newPlanId}` }
+            { targetName: `${newPlan?.name}`, targetDesc: `User upgraded to plan ${newPlanId}` }
         );
 
         return subscription;
@@ -124,10 +124,15 @@ const getSubscriptionById = async (id) => {
 
 async function cancelSubscription(subscriptionId) {
     try {
-        const subscription = await Subscription.findByIdAndUpdate(subscriptionId, {
-            subscriptionStatus: 'cancelled',
-            dateStopped: Date.now()
-        });
+        const subscription = await Subscription.findByIdAndUpdate(
+            subscriptionId,
+            {
+                subscriptionStatus: 'cancelled',
+                dateStopped: Date.now()
+            },
+            { new: true }
+        ).populate('plan');
+
         if (!subscription) {
             throw new Error('Subscription not found');
         }
@@ -150,7 +155,7 @@ async function cancelSubscription(subscriptionId) {
         await ActivityHistoryService.createActivityHistory(
             subscription.user,
             'subscription_canceled',
-            { targetName: `Subscription canceled`, targetDesc: `User canceled subscription ${subscriptionId}` }
+            { targetName: `${subscription?.plan?.name}`, targetDesc: `User canceled subscription ${subscriptionId}` }
         );
         return subscription;
     } catch (error) {
@@ -196,7 +201,10 @@ async function autoCancelExpiredSubscriptions() {
 // Suspend une souscription
 async function pauseSubscription(subscriptionId) {
     try {
-        const subscription = await Subscription.findByIdAndUpdate(subscriptionId, { subscriptionStatus: 'paused' });
+        const subscription = await Subscription.findByIdAndUpdate(subscriptionId, { subscriptionStatus: 'paused' },
+            { new: true }
+        ).populate('plan');
+
         if (!subscription) {
             throw new Error('Subscription not found');
         }
@@ -213,7 +221,7 @@ async function pauseSubscription(subscriptionId) {
         await ActivityHistoryService.createActivityHistory(
             subscription.user,
             'subscription_paused',
-            { targetName: `Subscription paused`, targetDesc: `User paused subscription ${subscriptionId}` }
+            { targetName: `${subscription?.plan?.name}`, targetDesc: `User paused subscription ${subscriptionId}` }
         );
 
         return subscription;
@@ -225,13 +233,20 @@ async function pauseSubscription(subscriptionId) {
 // Récupérer toutes les souscriptions pour un utilisateur spécifique
 async function getSubscriptionsByUser(userId) {
     try {
-        const subscription = await Subscription.findOne({ user: userId }).populate('plan');
+        const subscription = await Subscription.findOne({
+            user: userId,
+            subscriptionStatus: 'active'
+        })
+        .sort({ dateCreated: -1 }) 
+        .populate('plan'); 
+
         return subscription;
     } catch (error) {
-        console.log(error)
-        throw new Error('Error retrieving subscriptions for user: ' + error.message);
+        console.log(error);
+        throw new Error('Error retrieving the most recent valid subscription for user: ' + error.message);
     }
 }
+
 
 async function renewSubscription(subscriptionId) {
     try {

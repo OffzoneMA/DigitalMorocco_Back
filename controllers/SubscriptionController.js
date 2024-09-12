@@ -12,7 +12,6 @@ const getSubscriptions = async (req, res) => {
 const createSubscriptionForUser = async (req, res) => {
     const planId = req.params.planId;
     const userId = req.userId;
-    console.log(req.params.planId)
     try {
         const subscription = await SubscriptionService.createSubscriptionForUser(userId, planId, req.body);
         res.status(201).json(subscription);
@@ -90,6 +89,7 @@ const renewSubscription = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
 async function checUserkSubscription(req, res) {
     try {
         const userId = req.userId;
