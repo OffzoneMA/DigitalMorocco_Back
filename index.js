@@ -92,47 +92,21 @@ i18n.changeLanguage('fr');
 
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URL, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => {
-        // Supprimer complètement la collection 'subscriptions'
-        mongoose.connection.db.collection('subscriptions').drop()
-            .then(() => {
-                console.log("Collection 'subscriptions' supprimée.");
-
-                // Démarrer le serveur après la suppression
-                app.listen(process.env.PORT, () => {
-                    console.log("Server is running!");
-                    app.use(passport.initialize());
-                    app.use(passport.session());
-
-                    // Vérifier la date d'expiration des abonnements pour tous les membres toutes les 24 heures
-                    const taskInterval = 24 * 60 * 60 * 1000; 
-                    setInterval(checkSubscriptionStatus, taskInterval);
-                    setInterval(autoCancelExpiredSubscriptions, taskInterval);
-                });
-            })
-            .catch(err => {
-                if (err.code === 26) {
-                    console.log("La collection 'subscriptions' n'existe pas.");
-                } else {
-                    console.error('Erreur lors de la suppression de la collection:', err);
-                }
-
-                // Démarrer le serveur même si la collection n'existe pas
-                app.listen(process.env.PORT, () => {
-                    console.log("Server is running!");
-                    app.use(passport.initialize());
-                    app.use(passport.session());
-
-                    const taskInterval = 24 * 60 * 60 * 1000; 
-                    setInterval(checkSubscriptionStatus, taskInterval);
-                    setInterval(autoCancelExpiredSubscriptions, taskInterval);
-                });
-            });
+mongoose.connect(process.env.MONGO_URL ,{ useNewUrlParser: true, useUnifiedTopology: true })
+    .then(result => {
+        // Start the server after successful database connection
+        app.listen(process.env.PORT, () => {
+            console.log("Server is running!");
+            app.use(passport.initialize());
+            app.use(passport.session());
+            //Checking the subscription expire date (For all members) every 24Hr
+            const taskInterval = 24 * 60 * 60 * 1000; 
+            setInterval(checkSubscriptionStatus, taskInterval);
+            setInterval(autoCancelExpiredSubscriptions, taskInterval);
+          
+        });
     })
     .catch(err => console.log(err));
-
-
 
 app.use(
     session({
