@@ -59,7 +59,6 @@ async function createSubscriptionForUser(userId, planId, data) {
             'new_subscription',
             { targetName: `${plan.name}`, targetDesc: `User subscribed to plan ${planId}` }
         );
-
         return newSubscription;
     } catch (error) {
         console.log(error)

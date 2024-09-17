@@ -92,377 +92,46 @@ i18n.changeLanguage('fr');
 
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URL ,{ useNewUrlParser: true, useUnifiedTopology: true })
-    .then(result => {
-        // Start the server after successful database connection
-        app.listen(process.env.PORT, () => {
-            console.log("Server is running!");
-            app.use(passport.initialize());
-            app.use(passport.session());
-            //Checking the subscription expire date (For all members) every 24Hr
-            const taskInterval = 24 * 60 * 60 * 1000; 
-            setInterval(checkSubscriptionStatus, taskInterval);
-            setInterval(autoCancelExpiredSubscriptions, taskInterval);
-            // const events = [
-            //   {
-            //     title: "Past Tech Summit",
-            //     description: "An annual summit on technology.",
-            //     summary: "Discuss the future of technology.",
-            //     promoCode: "PASTTECH2024",
-            //     promoCodes: [
-            //       {
-            //         code: "PASTTECH2024",
-            //         discountPercentage: 10,
-            //         minOrderAmount: 50,
-            //         valid: true,
-            //         validUntil: new Date('2024-12-31')
-            //       }
-            //     ],
-            //     startDate: new Date('2023-05-01T09:00:00'),
-            //     endDate: new Date('2023-05-01T17:00:00'),
-            //     startTime: "09:00 AM",
-            //     endTime: "17:00 PM",
-            //     locationType: "physical",
-            //     category: "Conference",
-            //     industry: "Technology",
-            //     physicalLocation: "789 Tech Road, Innovation City",
-            //     latitude: 37.7749,
-            //     longitude: -122.4194,
-            //     creator: "665f1ac2ef43b11bd8d3a1d2", // Utilisez un ObjectId valide ici
-            //     headerImage: "https://example.com/image4.jpg",
-            //     image: "https://example.com/image4.jpg",
-            //     tags: ["tech", "summit"],
-            //     youtubeVideo: "https://youtube.com/video4",
-            //     zoomLink: "https://zoom.us/j/123450987",
-            //     zoomMeetingID: "123450987",
-            //     zoomPasscode: "pasttech2024",
-            //     price: 150,
-            //     salesEndDate: new Date('2023-04-30'),
-            //     availableQuantity: 50,
-            //     attendees: [],
-            //     attendeesUsers: [],
-            //     organizerLogo: "https://example.com/logo4.png",
-            //     organizername: "Tech Summit Org",
-            //     status: "past",
-            //     sponsors: [
-            //       {
-            //         logo: "https://example.com/sponsor4.png",
-            //         name: "Tech Sponsor"
-            //       }
-            //     ]
-            //   },
-            //   {
-            //     title: "Past Business Meetup",
-            //     description: "A meetup for business professionals.",
-            //     summary: "Network with business professionals.",
-            //     promoCode: "PASTBIZ2024",
-            //     promoCodes: [
-            //       {
-            //         code: "PASTBIZ2024",
-            //         discountPercentage: 15,
-            //         minOrderAmount: 100,
-            //         valid: true,
-            //         validUntil: new Date('2024-12-31')
-            //       }
-            //     ],
-            //     startDate: new Date('2023-06-10T10:00:00'),
-            //     endDate: new Date('2023-06-10T14:00:00'),
-            //     startTime: "10:00 AM",
-            //     endTime: "14:00 PM",
-            //     locationType: "online",
-            //     category: "Meetup",
-            //     industry: "Business",
-            //     physicalLocation: "",
-            //     latitude: null,
-            //     longitude: null,
-            //     creator: "665f1ac2ef43b11bd8d3a1d2", // Utilisez un ObjectId valide ici
-            //     headerImage: "https://example.com/image5.jpg",
-            //     image: "https://example.com/image5.jpg",
-            //     tags: ["business", "meetup"],
-            //     youtubeVideo: "https://youtube.com/video5",
-            //     zoomLink: "https://zoom.us/j/543216789",
-            //     zoomMeetingID: "543216789",
-            //     zoomPasscode: "pastbiz2024",
-            //     price: 50,
-            //     salesEndDate: new Date('2023-06-09'),
-            //     availableQuantity: 75,
-            //     attendees: [],
-            //     attendeesUsers: [],
-            //     organizerLogo: "https://example.com/logo5.png",
-            //     organizername: "Business Meetup Org",
-            //     status: "past",
-            //     sponsors: [
-            //       {
-            //         logo: "https://example.com/sponsor5.png",
-            //         name: "Business Sponsor"
-            //       }
-            //     ]
-            //   },
-            //   {
-            //     title: "Tech Workshop",
-            //     description: "A workshop on the latest tech trends.",
-            //     summary: "Learn about the latest in technology.",
-            //     promoCode: "TECH2024",
-            //     promoCodes: [
-            //       {
-            //         code: "TECH2024",
-            //         discountPercentage: 10,
-            //         minOrderAmount: 50,
-            //         valid: true,
-            //         validUntil: new Date('2024-12-31')
-            //       }
-            //     ],
-            //     startDate: new Date('2024-07-01T09:00:00'),
-            //     endDate: new Date('2024-07-01T17:00:00'),
-            //     startTime: "09:00 AM",
-            //     endTime: "17:00 PM",
-            //     locationType: "physical",
-            //     category: "Workshop",
-            //     industry: "Technology",
-            //     physicalLocation: "123 Tech Street, Tech City",
-            //     latitude: 37.7749,
-            //     longitude: -122.4194,
-            //     creator: "665f1ac2ef43b11bd8d3a1d2", // Utilisez un ObjectId valide ici
-            //     headerImage: "https://example.com/image1.jpg",
-            //     image: "https://example.com/image1.jpg",
-            //     tags: ["tech", "workshop"],
-            //     youtubeVideo: "https://youtube.com/video1",
-            //     zoomLink: "https://zoom.us/j/123456789",
-            //     zoomMeetingID: "123456789",
-            //     zoomPasscode: "tech2024",
-            //     price: 100,
-            //     salesEndDate: new Date('2024-06-30'),
-            //     availableQuantity: 100,
-            //     attendees: [],
-            //     attendeesUsers: [],
-            //     organizerLogo: "https://example.com/logo1.png",
-            //     organizername: "Tech Corp",
-            //     status: "upcoming",
-            //     sponsors: [
-            //       {
-            //         logo: "https://example.com/sponsor1.png",
-            //         name: "Tech Sponsor"
-            //       }
-            //     ]
-            //   },
-            //   {
-            //     title: "Business Seminar",
-            //     description: "A seminar on business strategies.",
-            //     summary: "Explore new business strategies.",
-            //     promoCode: "BUSINESS2024",
-            //     promoCodes: [
-            //       {
-            //         code: "BUSINESS2024",
-            //         discountPercentage: 15,
-            //         minOrderAmount: 100,
-            //         valid: true,
-            //         validUntil: new Date('2024-12-31')
-            //       }
-            //     ],
-            //     startDate: new Date('2024-08-15T10:00:00'),
-            //     endDate: new Date('2024-08-15T16:00:00'),
-            //     startTime: "10:00 AM",
-            //     endTime: "16:00 PM",
-            //     locationType: "online",
-            //     category: "Seminar",
-            //     industry: "Business",
-            //     physicalLocation: "",
-            //     latitude: null,
-            //     longitude: null,
-            //     creator: "665f1ac2ef43b11bd8d3a1d2", // Utilisez un ObjectId valide ici
-            //     headerImage: "https://example.com/image2.jpg",
-            //     image: "https://example.com/image2.jpg",
-            //     tags: ["business", "seminar"],
-            //     youtubeVideo: "https://youtube.com/video2",
-            //     zoomLink: "https://zoom.us/j/987654321",
-            //     zoomMeetingID: "987654321",
-            //     zoomPasscode: "business2024",
-            //     price: 200,
-            //     salesEndDate: new Date('2024-08-14'),
-            //     availableQuantity: 200,
-            //     attendees: [],
-            //     attendeesUsers: [],
-            //     organizerLogo: "https://example.com/logo2.png",
-            //     organizername: "Business Inc",
-            //     status: "upcoming",
-            //     sponsors: [
-            //       {
-            //         logo: "https://example.com/sponsor2.png",
-            //         name: "Business Sponsor"
-            //       }
-            //     ]
-            //   },
-            //   {
-            //     title: "Health Conference",
-            //     description: "A conference on health and wellness.",
-            //     summary: "Join us for a discussion on health and wellness.",
-            //     promoCode: "HEALTH2024",
-            //     promoCodes: [
-            //       {
-            //         code: "HEALTH2024",
-            //         discountPercentage: 20,
-            //         minOrderAmount: 150,
-            //         valid: true,
-            //         validUntil: new Date('2024-12-31')
-            //       }
-            //     ],
-            //     startDate: new Date('2024-09-20T08:00:00'),
-            //     endDate: new Date('2024-09-20T18:00:00'),
-            //     startTime: "08:00 AM",
-            //     endTime: "18:00 PM",
-            //     locationType: "physical",
-            //     category: "Conference",
-            //     industry: "Health",
-            //     physicalLocation: "456 Health Avenue, Wellness City",
-            //     latitude: 34.0522,
-            //     longitude: -118.2437,
-            //     creator: "665f1ac2ef43b11bd8d3a1d2", // Utilisez un ObjectId valide ici
-            //     headerImage: "https://example.com/image3.jpg",
-            //     image: "https://example.com/image3.jpg",
-            //     tags: ["health", "conference"],
-            //     youtubeVideo: "https://youtube.com/video3",
-            //     zoomLink: "https://zoom.us/j/654321987",
-            //     zoomMeetingID: "654321987",
-            //     zoomPasscode: "health2024",
-            //     price: 300,
-            //     salesEndDate: new Date('2024-09-19'),
-            //     availableQuantity: 300,
-            //     attendees: [],
-            //     attendeesUsers: [],
-            //     organizerLogo: "https://example.com/logo3.png",
-            //     organizername: "Health Org",
-            //     status: "upcoming",
-            //     sponsors: [
-            //       {
-            //         logo: "https://example.com/sponsor3.png",
-            //         name: "Health Sponsor"
-            //       }
-            //     ]
-            //   }
-            // ]
+mongoose.connect(process.env.MONGO_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => {
+        // Supprimer complètement la collection 'subscriptions'
+        mongoose.connection.db.collection('subscriptions').drop()
+            .then(() => {
+                console.log("Collection 'subscriptions' supprimée.");
 
-            // Event.insertMany(events)
-            // .then(() => {
-            //   console.log('Events inserted successfully');
-            //   mongoose.connection.close();
-            // })
-            // .catch((error) => {
-            //   console.error('Error inserting events:', error);
-            //   mongoose.connection.close();
-            // });
-        
-          //   const imageUrls = [
-          //     'https://i.ibb.co/mcJ6V1F/img-inv9.png',
-          //     'https://i.ibb.co/FJmpbHm/img-inv8.png',
-          //     'https://i.ibb.co/sQGRhx4/img-inv10.png',
-          //     'https://i.ibb.co/VJxx1YB/img-inv12.png',
-          //     'https://i.ibb.co/jR5gChr/img-inv7.png',
-          //     'https://i.ibb.co/F0xKTFK/img-inv11.png',
-          //     'https://i.ibb.co/bKMJrFp/img-inv5.png',
-          //     'https://i.ibb.co/HpkK3tY/img-inv4.png',
-          //     'https://i.ibb.co/Jt3q4Bq/img-inv1.png',
-          //     'https://i.ibb.co/tbrTvq5/img-inv2.png',
-          //     'https://i.ibb.co/BLmJPJz/img-inv3.png',
-          //     'https://i.ibb.co/PwW1zhn/img-inv.png',
-          // ];
-          
-          // const createUsersAndInvestors = async () => {
-          //     const users = [];
-          //     const investors = [];
-          
-          //     for (let i = 1; i <= 10; i++) {
-          //         const imageIndex = (i - 1) % imageUrls.length; // Loop through the image URLs
-          //         const imageUrl = imageUrls[imageIndex];
-          
-          //         const user = {
-          //             firstName: `InvestorFirstName${i}`,
-          //             lastName: `InvestorLastName${i}`,
-          //             phoneNumber: `1234567890${i}`,
-          //             website: `http://example${i}.com`,
-          //             address: `Address ${i}`,
-          //             Country: `Country ${i}`,
-          //             cityState: `CityState${i}`,
-          //             region: `Region ${i}`,
-          //             image: imageUrl,
-          //             displayName: `Investor${i}`,
-          //             email: `investormail${i}@example.com`,
-          //             role: 'investor',
-          //             password: `password${i}`, // Ensure passwords are hashed in a real application
-          //             status: 'accepted',
-          //             language: `Language${i}`,
-          //         };
-          //         users.push(user);
-          //     }
-          
-          //     try {
-          //         const createdUsers = await User.insertMany(users);
-          //         console.log('10 users created successfully');
-          
-          //         createdUsers.forEach((user, index) => {
-          //             const investor = {
-          //                 owner: user._id,
-          //                 name: `InvestorName${user.firstName}`,
-          //                 legalName: `InvestorLegalName${user.firstName}`,
-          //                 companyType: `CompanyType${user.firstName}`,
-          //                 description: `Description for ${user.firstName}`,
-          //                 foundedDate: `FoundedDate for ${user.firstName}`,
-          //                 headquarter: `Headquarter for ${user.firstName}`,
-          //                 investmentStage: `InvestmentStage for ${user.firstName}`,
-          //                 lastFundingType: `LastFundingType for ${user.firstName}`,
-          //                 phoneNumber: user.phoneNumber,
-          //                 emailAddress: user.email,
-          //                 investmentCapacity: 1000000, // Example value
-          //                 image: user.image,
-          //                 investorType: `InvestorType for ${user.firstName}`,
-          //                 website: user.website,
-          //                 fund: 500000, // Example value
-          //                 fundingRound: `FundingRound for ${user.firstName}`,
-          //                 acquisitions: 5, // Example value
-          //                 linkedin_link: `http://linkedin.com/in/${user.firstName}`,
-          //                 type: `Type for ${user.firstName}`,
-          //                 location: user.cityState,
-          //                 PreferredInvestmentIndustry: `PreferredIndustry for ${user.firstName}`,
-          //                 numberOfInvestment: 10, // Example value
-          //                 numberOfExits: 2, // Example value
-          //                 document: [
-          //                     { name: `Document1 for ${user.firstName}`, link: `http://example${user.firstName}.com/doc1` },
-          //                     { name: `Document2 for ${user.firstName}`, link: `http://example${user.firstName}.com/doc2` },
-          //                 ],
-          //                 investments: [
-          //                     {
-          //                         announcementDate: new Date(),
-          //                         companyName: `Company1 for ${user.firstName}`,
-          //                         companyLogo: `http://example${user.firstName}.com/logo1.jpg`,
-          //                         location: user.cityState,
-          //                         fundingRound: `Series A`,
-          //                         moneyRaised: 1000000,
-          //                     },
-          //                     {
-          //                         announcementDate: new Date(),
-          //                         companyName: `Company2 for ${user.firstName}`,
-          //                         companyLogo: `http://example${user.firstName}.com/logo2.jpg`,
-          //                         location: user.cityState,
-          //                         fundingRound: `Series B`,
-          //                         moneyRaised: 2000000,
-          //                     },
-          //                 ],
-          //             };
-          //             investors.push(investor);
-          //         });
-          
-          //         await Investor.insertMany(investors);
-          //         console.log('10 investors created successfully');
-          //     } catch (error) {
-          //         console.error('Error creating users or investors:', error);
-          //     } finally {
-          //         mongoose.connection.close();
-          //     }
-          // };
-          
-          // createUsersAndInvestors();
-          });
+                // Démarrer le serveur après la suppression
+                app.listen(process.env.PORT, () => {
+                    console.log("Server is running!");
+                    app.use(passport.initialize());
+                    app.use(passport.session());
+
+                    // Vérifier la date d'expiration des abonnements pour tous les membres toutes les 24 heures
+                    const taskInterval = 24 * 60 * 60 * 1000; 
+                    setInterval(checkSubscriptionStatus, taskInterval);
+                    setInterval(autoCancelExpiredSubscriptions, taskInterval);
+                });
+            })
+            .catch(err => {
+                if (err.code === 26) {
+                    console.log("La collection 'subscriptions' n'existe pas.");
+                } else {
+                    console.error('Erreur lors de la suppression de la collection:', err);
+                }
+
+                // Démarrer le serveur même si la collection n'existe pas
+                app.listen(process.env.PORT, () => {
+                    console.log("Server is running!");
+                    app.use(passport.initialize());
+                    app.use(passport.session());
+
+                    const taskInterval = 24 * 60 * 60 * 1000; 
+                    setInterval(checkSubscriptionStatus, taskInterval);
+                    setInterval(autoCancelExpiredSubscriptions, taskInterval);
+                });
+            });
     })
     .catch(err => console.log(err));
+
 
 app.use(
     session({

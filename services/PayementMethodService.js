@@ -23,7 +23,6 @@ async function getLastPaiementMethod(userId) {
             throw new Error('User not found.');
         }
         const paymentMethod = await PaymentMethod.findOne({ userId: userId });
-        console.log(paymentMethod)
         return paymentMethod;
     } catch (err) {
         throw err; 
