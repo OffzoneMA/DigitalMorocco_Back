@@ -276,7 +276,7 @@ const getAllContactRequest = async (args, role, id) => {
     const totalPages = Math.ceil(totalCount / pageSize);
     const ContactsHistory = await ContactRequest.find(query)
         .populate(role == "member" ? { path: 'investor' , model: 'Investor', select: '_id name image linkedin_link' } : { path: 'member' , model: 'Member', select: '_id companyName website city contactEmail logo country' })
-        .select('status communicationStatus dateCreated note document')
+        // .select('status communicationStatus dateCreated notes document')
         .sort({ dateCreated: 'desc' })
         .skip(skip)
         .limit(pageSize);

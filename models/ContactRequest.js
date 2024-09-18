@@ -25,10 +25,11 @@ const ContactRequestSchema = new mongoose.Schema({
         default: Date.now
     },
     communicationStatus: String,
+    attachment: String,
     notes: String,
     status: {
         type: String,
-        enum: ['Pending', 'Accepted', 'Rejected' ,'In Progress'],
+        enum: ['Pending', 'Approved' , 'Accepted', 'Rejected' ,'In Progress'],
         default: 'Pending'
     },
 

@@ -189,4 +189,19 @@ router.delete('/:projectId/milestones/:milestoneId',ProjectController.removeMile
  */
 router.patch('/:projectId/status', ProjectController.updateProjectStatus);
 
+/**
+ * @swagger
+ * /projects:
+ *   get:
+ *     summary: Retrieve all projects
+ *     tags: [Projects]
+ *     responses:
+ *       200:
+ *         description: A list of the top 5 sectors with project counts and percentages
+ *         content:
+ *       500:
+ *         description: Failed to retrieve top sectors
+ */
+router.get('/', ProjectController.getprojects);
+
 module.exports = router
