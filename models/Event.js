@@ -2,12 +2,11 @@ const mongoose = require("mongoose");
 const EventPromoCodeSchema = new mongoose.Schema({
     code: {
       type: String,
-      required: true,
-      unique: true
+    //   required: true,
     },
     discountPercentage: {
       type: Number,
-      required: true
+    //   required: true
     },
     minOrderAmount: {
       type: Number,
@@ -19,7 +18,7 @@ const EventPromoCodeSchema = new mongoose.Schema({
     },
     validUntil: {
         type: Date,
-        required: true
+        // required: true
     }
   });  
   
@@ -57,7 +56,7 @@ const eventSchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        enum: ['Workshop', 'Seminar', 'Conference', 'Meetup', 'Other']
+        enum: ['Workshop', 'Seminar', 'Conference', 'Meetup' , 'Networking', 'Other']
     },
     industry: String,
     physicalLocation: String,
@@ -92,6 +91,7 @@ const eventSchema = new mongoose.Schema({
     },
     price: {
         type: Number,
+        default:0
     },
     
     salesEndDate:Date,

@@ -187,8 +187,19 @@ const getDistinctValuesForUser = async (req, res) => {
   }
 };
 
+const createEventWithJson = async (req, res) => {
+  try {
+    const eventData = req.body;
+    const event = await EventService.createEventWithJson(eventData);
+    res.status(201).json(event);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
     createEvent, getEvents, getEventById, updateEvent, deleteEvent, getAllEventsByUser, addAttendeeToEvent,
     sendTicketToUser, supprimerCollection , addConnectedAttendee , updateConnectedAttendee , deleteConnectedAttendee ,
-    addPromoCode , getEventsForUser , getDistinctFieldValues , getPastEventsForUserParticipate , getDistinctValuesForUser
+    addPromoCode , getEventsForUser , getDistinctFieldValues , getPastEventsForUserParticipate , getDistinctValuesForUser , 
+    createEventWithJson
 };

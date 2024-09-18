@@ -306,6 +306,34 @@ router.post('/createEvent',AuthController.AuthenticateUser,upload.fields([{ name
 
 /**
  * @swagger
+ * /events/createWithJson:
+ *   post:
+ *     summary: Create a new event
+ *     tags: [Events]
+ *     description: Create a new event with the provided details.
+ *     requestBody:
+ *       description: Event object that needs to be added
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Event'
+ *     responses:
+ *       201:
+ *         description: Event created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Event'
+ *       400:
+ *         description: Invalid input
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/createWithJson', EventController.createEventWithJson);
+
+/**
+ * @swagger
  * /events/{eventId}/promo-codes:
  *   post:
  *     summary: Ajouter un nouveau code promotionnel à un événement

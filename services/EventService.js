@@ -143,6 +143,15 @@ async function createEvent(userId ,eventData , imageData ,headerImage , organize
     }
 }
 
+const createEventWithJson = async (eventData) => {
+  try {
+    const event = new Event(eventData);
+    return await event.save();
+  } catch (error) {
+    throw new Error(`Error creating event: ${error.message}`);
+  }
+};
+
 async function addPromoCode(eventId, promoCodeData) {
   const event = await Event.findById(eventId);
   event.promoCodes.push(promoCodeData);
@@ -352,5 +361,5 @@ module.exports = {
     createEvent, getAllEvents, getEventById, updateEvent, deleteEvent, getAllEventsByUser, addAttendeeToEvent,
     supprimerCollection , addConnectedAttendee , updateConnectedAttendee , deleteConnectedAttendee , addPromoCode ,
     countEventsByUserId , getEventsForUser , getDistinctValues , getPastEventsWithUserParticipation ,
-    getDistinctValuesByUser
+    getDistinctValuesByUser , createEventWithJson
 };
