@@ -14,7 +14,7 @@ const getAllInvestors = async (args) => {
     const totalCount = await Investor.countDocuments();
     const totalPages = Math.ceil(totalCount / pageSize);
     const investors = await Investor.find()
-        .select("name description image linkedin_link type location PreferredInvestmentIndustry dateCreated numberOfInvestment numberOfExits document")
+        // .select("name description image linkedin_link type location PreferredInvestmentIndustry dateCreated numberOfInvestment numberOfExits document")
         .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } } })
         .skip(skip)
         .limit(pageSize);
