@@ -50,7 +50,6 @@ async function getTokenFromShortCode(shortCode) {
   const shortCodeEntry = await TokenShortCode.findOne({ _id: shortCode, used: false });
   // const shortCodeEntry = await TokenShortCode.findById(shortCode );
 
-  console.log("shortCodeEntry" ,shortCodeEntry)
   if (shortCodeEntry) {
     return shortCodeEntry;
   }

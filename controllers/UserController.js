@@ -167,7 +167,6 @@ const sendVerification = async (req, res) => {
 const sendForgotPassword = async (req, res) => {
   try {
     const { email  , lang } = req.body;
-    console.log("forgot" , lang)
     const user = await UserService.getUserByEmail(email);
 
     if (!user) {

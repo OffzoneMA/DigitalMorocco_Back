@@ -14,7 +14,6 @@ const createLegalDocument = async (req, res) => {
     try {
         const userId = req.userId;
         const documentData = isJsonString(req?.body) ? JSON.parse(req?.body) : req?.body; 
-        console.log(req.body)
         const document = await LegalDocumentService.createLegalDocument(userId, documentData , req.file);
         res.status(201).json(document);
     } catch (error) {

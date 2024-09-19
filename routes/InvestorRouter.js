@@ -224,7 +224,6 @@ router.route("/all").get(InvestorController.getAllInvestors)
  */
 router.post('/', InvestorController.addInvestor);
 
-
 /**
  * @swagger
  * tags:
@@ -555,7 +554,29 @@ router.put("/byId/:id", InvestorController.getInvestorById);
  */
 router.put("/:id", InvestorController.updateInvestor);
 
-
+/**
+ * @swagger
+ * /investors/{investorId}/details:
+ *   get:
+ *     summary: Récupérer les détails d'un investisseur par ID
+ *     tags: [Investors]
+ *     description: Récupère les informations d'un investisseur spécifique à l'aide de son ID.
+ *     parameters:
+ *       - in: path
+ *         name: investorId
+ *         required: true
+ *         description: ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Détails de l'investisseur récupérés avec succès
+ *       404:
+ *         description: Investisseur non trouvé
+ *       500:
+ *         description: Erreur serveur
+ */
+router.get("/:investorId/details", AuthController.AuthenticateMember , InvestorController.getInvestorDetails);
 /**
  * @swagger
  * /investors/distinct/{field}:

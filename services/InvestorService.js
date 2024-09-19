@@ -80,13 +80,11 @@ const getProjects = async () => {
 
 const updateContactStatus=async(requestId , response)=>{
         const request = await ContactRequest.findById(requestId)
-        console.log('Response received:', response);
         if (!request) {
             throw new Error('Request doesn t exist')
         }
         if (response == "accepted") return await acceptContact(request?.investor,requestId, request.member);
         if (response == "rejected") return await rejectContact(request?.investor, requestId, request.member);
-
 }
 
 const acceptContact = async (investorId, requestId, memberId) => {
@@ -113,7 +111,6 @@ const acceptContact = async (investorId, requestId, memberId) => {
     );
     return request
 }
-
 const rejectContact= async (investorId, requestId, memberId) => {
 
      const request = await ContactRequest.findByIdAndUpdate(requestId, { status:"rejected"})
@@ -138,7 +135,6 @@ const rejectContact= async (investorId, requestId, memberId) => {
     );
     return request
 }
-
 const updateInvestor = async (id, data) => {
     return await Investor.findByIdAndUpdate(id, data, { new: true });
 };
@@ -152,6 +148,51 @@ const getDistinctValues = async (field) => {
     }
 };
 
+async function getInvestorDetailsRequest(memberId, investorId) {
+    try {
+        // Find the member
+        const member = await Member.findById(memberId).populate("investorsRequestsAccepted");
+        if (!member) {
+            throw new Error("Member not found");
+        }
+        // Check if the investor has accepted the request
+        const acceptedInvestor = member.investorsRequestsAccepted.find(inv => inv?._id.toString() === investorId);
+
+        if (acceptedInvestor) {
+            // If the investor has accepted, retrieve full details
+            const investorDetails = await Investor.findById(investorId);
+
+            return {
+                status: "accepted",
+                details: investorDetails,
+            };
+        } else {
+            const investor = await Investor.findById(investorId);
+
+            const fakeData = {
+                ...investor._doc, // copy all original fields
+                image: "fake_image_url.jpg",
+                name: "The Investor Name",
+                legalName: "Fake Company Legal Name",
+                phone: "000-000-0000",
+                type: "Unknown",
+                website: "https://fakewebsite.com",
+                email: "fake@example.com",
+                desc: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+            };
+
+
+            return {
+                status: "pending",
+                details: fakeData,
+            };
+        }
+    } catch (error) {
+        console.error(error);
+        throw new Error("An error occurred while checking the investor request");
+    }
+}
+
 module.exports = { deleteInvestor,getContacts, getProjects, CreateInvestor, 
     getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, 
-    updateContactStatus , updateInvestor , getInvestors  , getDistinctValues}
+    updateContactStatus , updateInvestor , getInvestors  , getDistinctValues , getInvestorDetailsRequest}

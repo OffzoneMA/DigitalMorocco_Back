@@ -72,7 +72,6 @@ const pauseSubscription = async (req, res) => {
 const getSubscriptionsByUser = async (req, res) => {
     try {
         const subscriptions = await SubscriptionService.getSubscriptionsByUser(req.userId);
-        console.log(subscriptions)
         res.status(200).json(subscriptions);
     } catch (err) {
         console.log(err)

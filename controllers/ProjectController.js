@@ -51,7 +51,6 @@ async function addMilestone(req, res) {
   async function removeMilestone(req, res) {
     try {
         const { projectId, milestoneId } = req.params;
-        console.log(projectId, milestoneId)
   
       const updatedProject = await ProjectService.removeMilestone(projectId, milestoneId);
   

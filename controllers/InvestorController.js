@@ -93,8 +93,6 @@ const getProjects = async (req, res) => {
 }
 
 const updateContactStatus = async (req, res) => {
-    console.log(req.params.requestId)
-    console.log(req.params.status)
     try {
         const result = await InvestorService.updateContactStatus(req.params.requestId , req.params.status);
         res.status(200).json(result);
@@ -154,6 +152,17 @@ const getInvestorById = async (req, res) => {
     }
 };
 
+async function getInvestorDetails(req, res) {
+    const investorId = req.params.investorId;
+    const memberId = req.memberId;
+    try {
+        const investorDetails = await InvestorService.getInvestorDetailsRequest(memberId, investorId);
+        res.status(200).json(investorDetails);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching investor details", error: error.message });
+    }
+}
+
 module.exports = { getInvestorRequests,updateContactStatus, addInvestor, getInvestors, 
     getContactRequests, getContacts, getProjects , getContactRequestsForInvestor , updateInvestor , 
-    getAllInvestors , getDistinctInvestorData , getInvestorById}
+    getAllInvestors , getDistinctInvestorData , getInvestorById , getInvestorDetails}
