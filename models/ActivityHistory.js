@@ -4,7 +4,7 @@ const ActivityHistorySchema  = new mongoose.Schema({
     eventType: {
         type: String,
         enum: [
-            'project_created', 'project_updated', 'project_deleted', 
+            'project_created', 'project_updated', 'project_deleted', 'project_status_updated',
             'project_shared', 'milestone_add_to_project' , 'milestone_removed' , 'company_created', 
             'company_updated' , 'document_created', 
             'document_updated', 'document_deleted', 'document_shared', 
