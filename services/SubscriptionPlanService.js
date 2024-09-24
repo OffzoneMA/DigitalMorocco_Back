@@ -25,6 +25,25 @@ async function getAllSubscriptionPlans() {
     }
 }
 
+async function searchSubscriptionPlans(searchTerm) {
+    try {
+        const regex = new RegExp(searchTerm, 'i'); 
+
+        const subscriptionPlans = await SubscriptionPlan.find({
+            isAvailable: true, 
+            $or: [
+                { name: regex },          
+                { description: regex },   
+            ]
+        });
+
+        return subscriptionPlans;
+    } catch (error) {
+        throw new Error('Error searching subscription plans: ' + error.message);
+    }
+}
+
+
 async function getSubscriptionPlanById(planId) {
     try {
         const subscriptionPlan = await SubscriptionPlan.findById(planId);
@@ -72,4 +91,4 @@ async function deleteSubscriptionPlan(planId) {
 }
 
 module.exports = { getAllSubscriptionPlans, getSubscriptionPlanById, createSubscriptionPlan, 
-updateSubscriptionPlan , deleteSubscriptionPlan ,checkUserRole}
+updateSubscriptionPlan , deleteSubscriptionPlan ,checkUserRole , searchSubscriptionPlans}

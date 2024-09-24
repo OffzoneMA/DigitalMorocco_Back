@@ -269,6 +269,70 @@ async function getEventsForUser(userId) {
   }
 }
 
+async function searchParticipateEvents(user, searchTerm) {
+  try {
+      const regex = new RegExp(searchTerm, 'i'); 
+
+      const events = await Event.find({
+          'attendeesUsers.userId': user?._id,
+          $or: [
+              { title: regex },       
+              { description: regex }, 
+              { physicalLocation: regex }   ,
+              {category: regex}  
+          ]
+      });
+
+      return events;
+  } catch (error) {
+      throw new Error('Error searching events for user: ' + error.message);
+  }
+}
+
+async function searchUpcomingEvents(searchTerm) {
+  try {
+      const regex = new RegExp(searchTerm, 'i'); 
+
+      const upcomingEvents = await Event.find({
+          status: 'upcoming', 
+          $or: [
+              { title: regex },
+              { description: regex },
+              { summary: regex },
+              { category: regex },
+              { industry: regex }
+          ]
+      }).populate('attendeesUsers.userId');
+
+      return upcomingEvents;
+  } catch (error) {
+      throw new Error('Error searching upcoming events: ' + error.message);
+  }
+}
+
+async function searchPastEvents(searchTerm) {
+  try {
+      const regex = new RegExp(searchTerm, 'i'); 
+
+      const pastEvents = await Event.find({
+          status: 'past', 
+          $or: [
+              { title: regex },
+              { description: regex },
+              { summary: regex },
+              { category: regex },
+              { industry: regex }
+          ]
+      }).populate('attendeesUsers.userId');
+
+      return pastEvents;
+  } catch (error) {
+      throw new Error('Error searching past events: ' + error.message);
+  }
+}
+
+
+
 cron.schedule('0 0 * * *', async () => {
   try {
       const events = await Event.find();
@@ -329,6 +393,25 @@ const getPastEventsWithUserParticipation = async (userId) => {
   }
 };
 
+async function getAllUpcommingEvents(userId) {
+  try {
+      const events = await Event.find({status : 'upcoming'});
+
+      const eventsWithParticipation = events.map(event => {
+          const userParticipated = event.attendeesUsers.some(user => user.userId.equals(userId));
+          return {
+              ...event.toObject(), 
+              userParticipated    
+          };
+      });
+
+      return eventsWithParticipation;
+  } catch (error) {
+      throw new Error('Error retrieving events: ' + error.message);
+  }
+}
+
+
 // const getDistinctValuesByUser = async (userId, field) => {
 //   try {
 //     const userEvents = await Event.find({ 'attendeesUsers.userId': mongoose.Types.ObjectId(userId) });
@@ -356,10 +439,10 @@ const getDistinctValuesByUser = async (field, userId) => {
 };
 
 
-
 module.exports = {
     createEvent, getAllEvents, getEventById, updateEvent, deleteEvent, getAllEventsByUser, addAttendeeToEvent,
     supprimerCollection , addConnectedAttendee , updateConnectedAttendee , deleteConnectedAttendee , addPromoCode ,
     countEventsByUserId , getEventsForUser , getDistinctValues , getPastEventsWithUserParticipation ,
-    getDistinctValuesByUser , createEventWithJson
+    getDistinctValuesByUser , createEventWithJson , searchParticipateEvents , searchUpcomingEvents ,
+    searchPastEvents , getAllUpcommingEvents 
 };

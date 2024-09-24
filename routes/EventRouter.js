@@ -785,6 +785,21 @@ router.get('/past/participate', AuthController.AuthenticateUser, EventController
 
 /**
  * @swagger
+ * /events/upcoming/participate:
+ *   get:
+ *     summary: Get past events with user participation status
+ *     tags: [Events]
+ *     responses:
+ *       200:
+ *         description: List of past events with user participation status
+ *       500:
+ *         description: Server error
+ */
+router.get('/upcoming/participate', AuthController.AuthenticateUser, EventController.getAllUpcomingEventsForUserParticipate);
+
+
+/**
+ * @swagger
  * /events/distinct/user/{field}:
  *   get:
  *     summary: Get distinct values of a specific field from events attended by the user

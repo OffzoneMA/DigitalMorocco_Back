@@ -118,6 +118,28 @@ const deletePartner = async (userId) => {
 
 }
 
+const searchPartners = async (searchTerm) => {
+    try {
+        const regex = new RegExp(searchTerm, 'i'); 
+        
+        const partners = await Partner.find({
+            $or: [
+                { desc: regex },
+                { contactEmail: regex },
+                { companyName: regex },
+                { country: regex } , 
+                {address : regex } , 
+                {companyType : regex}
+            ]
+        });
+
+        return partners ;
+    } catch (error) {
+        throw new Error('Error searching partners: ' + error.message);
+    }
+};
+
 
 module.exports = { deletePartner,CreatePartner, getPartnerById, partnerByNameExists, 
-    createEnterprise, getAllPartners,getProjects, getPartnerByUserId , updatePartner , getAllPartnersAll}
+    createEnterprise, getAllPartners,getProjects, getPartnerByUserId , updatePartner , 
+    getAllPartnersAll , searchPartners}

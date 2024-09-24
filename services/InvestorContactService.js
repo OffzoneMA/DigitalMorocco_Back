@@ -323,6 +323,38 @@ async function getContactRequestsForMember(memberId) {
     }
 }
 
+async function searchContactRequests(user, searchTerm) {
+    try {
+        const regex = new RegExp(searchTerm, 'i'); 
+
+        let filter = {};
+
+        // Récupérer l'ID en fonction du rôle
+        if (user?.role?.toLowerCase() === 'investor') {
+            const investor = await InvestorService.getInvestorByUserId(user?._id);
+            filter = { investor: investor._id }; 
+        } else if (user?.role?.toLowerCase() === 'member') {
+            const member = await MemberService.getMemberByUserId(user?._id);
+            filter = { member: member._id }; 
+        }
+
+        const contactRequests = await ContactRequest.find({
+            ...filter,
+            $or: [
+                { requestLetter: regex },     
+                { communicationStatus: regex }, 
+                { notes: regex } ,
+                {attachment : regex} , 
+                {'document.name' : regex}
+            ]
+        });
+
+        return contactRequests;
+    } catch (error) {
+        throw new Error('Error searching contact requests: ' + error.message);
+    }
+}
+
 const getContactRequestById = async (id) => {
     return await ContactRequest.findById(id)
         .populate('member', '_id companyName website city contactEmail logo country')
@@ -346,5 +378,6 @@ const deleteContactRequest = async (id) => {
 module.exports = { CreateInvestorContactReq, getAllContactRequest ,
     getContactRequestsForInvestor , getContactRequestsForMember  , 
     shareProjectWithInvestors , CreateInvestorContactReqForProject ,
-    getContactRequestById, createContactRequest, updateContactRequest, deleteContactRequest , getAllContactRequestsAll
+    getContactRequestById, createContactRequest, updateContactRequest, deleteContactRequest ,
+     getAllContactRequestsAll, searchContactRequests
  }

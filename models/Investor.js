@@ -42,7 +42,6 @@ const InvestorSchema = new mongoose.Schema({
         name: String,
         link: String,
     }],
-    location :String,
     investments: [
         {
             announcementDate : Date,

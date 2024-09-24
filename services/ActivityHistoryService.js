@@ -109,6 +109,29 @@ async function getAllActivityHistoriesByUser(userId) {
     }
 }
 
+async function searchActivityHistoriesByUser(userId, searchTerm) {
+    try {
+        const regex = new RegExp(searchTerm, 'i'); 
+        const events = await ActivityHistory.find({
+            user: userId,
+            $or: [
+                { eventType: regex }, 
+                { 'eventData.target': { $regex: regex } },  
+                // { 'eventData.documentTitle': { $regex: regex } },  
+                // { 'eventData.someOtherField': { $regex: regex } }            
+            ]
+        })
+            .sort({ timestamp: -1 })
+            .populate({
+                path: 'user'
+            })
+            .exec();
+        
+        return events;
+    } catch (err) {
+        throw new Error('Error searching user history: ' + err.message);
+    }
+}
 
 async function deleteActivityHistory(id) {
     try {
@@ -123,5 +146,5 @@ async function deleteActivityHistory(id) {
 }
 
 module.exports = {createActivityHistory ,getAllActivityHistories ,  getAllActivityHistoriesByUser , 
-    deleteActivityHistory 
+    deleteActivityHistory  , searchActivityHistoriesByUser
  }

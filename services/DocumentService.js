@@ -130,6 +130,29 @@ async function getDocumentsForUser(userId) {
     }
 }
 
+async function searchDocuments(user, searchTerm) {
+    try {
+        const userRole = user?.role?.toLowerCase();
+        const regex = new RegExp(searchTerm, 'i'); 
+        let query;
+
+        if (userRole === 'admin') {
+            query = { $or: [{ title: regex }, { documentName: regex }] }; 
+        } else {
+            query = {
+                owner: user?._id,
+                $or: [{ title: regex }, { documentName: regex }] 
+            };
+        }
+
+        const documents = await Document.find(query).populate('owner');
+        return documents;
+    } catch (error) {
+        throw new Error('Error searching documents for member: ' + error.message);
+    }
+}
+
+
 async function getDocumentsByUploader(userId) {
     try {
         const documents = await Document.find({ uploadBy: userId });
@@ -204,4 +227,4 @@ async function getShareWithData(userId) {
 
 module.exports = {createDocument , updateDocument , getAllDocuments, getDocumentById,
 getDocumentsForUser , getDocumentsByUploader, deleteDocument , shareDocument , 
-getShareWithData}
+getShareWithData  , searchDocuments}

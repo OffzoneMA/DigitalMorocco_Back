@@ -69,6 +69,7 @@ async function addMilestone(projectId, milestoneData) {
     );
       return project;
     } catch (error) {
+      console.log(error)
       throw new Error('Error removing milestone from project', error);
     }
   }

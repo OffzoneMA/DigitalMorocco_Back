@@ -111,6 +111,41 @@ async function getAllEmployeesByUser(userId) {
     }
 }
 
+async function searchEmployees(user, searchTerm) {
+    try {
+        const regex = new RegExp(searchTerm, 'i'); 
+        const userRole = user?.role?.toLowerCase();
+        
+        let employees;
+
+        if (userRole === 'admin') {
+            employees = await Employee.find({
+                $or: [
+                    { fullName: regex },
+                    { workEmail: regex },
+                    { jobTitle: regex },
+                    { personalEmail: regex } 
+                ]
+            });
+        } else {
+            employees = await Employee.find({
+                createdBy: user?._id,
+                $or: [
+                    { fullName: regex },
+                    { workEmail: regex },
+                    { jobTitle: regex },
+                    { personalEmail: regex } 
+                ]
+            });
+        }
+
+        return employees;
+    } catch (error) {
+        throw new Error('Error searching employees by user: ' + error.message);
+    }
+}
+
+
 async function getEmployeeByUser(userId) {
     try {
         return await Employee.findOne({ createdBy: userId });
@@ -126,5 +161,5 @@ module.exports = {
     deleteEmployee,
     getAllEmployees,
     getAllEmployeesByUser,
-    getEmployeeByUser
+    getEmployeeByUser , searchEmployees
 };

@@ -119,11 +119,40 @@ const getLegalDocumentsByUser = async (userId) => {
     }
 };
 
+const searchLegalDocuments = async (user, searchTerm) => {
+    try {
+        const regex = new RegExp(searchTerm, 'i'); 
+
+        let filter = {};
+
+        if (user?.role?.toLowerCase() === 'admin') {
+            filter = {};
+        } else {
+            filter = { createdBy: user._id };
+        }
+
+        const documents = await LegalDocument.find({
+            ...filter,
+            $or: [
+                { title: regex }, 
+                { name: regex },         
+                { description: regex },   
+                { type: regex }   
+            ]
+        }).populate('createdBy'); 
+
+        return documents;
+    } catch (error) {
+        throw new Error('Error searching legal documents: ' + error.message);
+    }
+};
+
+
 module.exports = {
     createLegalDocument,
     updateLegalDocument,
     deleteLegalDocument,
     getLegalDocumentById,
     getLegalDocuments,
-    getLegalDocumentsByUser
+    getLegalDocumentsByUser , searchLegalDocuments
 };

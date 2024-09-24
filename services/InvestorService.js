@@ -30,6 +30,26 @@ const getInvestors = async () => {
     return { investors, totalCount }
 }
 
+const searchInvestors = async (searchTerm) => {
+    try {
+        const regex = new RegExp(searchTerm, 'i'); 
+        
+        const investors = await Investor.find({
+            $or: [
+                { name: regex },       
+                { companyName: regex },          
+                { companyType: regex },    
+                { contactEmail: regex },    
+                { desc: regex },       
+            ]
+        });
+
+        return investors ;
+    } catch (error) {
+        throw new Error('Error searching investors: ' + error.message);
+    }
+};
+
 const CreateInvestor = async (investor) => {
     return await Investor.create(investor);
 }
@@ -141,7 +161,7 @@ const updateInvestor = async (id, data) => {
 
 const getDistinctValues = async (field) => {
     try {
-        const distinctValues = await Investor.distinct(field);
+        const distinctValues = await Investor.distinct(field, { [field]: { $ne: null } });
         return distinctValues;
     } catch (error) {
         throw new Error(`Error fetching distinct ${field}: ${error.message}`);
@@ -195,4 +215,5 @@ async function getInvestorDetailsRequest(memberId, investorId) {
 
 module.exports = { deleteInvestor,getContacts, getProjects, CreateInvestor, 
     getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, 
-    updateContactStatus , updateInvestor , getInvestors  , getDistinctValues , getInvestorDetailsRequest}
+    updateContactStatus , updateInvestor , getInvestors  , getDistinctValues , 
+    getInvestorDetailsRequest , searchInvestors}

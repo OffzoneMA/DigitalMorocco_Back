@@ -29,6 +29,7 @@ const PaymentMethodRouter = require('./routes/PaymentMethodRouter');
 const ActivityHistoryRouter = require('./routes/ActivityHistoryRouter');
 const EmployeeRouter = require('./routes/EmployeeRouter');
 const LegalDocumentRouter = require('./routes/LegalDocumentRouter');
+const SearchRouter = require('./routes/SearchRouter')
 
 const session = require('express-session');
 const { passport } = require("./config/passport-setup");
@@ -143,12 +144,11 @@ app.use('/activity-history', ActivityHistoryRouter);
 app.use('/payment-methods', PaymentMethodRouter);
 app.use('/employee', EmployeeRouter);
 app.use('/legal-documents', LegalDocumentRouter);
+app.use('/search' , SearchRouter);
 
 const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css";
 
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, { customCssUrl: CSS_URL }));
-
-
 
 module.exports = app;

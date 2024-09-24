@@ -79,6 +79,26 @@ async function getTestAllMembers() {
     }
 }
 
+async function searchMembers(searchTerm) {
+    try {
+        const regex = new RegExp(searchTerm, 'i'); // 'i' rend la recherche insensible à la casse
+        
+        const members = await Member.find({
+            $or: [
+                { 'companyName': regex }, 
+                { 'contactEmail': regex }, 
+                { 'desc': regex }, 
+                { 'companyType': regex },  
+                { 'address': regex } 
+            ]
+        }).populate('owner'); 
+        
+        return members;
+    } catch (error) {
+        throw new Error('Error searching members: ' + error.message);
+    }
+}
+
 
 async function updateMember(memberId, updateData) {
     try {
@@ -549,6 +569,28 @@ async function getAllProjectsForMember(memberId, args) {
     }
 }
 
+async function searchProjects(user, searchQuery) {
+    try {
+        const filter = {};
+
+        if (user?.role?.toLowerCase() === 'member') {
+            const member = await getMemberByUserId(user?._id)
+            filter.owner = member._id;
+        }
+
+        if (searchQuery) {
+            filter.$or = [
+                { name: { $regex: searchQuery, $options: 'i' } },  
+                { details: { $regex: searchQuery, $options: 'i' } }  
+            ];
+        }
+
+        const projects = await Project.find(filter);
+        return projects;
+    } catch (error) {
+        throw new Error('Error searching projects');
+    }
+}
 
 const deleteMember = async (userId) => {
     const member = await getMemberByUserId(userId)
@@ -637,6 +679,37 @@ const getInvestorsForMember = async (memberId) => {
     }
 }
 
+const searchInvestorsForMember = async (user, searchQuery) => {
+    try {
+        const member = await getMemberByUserId(user?._id);
+
+        if (!member) {
+            throw new Error('Member not found');
+        }
+
+        const investorIdsSet = new Set(member.investorsRequestsAccepted);
+        const uniqueInvestorIds = Array.from(investorIdsSet);
+
+        const regex = new RegExp(searchQuery, 'i');
+
+        const investors = await Investor.find({ 
+            _id: { $in: uniqueInvestorIds },
+            $or: [
+                { name: regex },       
+                { companyName: regex },          
+                { companyType: regex },    
+                { contactEmail: regex },    
+                { desc: regex },    
+            ]
+        });
+
+        return investors;
+    } catch (error) {
+        throw new Error('Error searching investors for member: ' + error.message);
+    }
+}
+
+
 const getContacts = async (memberId) => {
     const investors = await Member.findById(memberId).select("investorsRequestsAccepted").populate({
         path: 'investorsRequestsAccepted', select: '_id  name linkedin_link'
@@ -697,11 +770,11 @@ const checkMemberStatus = async (memberId) => {
     return false;
     }
 
-  };
+};
 
   module.exports = {checkMemberStatus, 
     createCompany,  deleteMember, getContacts, getAllMembers, createProject, checkSubscriptionStatus, 
     CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, getMemberByUserId, 
     checkSubscriptionStatus ,createCompany , getTestAllMembers , createTestProject , getInvestorsForMember ,
      getAllProjectsForMember , updateProject , updateMember , createTestCompany , updateMember , 
-     getMemberInfoByUserId , CreateMemberWithLogo} 
+     getMemberInfoByUserId , CreateMemberWithLogo , searchProjects , searchMembers , searchInvestorsForMember} 
