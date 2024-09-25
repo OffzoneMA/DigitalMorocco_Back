@@ -10,11 +10,13 @@ const LegalDocumentService = require('../services/LegalDocumentService');
 const PartnerService = require('../services/PartnerService');
 const ProjectService = require('../services/ProjectService');
 const SubscriptionPlanService = require('../services/SubscriptionPlanService');
+const SubscriptionService = require('../services/SubscriptionService');
 
 const searchAccrossModels = async (searchQuery, userId) => {
     try {
       const user = await User.findById(userId);
       const userRole = user?.role?.toLowerCase();
+      const userSubs = await SubscriptionService.checkUserSubscription(userId);
       
       let searchResults = [];
   
@@ -61,7 +63,10 @@ const searchAccrossModels = async (searchQuery, userId) => {
       addResults('Projects', projects);
   
       // Plans d'abonnement
-      const subscriptions = await SubscriptionPlanService.searchSubscriptionPlans(searchQuery);
+      const subscriptionsPlan = await SubscriptionPlanService.searchSubscriptionPlans(searchQuery);
+      addResults('SubscriptionPlan', subscriptionsPlan);
+
+      const subscriptions = await SubscriptionService.searchSubscriptionsByUser(user , searchQuery);
       addResults('Subscription', subscriptions);
   
       // Résultats spécifiques pour les rôles d'administrateur
@@ -80,6 +85,10 @@ const searchAccrossModels = async (searchQuery, userId) => {
       if (userRole === 'member') {
         const myInvestors = await MemberService.searchInvestorsForMember(user, searchQuery);
         addResults('MyInvestors', myInvestors);
+        if(userSubs) {
+          const investors = await InvestorService.searchInvestors(searchQuery);
+          addResults('Investors', investors);
+        }
       }
   
       return searchResults;

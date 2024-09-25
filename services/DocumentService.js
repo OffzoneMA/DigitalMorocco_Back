@@ -137,11 +137,15 @@ async function searchDocuments(user, searchTerm) {
         let query;
 
         if (userRole === 'admin') {
-            query = { $or: [{ title: regex }, { documentName: regex }] }; 
+            query = { $or: [{ title: regex }, 
+                // { documentName: regex }
+            ] }; 
         } else {
             query = {
                 owner: user?._id,
-                $or: [{ title: regex }, { documentName: regex }] 
+                $or: [{ title: regex },
+                    //  { documentName: regex }
+                    ] 
             };
         }
 

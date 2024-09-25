@@ -276,12 +276,11 @@ const getAllContactRequest = async (args, role, id) => {
     const totalPages = Math.ceil(totalCount / pageSize);
     const ContactsHistory = await ContactRequest.find(query)
         .populate(role == "member" ? { path: 'investor' , model: 'Investor', select: '_id name image linkedin_link' } : { path: 'member' , model: 'Member', select: '_id companyName website city contactEmail logo country' })
-        // .select('status communicationStatus dateCreated notes document')
+        .populate({ path: 'project',  model: 'Project' })
         .sort({ dateCreated: 'desc' })
         .skip(skip)
         .limit(pageSize);
     return { ContactsHistory, totalPages }
-
 
 }
 
@@ -326,30 +325,37 @@ async function getContactRequestsForMember(memberId) {
 async function searchContactRequests(user, searchTerm) {
     try {
         const regex = new RegExp(searchTerm, 'i'); 
-
         let filter = {};
 
-        // Récupérer l'ID en fonction du rôle
         if (user?.role?.toLowerCase() === 'investor') {
             const investor = await InvestorService.getInvestorByUserId(user?._id);
             filter = { investor: investor._id }; 
+
+            const matchingMembers = await Member.find({ companyName: regex });
+            const matchingMemberIds = matchingMembers.map(member => member._id);
+
+            const contactRequests = await ContactRequest.find({
+                ...filter,
+                member: { $in: matchingMemberIds },  
+            }).populate('member');
+
+            return contactRequests;
+
         } else if (user?.role?.toLowerCase() === 'member') {
             const member = await MemberService.getMemberByUserId(user?._id);
             filter = { member: member._id }; 
+
+            const matchingInvestors = await Investor.find({ name: regex });
+            const matchingInvestorIds = matchingInvestors.map(investor => investor._id);
+
+            const contactRequests = await ContactRequest.find({
+                ...filter,
+                investor: { $in: matchingInvestorIds },
+            }).populate('investor');
+
+            return contactRequests;
         }
 
-        const contactRequests = await ContactRequest.find({
-            ...filter,
-            $or: [
-                { requestLetter: regex },     
-                { communicationStatus: regex }, 
-                { notes: regex } ,
-                {attachment : regex} , 
-                {'document.name' : regex}
-            ]
-        });
-
-        return contactRequests;
     } catch (error) {
         throw new Error('Error searching contact requests: ' + error.message);
     }

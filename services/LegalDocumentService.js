@@ -135,9 +135,9 @@ const searchLegalDocuments = async (user, searchTerm) => {
             ...filter,
             $or: [
                 { title: regex }, 
-                { name: regex },         
-                { description: regex },   
-                { type: regex }   
+                // { name: regex },         
+                // { description: regex },   
+                // { type: regex }   
             ]
         }).populate('createdBy'); 
 

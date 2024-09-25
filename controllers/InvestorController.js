@@ -104,7 +104,6 @@ const updateContactStatus = async (req, res) => {
 
 async function getContactRequestsForInvestor(req, res) {
     const investorId = req.params.investorId;
-
     try {
         const contactRequests = await InvestorContactService.getContactRequestsForInvestor(investorId);
         res.json({ success: true, contactRequests });

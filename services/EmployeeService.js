@@ -122,9 +122,9 @@ async function searchEmployees(user, searchTerm) {
             employees = await Employee.find({
                 $or: [
                     { fullName: regex },
-                    { workEmail: regex },
-                    { jobTitle: regex },
-                    { personalEmail: regex } 
+                    // { workEmail: regex },
+                    // { jobTitle: regex },
+                    // { personalEmail: regex } 
                 ]
             });
         } else {
@@ -132,9 +132,9 @@ async function searchEmployees(user, searchTerm) {
                 createdBy: user?._id,
                 $or: [
                     { fullName: regex },
-                    { workEmail: regex },
-                    { jobTitle: regex },
-                    { personalEmail: regex } 
+                    // { workEmail: regex },
+                    // { jobTitle: regex },
+                    // { personalEmail: regex } 
                 ]
             });
         }

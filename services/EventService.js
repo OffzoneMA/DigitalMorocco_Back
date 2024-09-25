@@ -277,9 +277,9 @@ async function searchParticipateEvents(user, searchTerm) {
           'attendeesUsers.userId': user?._id,
           $or: [
               { title: regex },       
-              { description: regex }, 
-              { physicalLocation: regex }   ,
-              {category: regex}  
+              // { description: regex }, 
+              // { physicalLocation: regex }   ,
+              // {category: regex}  
           ]
       });
 
@@ -297,10 +297,10 @@ async function searchUpcomingEvents(searchTerm) {
           status: 'upcoming', 
           $or: [
               { title: regex },
-              { description: regex },
-              { summary: regex },
-              { category: regex },
-              { industry: regex }
+              // { description: regex },
+              // { summary: regex },
+              // { category: regex },
+              // { industry: regex }
           ]
       }).populate('attendeesUsers.userId');
 
@@ -318,10 +318,10 @@ async function searchPastEvents(searchTerm) {
           status: 'past', 
           $or: [
               { title: regex },
-              { description: regex },
-              { summary: regex },
-              { category: regex },
-              { industry: regex }
+              // { description: regex },
+              // { summary: regex },
+              // { category: regex },
+              // { industry: regex }
           ]
       }).populate('attendeesUsers.userId');
 

@@ -115,8 +115,8 @@ async function searchActivityHistoriesByUser(userId, searchTerm) {
         const events = await ActivityHistory.find({
             user: userId,
             $or: [
-                { eventType: regex }, 
-                { 'eventData.target': { $regex: regex } },  
+                // { eventType: regex }, 
+                { 'eventData.targetName': { $regex: regex } },  
                 // { 'eventData.documentTitle': { $regex: regex } },  
                 // { 'eventData.someOtherField': { $regex: regex } }            
             ]

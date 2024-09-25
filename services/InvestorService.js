@@ -38,9 +38,9 @@ const searchInvestors = async (searchTerm) => {
             $or: [
                 { name: regex },       
                 { companyName: regex },          
-                { companyType: regex },    
-                { contactEmail: regex },    
-                { desc: regex },       
+                // { companyType: regex },    
+                // { contactEmail: regex },    
+                // { desc: regex },       
             ]
         });
 

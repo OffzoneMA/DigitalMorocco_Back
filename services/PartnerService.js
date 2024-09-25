@@ -124,12 +124,12 @@ const searchPartners = async (searchTerm) => {
         
         const partners = await Partner.find({
             $or: [
-                { desc: regex },
-                { contactEmail: regex },
+                // { desc: regex },
+                // { contactEmail: regex },
                 { companyName: regex },
-                { country: regex } , 
-                {address : regex } , 
-                {companyType : regex}
+                // { country: regex } , 
+                // {address : regex } , 
+                // {companyType : regex}
             ]
         });
 

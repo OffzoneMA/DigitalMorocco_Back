@@ -65,7 +65,6 @@ async function createSubscriptionForUser(userId, planId, data) {
         throw new Error('Error creating subscription: ' + error.message);
     }
 }
-
 async function upgradeSubscription(subscriptionId, newPlanId , newBilling) {
     try {
         const subscription = await Subscription.findById(subscriptionId);
@@ -115,8 +114,6 @@ async function upgradeSubscription(subscriptionId, newPlanId , newBilling) {
         throw new Error('Error upgrading subscription: ' + error.message);
     }
 }
-
-
 const getSubscriptionById = async (id) => {
     return await Subscription.findById(id);
 }
@@ -196,7 +193,6 @@ async function autoCancelExpiredSubscriptions() {
     }
 }
 
-
 // Suspend une souscription
 async function pauseSubscription(subscriptionId) {
     try {
@@ -246,6 +242,27 @@ async function getSubscriptionsByUser(userId) {
     }
 }
 
+async function searchSubscriptionsByUser(user, searchTerm) {
+    try {
+        const regex = new RegExp(searchTerm, 'i');
+
+        const subscriptions = await Subscription.find({
+            user: user?._id,
+            subscriptionStatus: 'active', 
+            $or: [
+                { 'plan.name': regex },         
+                { 'subscriptionStatus': regex },
+                // { 'plan.description': regex },  
+            ]
+        })
+        .sort({ dateCreated: -1 }) 
+        .populate('plan');         
+        return subscriptions;
+    } catch (error) {
+        console.log(error);
+        throw new Error('Error searching subscriptions for user: ' + error.message);
+    }
+}
 
 async function renewSubscription(subscriptionId) {
     try {
@@ -337,5 +354,5 @@ async function deleteSubscription(subscriptionId) {
 module.exports = {  createSubscriptionForUser,  upgradeSubscription,  getSubscriptionById,
     cancelSubscription,  autoCancelExpiredSubscriptions,  pauseSubscription,  getSubscriptionsByUser,  renewSubscription,  dateInDays,  dateIn1Month,
     dateIn1Year,  getDateExpires , checkUserSubscription , getSubscriptions , updateSubscription , 
-    deleteSubscription
+    deleteSubscription , searchSubscriptionsByUser
 };

@@ -33,7 +33,7 @@ async function searchSubscriptionPlans(searchTerm) {
             isAvailable: true, 
             $or: [
                 { name: regex },          
-                { description: regex },   
+                // { description: regex },   
             ]
         });
 

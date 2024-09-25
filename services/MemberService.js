@@ -81,15 +81,15 @@ async function getTestAllMembers() {
 
 async function searchMembers(searchTerm) {
     try {
-        const regex = new RegExp(searchTerm, 'i'); // 'i' rend la recherche insensible à la casse
+        const regex = new RegExp(searchTerm, 'i'); 
         
         const members = await Member.find({
             $or: [
                 { 'companyName': regex }, 
-                { 'contactEmail': regex }, 
-                { 'desc': regex }, 
-                { 'companyType': regex },  
-                { 'address': regex } 
+                // { 'contactEmail': regex }, 
+                // { 'desc': regex }, 
+                // { 'companyType': regex },  
+                // { 'address': regex } 
             ]
         }).populate('owner'); 
         
@@ -621,7 +621,7 @@ const getMemberById = async (id) => {
     return await Member.findById(id);
 }
 const getMemberByUserId = async (userId) => {
-    const member = await Member.findOne({ owner: userId }, 'owner companyName legalName website contactEmail desc address city country companyType taxNbr corporateNbr visbility credits subStatus');
+    const member = await Member.findOne({ owner: userId });
     return member;
 }
 
@@ -696,13 +696,12 @@ const searchInvestorsForMember = async (user, searchQuery) => {
             _id: { $in: uniqueInvestorIds },
             $or: [
                 { name: regex },       
-                { companyName: regex },          
-                { companyType: regex },    
-                { contactEmail: regex },    
-                { desc: regex },    
+                // { companyName: regex },          
+                // { companyType: regex },    
+                // { contactEmail: regex },    
+                // { desc: regex },    
             ]
         });
-
         return investors;
     } catch (error) {
         throw new Error('Error searching investors for member: ' + error.message);
