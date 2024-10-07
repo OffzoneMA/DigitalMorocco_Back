@@ -1274,7 +1274,7 @@ router.get('/my-investors', AuthController.AuthenticateMember , MemberController
 
 /**
  * @swagger
- * members/investors/distinct/{field}:
+ * /members/investors/distinct/{field}:
  *   get:
  *     summary: Get distinct values of a specified field from investors
  *     tags: [Members]
