@@ -10,7 +10,7 @@ const ProjectService = require("./ProjectService");
 const SubscriptionService = require('../services/SubscriptionService');
 const ActivityHistoryService = require('../services/ActivityHistoryService');
 const uploadService = require('./FileService')
-
+const Project = require('../models/Project');
 const User = require("../models/User");
 
 const CreateInvestorContactReq = async (memberId, investorId) => {
@@ -161,13 +161,13 @@ const CreateInvestorContactReqForProject = async (memberId, investorId , project
     await ActivityHistoryService.createActivityHistory(
         member.owner,
         'contact_sent',
-        { targetName: `${investor?.companyName || investor?.name}`, targetDesc: `Contact request from member ${req.memberId} to investor ${investorId} for project ${projectId}` , for: project?.name }
+        { targetName: `${investor?.companyName || investor?.name}`, targetDesc: `Contact request from member to investor ${investorId} for project ${projectId}` , for: project?.name }
     );
 
     await ActivityHistoryService.createActivityHistory(
         investor.owner,
         'contact_request_received',
-        { targetName: `${project?.name}`, targetDesc: `Contact request received from member ${req.memberId} for project ${projectId}` , from: member?.companyName }
+        { targetName: `${project?.name}`, targetDesc: `Contact request received from member ${memberId} for project ${projectId}` , from: member?.companyName }
     );
 
     //Send Email Notification to the investor
@@ -263,26 +263,214 @@ const shareProjectWithInvestors = async (projectId, memberId, investorIds) => {
 
 const getAllContactRequest = async (args, role, id) => {
     const page = args.page || 1;
-    const pageSize = args.pageSize || 10;
+    const pageSize = args.pageSize || 8;
     const skip = (page - 1) * pageSize;
 
+    // Construire le filtre de recherche
     const query = {};
-    if (role == "member") query.member = id;
-    if (role == "investor") query.investor = id;
-    if (args?.status) query.status = args?.status;
+    if (role === "member") query.member = id;
+    if (role === "investor") query.investor = id;
 
+    // Filtrer par statut (plusieurs valeurs)
+    if (args?.status && args.status.length > 0) {
+        query.status = { $in: args.status.split(',') }; 
+    }
 
+    if (args?.dateCreated) {
+        const startOfDay = new Date(args.dateCreated);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(args.dateCreated);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        query.dateCreated = {
+            $gte: startOfDay,
+            $lte: endOfDay
+        };
+    }
+
+    // Construire le filtre de projet
+    let projectFilter = [];
+    
+    // Filtrage par plusieurs secteurs de projets
+    if (args?.projectSectors && args.projectSectors.length > 0) {
+        const projectQueryBySectors = await Project.find({
+            sector: { $in: args.projectSectors.split(',') }
+        }).select('_id');
+
+        const projectIdsBySectors = projectQueryBySectors.map(project => project._id);
+        if (projectIdsBySectors.length > 0) {
+            projectFilter.push({ project: { $in: projectIdsBySectors } });
+        }
+    }
+
+    // Filtrage par funding
+    if (args?.funding) {
+        const projectQueryByFunding = await Project.find({
+            funding: args.funding
+        }).select('_id');
+
+        const projectIdsByFunding = projectQueryByFunding.map(project => project._id);
+        if (projectIdsByFunding.length > 0) {
+            projectFilter.push({ project: { $in: projectIdsByFunding } });
+        }
+    }
+
+    if (args?.country) {
+        const projectQueryByCountry = await Project.find({
+            country: args.country
+        }).select('_id');
+
+        const projectIdsByCountry = projectQueryByCountry.map(project => project._id);
+        if (projectIdsByCountry.length > 0) {
+            projectFilter.push({ project: { $in: projectIdsByCountry } });
+        }
+    }
+
+    if (args?.projectStage) {
+        const projectQueryByStage = await Project.find({
+            stage: args.projectStage
+        }).select('_id');
+
+        const projectIdsByStage = projectQueryByStage.map(project => project._id);
+        if (projectIdsByStage.length > 0) {
+            projectFilter.push({ project: { $in: projectIdsByStage } });
+        }
+    }
+
+    // Filtrage par statut de projet
+    if (args?.projectStatus && args.projectStatus.length > 0) {
+        const projectQueryByStatus = await Project.find({
+            status: { $in: args.projectStatus.split(',') }
+        }).select('_id');
+
+        const projectIdsByStatus = projectQueryByStatus.map(project => project._id);
+        if (projectIdsByStatus.length > 0) {
+            projectFilter.push({ project: { $in: projectIdsByStatus } });
+        }
+    }
+
+    // Ajouter le filtre de projet dans la requête globale si applicable
+    if (projectFilter.length > 0) {
+        query.$or = projectFilter;
+    }
+
+    // Récupérer les résultats
     const totalCount = await ContactRequest.countDocuments(query);
     const totalPages = Math.ceil(totalCount / pageSize);
     const ContactsHistory = await ContactRequest.find(query)
-        .populate(role == "member" ? { path: 'investor' , model: 'Investor', select: '_id name image linkedin_link' } : { path: 'member' , model: 'Member', select: '_id companyName website city contactEmail logo country' })
-        .populate({ path: 'project',  model: 'Project' })
+        .populate(role === "member" ? {
+            path: 'investor',
+            model: 'Investor',
+            select: '_id name image linkedin_link'
+        } : {
+            path: 'member',
+            model: 'Member',
+            select: '_id companyName website city contactEmail logo country'
+        })
+        .populate({ path: 'project', model: 'Project' })
         .sort({ dateCreated: 'desc' })
         .skip(skip)
         .limit(pageSize);
-    return { ContactsHistory, totalPages }
 
-}
+    return { ContactsHistory, totalPages };
+};
+
+const getDistinctFieldValues = async (role, id, field) => {
+    try {
+        const query = {};
+        if (role === "member") {
+            query.member = id;
+        } else if (role === "investor") {
+            query.investor = id;
+        }
+
+        if (field === 'investorNames') {
+            const distinctValues = await ContactRequest.aggregate([
+                { $match: query }, 
+                { $lookup: {
+                    from: 'investors', 
+                    localField: 'investor',
+                    foreignField: '_id', 
+                    as: 'investorDetails' 
+                }},
+                { $unwind: '$investorDetails' }, 
+                { $group: {
+                    _id: null, 
+                    distinctNames: { $addToSet: '$investorDetails.name' } 
+                }},
+                { $project: {
+                    _id: 0, 
+                    distinctNames: 1 
+                }}
+            ]);
+
+            return distinctValues.length > 0 ? distinctValues[0].distinctNames : [];
+        }
+
+        const distinctValues = await ContactRequest.distinct(field, query);
+        return distinctValues;
+    } catch (error) {
+        throw new Error('Error retrieving distinct field values: ' + error.message);
+    }
+};
+
+const getDistinctProjectFieldValues = async (role, id, field, status) => {
+    try {
+        const query = {};
+        if (role === "member") {
+            query.member = id;
+        } else if (role === "investor") {
+            query.investor = id;
+        }
+
+        // Ajoutez le filtrage par status si fourni
+        if (status) {
+            query.status = status;
+        }
+
+        // Liste des champs de `Project` que vous souhaitez récupérer
+        const projectFields = [
+            'sector',
+            'funding',
+            'name',
+            'stage',
+            'country',
+            'status',
+            // Ajoutez d'autres champs de `Project` ici selon vos besoins
+        ];
+
+        // Vérifiez si le champ demandé fait partie des champs de `Project`
+        if (projectFields.includes(field)) {
+            const distinctValues = await ContactRequest.aggregate([
+                { $match: query }, 
+                { $lookup: {
+                    from: 'projects', 
+                    localField: 'project',
+                    foreignField: '_id', 
+                    as: 'projectDetails' 
+                }},
+                { $unwind: '$projectDetails' }, 
+                { $group: {
+                    _id: null, 
+                    distinctValues: { $addToSet: `$projectDetails.${field}` } 
+                }},
+                { $project: {
+                    _id: 0, 
+                    distinctValues: 1 
+                }}
+            ]);
+
+            return distinctValues.length > 0 ? distinctValues[0].distinctValues : [];
+        }
+
+        // Pour les autres champs dans `ContactRequest` directement
+        const distinctValues = await ContactRequest.distinct(field, query);
+        return distinctValues;
+    } catch (error) {
+        throw new Error('Error retrieving distinct field values: ' + error.message);
+    }
+};
+
 
 async function getAllContactRequestsAll() {
     try {
@@ -292,7 +480,6 @@ async function getAllContactRequestsAll() {
         throw new Error('Error getting all contact requests: ' + error.message);
     }
 }
-
 
 const DiffDate = async (req_date) => {
     const currentDate = new Date();
@@ -363,8 +550,9 @@ async function searchContactRequests(user, searchTerm) {
 
 const getContactRequestById = async (id) => {
     return await ContactRequest.findById(id)
-        .populate('member', '_id companyName website city contactEmail logo country')
-        .populate('investor', 'name linkedin_link');
+        .populate('member')
+        .populate('investor')
+        .populate('project');
 };
 
 const createContactRequest = async (data) => {
@@ -380,10 +568,41 @@ const deleteContactRequest = async (id) => {
     return await ContactRequest.findByIdAndDelete(id);
 };
 
+const approveContactRequest = async (requestId, approvalData) => {
+    const contactRequest = await ContactRequest.findById(requestId);
+    if (!contactRequest) {
+        throw new Error('Contact request not found');
+    }
+
+    contactRequest.status = 'Approved';
+    contactRequest.approval.approvalDate = new Date();
+    contactRequest.approval.approvalNotes = approvalData.approvalNotes;
+    contactRequest.approval.typeInvestment = approvalData.typeInvestment;
+
+    await contactRequest.save();
+    return contactRequest;
+};
+
+const rejectContactRequest = async (requestId, rejectionData) => {
+    const contactRequest = await ContactRequest.findById(requestId);
+    if (!contactRequest) {
+        throw new Error('Contact request not found');
+    }
+
+    contactRequest.status = 'Rejected';
+    contactRequest.rejection.rejectionDate = new Date();
+    contactRequest.rejection.reason = rejectionData.reason;
+    contactRequest.rejection.rejectionNotes = rejectionData.rejectionNotes;
+
+    await contactRequest.save();
+    return contactRequest;
+};
+
 
 module.exports = { CreateInvestorContactReq, getAllContactRequest ,
     getContactRequestsForInvestor , getContactRequestsForMember  , 
     shareProjectWithInvestors , CreateInvestorContactReqForProject ,
     getContactRequestById, createContactRequest, updateContactRequest, deleteContactRequest ,
-     getAllContactRequestsAll, searchContactRequests
+     getAllContactRequestsAll, searchContactRequests , getDistinctFieldValues , getDistinctProjectFieldValues ,
+     approveContactRequest , rejectContactRequest
  }

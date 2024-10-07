@@ -93,6 +93,17 @@ router.post('/', AuthController.AuthenticateUser, upload.single('file'), LegalDo
  *    get:
  *      summary: Get all legal documents by user
  *      tags: [Legal Documents]
+ *      parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: string
+ *         description: page
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: string
+ *         description: pageSize
  *      security:
  *        - bearerAuth: []
  *      responses:

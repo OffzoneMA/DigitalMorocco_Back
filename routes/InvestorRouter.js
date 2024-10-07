@@ -29,6 +29,7 @@ const upload = require("../middelware/multer")
  *         owner: 867b85a9c819e68222g7685
  *         linkedin_link: https://www.linkedin.com/in/investor-e-9a4848485/
  */
+
 /**
  * @swagger
  * tags:
@@ -37,19 +38,128 @@ const upload = require("../middelware/multer")
  * /investors:
  *   get:
  *     summary: Get all investors from the DB
- *     description: list of all investors exited 
+ *     description: Get a list of all investors, with optional pagination and filtering.
  *     tags: [Investors]
  *     security:
- *       - jwtToken: []  #you can enter only the admin or the member user token other users are forbidden to access
+ *       - jwtToken: []  # Only admin or member user tokens are allowed; other users are forbidden
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: The page number to retrieve
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           example: 10
+ *         description: The number of records per page
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by the investor type
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: Filter by location
+ *       - in: query
+ *         name: industries
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by preferred investment industries
  *     responses:
  *       200:
- *         description: Successful response
+ *         description: A list of investors
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Investor'
+ *               type: object
+ *               properties:
+ *                 investors:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Investor'
+ *                 totalPages:
+ *                   type: integer
+ *                   description: Total number of pages
+ *                 currentPage:
+ *                   type: integer
+ *                   description: Current page number
+ *       401:
+ *         description: Unauthorized - JWT token is missing or invalid
+ *       403:
+ *         description: Forbidden - Access denied for this user type
+ *       500:
+ *         description: Server error
  */
 router.route("/").get(AuthController.AuthenticateSubMemberOrAdmin, InvestorController.getInvestors)
+
+/**
+ * @swagger
+ * tags:
+ *   name: Investors
+ *   description: Managing API of the Investor
+ * /investors/withoutPage:
+ *   get:
+ *     summary: Get all investors from the DB
+ *     description: Get a list of all investors, with optional pagination and filtering.
+ *     tags: [Investors]
+ *     security:
+ *       - jwtToken: []  # Only admin or member user tokens are allowed; other users are forbidden
+ *     parameters:
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by the investor type
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: Filter by location
+ *       - in: query
+ *         name: industries
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by preferred investment industries
+ *     responses:
+ *       200:
+ *         description: A list of investors
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 investors:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Investor'
+ *                 totalPages:
+ *                   type: integer
+ *                   description: Total number of pages
+ *                 currentPage:
+ *                   type: integer
+ *                   description: Current page number
+ *       401:
+ *         description: Unauthorized - JWT token is missing or invalid
+ *       403:
+ *         description: Forbidden - Access denied for this user type
+ *       500:
+ *         description: Server error
+ */
+router.route("/withoutPage").get(AuthController.AuthenticateSubMemberOrAdmin, InvestorController.getAllInvestorsWithoutPagination)
+
 
 /**
  * @swagger
@@ -304,6 +414,60 @@ router.get('/investor-requests', InvestorController.getInvestorRequests);
  *     summary: Get all contact requests from the member 
  *     description: list of all the sent member's contact requets the pending ones rejected and accepted
  *     tags: [Investors]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           default: 8
+ *         description: Number of records per page for pagination
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by status of the contact request
+ *       - in: query
+ *         name: country
+ *         schema:
+ *           type: string
+ *         description: Filter by country of the contact request project
+ *       - in: query
+ *         name: projectStage
+ *         schema:
+ *           type: string
+ *         description: Filter by stage of the contact request project
+ *       - in: query
+ *         name: projectSectors
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *       - in: query
+ *         name: projectStatus
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *       - in: query
+ *         name: dateCreated
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Date for filtering contact requests by creation date.
+ *       - in: query
+ *         name: funding
+ *         schema:
+ *           type: number
+ *           example: 500000
+ *         description: Filter contact requests by funding amount of the project.
  *     security:
  *       - jwtToken: []
  *     responses:
@@ -605,6 +769,87 @@ router.get("/:investorId/details", AuthController.AuthenticateMember , InvestorC
  *         description: Internal Server Error
  */
 router.get('/distinct/:field', InvestorController.getDistinctInvestorData);
+
+/**
+ * @swagger
+ * /investors/contactRequests/distinct-project-fields:
+ *   get:
+ *     summary: Récupère les valeurs distinctes des champs d'un projet liés aux requêtes de contact
+ *     tags: 
+ *       - Investors
+ *     parameters:
+ *       - in: query
+ *         name: role
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Rôle de l'utilisateur (member ou investor)
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de l'utilisateur (member ou investor)
+ *       - in: query
+ *         name: field
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Champ du projet pour lequel récupérer des valeurs distinctes
+ *       - in: query
+ *         name: status
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Statut des requêtes de contact à filtrer (par exemple 'approved', 'pending', etc.)
+ *     responses:
+ *       200:
+ *         description: Liste des valeurs distinctes récupérées avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 distinctValues:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       500:
+ *         description: Erreur lors de la récupération des valeurs distinctes
+ */
+router.get('/contactRequests/distinct-project-fields', AuthController.AuthenticateInvestor , InvestorController.getDistinctRequestProjectFields);
+
+/**
+ * @swagger
+ * /investors/request/distinct/{field}:
+ *   get:
+ *     summary: Get distinct field values from contact requests
+ *     description: Retrieve distinct values of a specified field for contact requests by member or investor.
+ *     tags: [ContactRequests]
+ *     parameters:
+ *       - name: field
+ *         in: path
+ *         description: The field to retrieve distinct values from (e.g., status, investorNames)
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response with distinct values
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 distinctValues:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       500:
+ *         description: Error retrieving distinct values
+ */
+router.get('/request/distinct/:field', AuthController.AuthenticateInvestor ,  InvestorController.getDistinctRequestValues);
+
 
 
 module.exports = router

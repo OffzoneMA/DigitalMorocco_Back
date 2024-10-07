@@ -497,18 +497,45 @@ router.post("/share-project", AuthController.AuthenticateMember, MemberControlle
  * @swagger
  * /members/ContactRequest:
  *   get:
- *     summary: Get all contact requests of the member 
- *     description: list of all the member's contact requets sent to investor 
+ *     summary: Get all contact requests of the member
+ *     description: List of all the member's contact requests sent to investors with optional filtering, sorting, and pagination.
  *     tags: [Members]
  *     security:
- *       - jwtToken: []
+ *       - jwtToken: [] # Only accessible with a valid JWT token
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           default: 8
+ *         description: Number of records per page for pagination
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by status of the contact request
+ *       - in: query
+ *         name: investorNames
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by investor names (multiple selection allowed)
  *     responses:
  *       200:
  *         description: Successful response
- *         content:
- *           application/json:
- *             schema:
- *               type: string
+ *       401:
+ *         description: Unauthorized - Authentication is required
+ *       500:
+ *         description: Server error
  */
 router.route("/ContactRequest").get(AuthController.AuthenticateMember, MemberController.getContactRequests)
 
@@ -605,6 +632,60 @@ router.route("/Contacts").get(AuthController.AuthenticateMember, MemberControlle
  *         description: Bad request, check the request body
  */
 router.post("/company",AuthController.AuthenticateMember, upload.single('logo'), MemberController.createCompany);
+
+/**
+ * @swagger
+ * /members/companies:
+ *   post:
+ *     summary: Créer ou mettre à jour une entreprise pour un membre, un investisseur ou un partenaire.
+ *     tags: [Members]
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               role:
+ *                 type: string
+ *                 description: Le rôle de l'utilisateur (member, investor, partner)
+ *               companyName:
+ *                 type: string
+ *               legalName:
+ *                 type: string
+ *               website:
+ *                 type: string
+ *               contactEmail:
+ *                 type: string
+ *               desc:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               country:
+ *                 type: string
+ *               city:
+ *                 type: string
+ *               stage:
+ *                 type: string
+ *               state:
+ *                 type: string
+ *               companyType:
+ *                 type: string
+ *               taxNbr:
+ *                 type: string
+ *               corporateNbr:
+ *                 type: string
+ *               logo:
+ *                 type: string
+ *                 format: binary
+ *                 description: Logo de l'entreprise
+ *     responses:
+ *       200:
+ *         description: Entreprise créée ou mise à jour avec succès.
+ *       500:
+ *         description: Erreur lors de la création ou de la mise à jour de l'entreprise.
+ */
+router.post('/companies', AuthController.AuthenticateUser, upload.single('logo'), MemberController.createTestCompany);
+
 
 /**
  * @swagger
@@ -775,6 +856,16 @@ router.post('/members/:userId', MemberController.createMember);
  *           enum: ['public', 'private']
  *         description: Filter by project visibility
  *       - in: query
+ *         name: page
+ *         schema:
+ *           type: string
+ *         description: page
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: string
+ *         description: pageSize
+ *       - in: query
  *         name: status
  *         schema:
  *           type: string
@@ -795,6 +886,42 @@ router.post('/members/:userId', MemberController.createMember);
  *         description: Internal server error.
  */
 router.get('/projects',AuthController.AuthenticateMember, MemberController.getAllProjectsForMember);
+
+/**
+ * @swagger
+ * /members/projectswithoutpage:
+ *   get:
+ *     summary: Get all projects for a member
+ *     tags: [Members]
+ *     description: Retrieve all projects associated with a specific member.
+ *     parameters:
+ *       - in: query
+ *         name: visibility
+ *         schema:
+ *           type: string
+ *           enum: ['public', 'private']
+ *         description: Filter by project visibility
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: ["In Progress", "Active", "Stand by"]
+ *         description: Filter by project status
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter by projects created on or after the given date
+ *     responses:
+ *       '200':
+ *         description: A list of projects associated with the member.
+ *       '404':
+ *         description: Member not found.
+ *       '500':
+ *         description: Internal server error.
+ */
+router.get('/projectswithoutpage',AuthController.AuthenticateMember, MemberController.getAllProjectsForMemberWithoutPagination);
 
 /**
  * @swagger
@@ -1105,6 +1232,38 @@ router.put("/:id", MemberController.updateMember);
  *     description: Retrieve a list of investors associated with a specific member.
  *     tags:
  *       - Members
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: The page number to retrieve
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           example: 10
+ *         description: The number of records per page
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by the investor type
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: Filter by location
+ *       - in: query
+ *         name: industries
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by preferred investment industries
  *     responses:
  *       200:
  *         description: A list of investors
@@ -1112,5 +1271,65 @@ router.put("/:id", MemberController.updateMember);
  *         description: Internal server error
  */
 router.get('/my-investors', AuthController.AuthenticateMember , MemberController.getInvestorsForMember);
+
+/**
+ * @swagger
+ * members/investors/distinct/{field}:
+ *   get:
+ *     summary: Get distinct values of a specified field from investors
+ *     tags: [Members]
+ *     parameters:
+ *       - in: path
+ *         name: field
+ *         required: true
+ *         description: The field for which to get distinct values (e.g., type, location, companyType)
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: A list of distinct values
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ *       400:
+ *         description: Bad Request
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get('/investors/distinct/:field', AuthController.AuthenticateMember , MemberController.getDistinctInvestorFieldValues);
+
+/**
+ * @swagger
+ * /members/request/distinct/{field}:
+ *   get:
+ *     summary: Get distinct field values from contact requests
+ *     description: Retrieve distinct values of a specified field for contact requests by member or investor.
+ *     tags: [ContactRequests]
+ *     parameters:
+ *       - name: field
+ *         in: path
+ *         description: The field to retrieve distinct values from (e.g., status, investorNames)
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response with distinct values
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 distinctValues:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       500:
+ *         description: Error retrieving distinct values
+ */
+router.get('/request/distinct/:field', AuthController.AuthenticateMember ,  MemberController.getDistinctRequestFieldValues);
 
 module.exports = router;

@@ -151,13 +151,23 @@ async function getAllProjectsForMember(req, res) {
     try {
       const memberId = req.memberId;
       const args = req.query;
-  
       const projects = await MemberService.getAllProjectsForMember(memberId, args);
       res.status(200).json(projects);
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
   }
+
+async function getAllProjectsForMemberWithoutPagination(req, res) {
+try {
+    const memberId = req.memberId;
+    const args = req.query;
+    const projects = await MemberService.getAllProjectsForMemberWithoutPagination(memberId, args);
+    res.status(200).json(projects);
+} catch (error) {
+    res.status(400).json({ message: error.message });
+}
+}
 
 const contactRequest = async (req, res) => {
     try {
@@ -178,10 +188,11 @@ const contactRequest = async (req, res) => {
 
 const getContactRequests = async (req, res) => {
     try {
-        const result = await InvestorContactService.getAllContactRequest(req.query,"member",req.memberId)
+        const result = await MemberService.getContactRequestsForMember(req.memberId , req?.query)
         res.status(200).json(result);
     } catch (error) {
-        res.status(500).json({ message: "Something went wrong!"});
+        console.log(error)
+        res.status(500).json({ message: error?.message});
     }
 }
 
@@ -216,18 +227,29 @@ async function getInvestorsForMember(req, res) {
     const memberId = req.memberId;
 
     try {
-        const investors = await MemberService.getInvestorsForMember(memberId);
+        const investors = await MemberService.getInvestorsForMember(memberId , req.query);
         res.json({ success: true, investors });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 }
 
+const getDistinctInvestorFieldValues = async (req, res) => {
+    const field = req.params.field;
+    const memberId = req.memberId;
+
+    try {
+        const distinctValues = await MemberService.getDistinctInvestorsValuesForMember(memberId, field);
+        res.status(200).json({ distinctValues });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 async function getContactRequestsForMember(req, res) {
     const memberId = req.memberId;
 
     try {
-        console.log("all" ,memberId )
         const contactRequests = await InvestorContactService.getContactRequestsForMember(memberId);
         res.json({ success: true, contactRequests });
     } catch (error) {
@@ -273,15 +295,17 @@ const getUniqueCompanyTypes = async (req, res) => {
 };
 
 const createTestCompany = async (req, res) => {
-    const userId = req.params.userId;
-    const companyData = req.body;
-    const logo = req.file;
-  
     try {
-      const result = await MemberService.createTestCompany(userId , companyData , logo);
-      res.status(200).json(result);
+        const role = req.body.role;
+        const companyData = isJsonString(req?.body.companyData) ? JSON.parse(req?.body.companyData) : req?.body.companyData
+        const logo = req.file; 
+        const userId = req.userId;
+        const result = await MemberService.createTestCompany(userId, role, companyData, logo);
+
+        return res.status(200).json(result);
     } catch (error) {
-      return res.status(500).json({ message: "Impossible de créer l'entreprise : " + error.message });
+        console.log(error)
+        return res.status(500).json({ message: error.message });
     }
 };
 
@@ -298,8 +322,20 @@ const shareProject = async (req, res) => {
     }
 };
 
+const getDistinctRequestFieldValues = async (req, res) => {
+    const {field } = req.params;
+    const memberId = req.memberId ;
+    try {
+        const distinctValues = await InvestorContactService.getDistinctFieldValues("member", memberId, field);
+        res.status(200).json({ distinctValues });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {  addCompanyToMember,getContacts,getMembers, createEnterprise, getByName, createProject, 
     contactRequest, getContactRequests , createCompany  ,createMember ,getTestAllMembers , 
     getInvestorsForMember , getContactRequestsForMember , getAllProjectsForMember , updateProject , 
     updateMember , getUniqueCountries , getUniqueStages , getUniqueCompanyTypes , createTestCompany , 
-    updateMember , shareProject , CreateMemberWithLogo}
+    updateMember , shareProject , CreateMemberWithLogo , getDistinctInvestorFieldValues ,
+getDistinctRequestFieldValues , getAllProjectsForMemberWithoutPagination }

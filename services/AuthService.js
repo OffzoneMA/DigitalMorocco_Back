@@ -113,36 +113,38 @@ const generateUserInfos = async (user) => {
 }
 
 const generateUserInfosAll = async (user) => {
-  const accessToken = await generateAccessToken(user)
-  let data
-  let projectCount;
-  let eventCount;
- 
-  if (user?.role?.toLowerCase() == "member"){
-      let member = await MemberService.getMemberInfoByUserId(user._id)
-      projectCount = await ProjectService.countProjectsByMemberId(member?._id);
-      data = {
-          ...member?._doc ? member._doc : member,
-          projectCount
-      };
+  const accessToken = await generateAccessToken(user);
+  let roleData = {};
+  let projectCount = 0;
+  let eventCount = 0;
 
-  }
-  if (user?.role?.toLowerCase() == "partner") {
-      let partner = await PartnerService.getPartnerByUserId(user._id)
-      data = partner?._doc ? partner?._doc : partner
-  }
-  if (user?.role?.toLowerCase() == "investor") {
-      let investor = await InvestorService.getInvestorByUserId(user._id)
-      data = investor?._doc ? investor?._doc : investor
+  if (user?.role?.toLowerCase() === "member") {
+    const member = await MemberService.getMemberInfoByUserId(user._id);
+    projectCount = await ProjectService.countProjectsByMemberId(member?._id);
+    roleData = {
+      ...member?._doc ? member._doc : member,
+      projectCount
+    };
+  } else if (user?.role?.toLowerCase() === "partner") {
+    const partner = await PartnerService.getPartnerByUserId(user._id);
+    roleData = partner?._doc ? partner._doc : partner;
+  } else if (user?.role?.toLowerCase() === "investor") {
+    const investor = await InvestorService.getInvestorByUserId(user._id);
+    roleData = investor?._doc ? investor._doc : investor;
   }
 
   eventCount = await EventService.countEventsByUserId(user?._id);
-  const result = user?._doc 
-  ? { ...user._doc, [user?.role?.toLowerCase()]: data, eventCount } 
-  : { ...user, [user?.role?.toLowerCase()]: data, eventCount };    
-  
-  return { accessToken: accessToken, user: result }
-}
+
+  // Combine user info and role-specific data into one object for easy access
+  const userInfo = user?._doc ? { ...user._doc } : { ...user };
+  const result = {
+    ...userInfo,
+    ...roleData,
+    eventCount,
+  };
+
+  return { accessToken, user: result };
+};
 
  const generateAccessToken = async (user) => {
     const payload = user?.role

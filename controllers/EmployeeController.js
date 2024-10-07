@@ -66,7 +66,18 @@ const getAllEmployees = async (req, res) => {
 const getAllEmployeesByUser = async (req, res) => {
     try {
         const userId = req.userId;
-        const employees = await EmployeeService.getAllEmployeesByUser(userId);
+        const employees = await EmployeeService.getAllEmployeesByUser(userId , req.query);
+        res.status(200).json(employees);
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const getAllEmployeesByUserWithoutPagination = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const employees = await EmployeeService.getAllEmployeesByUserWithoutPagination(userId );
         res.status(200).json(employees);
     } catch (error) {
         console.log(error)
@@ -80,5 +91,5 @@ module.exports = {
     getEmployeeById,
     deleteEmployee,
     getAllEmployees,
-    getAllEmployeesByUser,
+    getAllEmployeesByUser, getAllEmployeesByUserWithoutPagination
 };

@@ -65,7 +65,7 @@ const getLegalDocuments = async (req, res) => {
 const getLegalDocumentsByUser = async (req, res) => {
     try {
         const userId = req.userId;
-        const documents = await LegalDocumentService.getLegalDocumentsByUser(userId);
+        const documents = await LegalDocumentService.getLegalDocumentsByUser(userId , req.query);
         res.status(200).json(documents);
     } catch (error) {
         res.status(400).json({ error: error.message });

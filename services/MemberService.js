@@ -147,10 +147,11 @@ const createCompany = async (userId, companyData) => {
     }
 };
 
-const createTestCompany = async (userId, companyData , logo) => {
+const createOrUpdateMember = async (userId, companyData, logo) => {
     try {
         const existingMember = await Member.findOne({ owner: userId });
-        const actionType = existingMember?.companyName ? 'company_updated' : 'company_created';
+        const actionType = existingMember ? 'company_updated' : 'company_created';
+
         if (existingMember) {
             existingMember.companyName = companyData.companyName;
             existingMember.legalName = companyData.legalName;
@@ -158,15 +159,16 @@ const createTestCompany = async (userId, companyData , logo) => {
             existingMember.contactEmail = companyData.contactEmail;
             existingMember.desc = companyData.desc;
             existingMember.country = companyData.country;
-            existingMember.city = companyData.city;
+            existingMember.city = companyData.city?.name;
             existingMember.stage = companyData.stage;
             existingMember.companyType = companyData.companyType;
             existingMember.taxNbr = companyData.taxIdentfier;
             existingMember.corporateNbr = companyData.corporateNbr;
+            existingMember.address = companyData.address;
 
             if (logo) {
-                let logoLink = await uploadService.uploadFile(logo, "Members/" + existingMember.owner + "", 'logo')
-                existingMember.logo = logoLink
+                const logoLink = await uploadService.uploadFile(logo, `Members/${existingMember.owner}`, 'logo');
+                existingMember.logo = logoLink;
             }
 
             const savedMember = await existingMember.save();
@@ -177,17 +179,158 @@ const createTestCompany = async (userId, companyData , logo) => {
             );
 
             return {
-                message: 'Nouvelle entreprise ajoutée avec succès',
+                message: 'Membre mis à jour avec succès',
                 company: savedMember,
             };
         }
+
         throw new Error("Le membre n'existe pas pour cet utilisateur");
     } catch (error) {
-        throw new Error("Impossible de créer l'entreprise : " + error.message);
+        throw new Error("Impossible de créer ou mettre à jour le membre : " + error.message);
     }
 };
 
+const createOrUpdateInvestor = async (userId, companyData, logo) => {
+    try {
+        const existingInvestor = await Investor.findOne({ owner: userId });
+        const actionType = existingInvestor ? 'company_updated' : 'company_created';
 
+        if (existingInvestor) {
+            existingInvestor.companyName = companyData.companyName;
+            existingInvestor.name = companyData.companyName;
+            existingInvestor.legalName = companyData.legalName;
+            existingInvestor.website = companyData.website;
+            existingInvestor.contactEmail = companyData.contactEmail;
+            existingInvestor.emailAddress = companyData.contactEmail;
+            existingInvestor.desc = companyData.desc;
+            existingInvestor.country = companyData.country;
+            existingInvestor.city = companyData.city?.name;
+            existingInvestor.stage = companyData.stage;
+            existingInvestor.companyType = companyData.companyType;
+            existingInvestor.type = companyData.companyType;
+            existingInvestor.taxNbr = companyData.taxIdentfier;
+            existingInvestor.corporateNbr = companyData.corporateNbr;
+            existingInvestor.address = companyData.address;
+
+            if (logo) {
+                const logoLink = await uploadService.uploadFile(logo, `Investors/${existingInvestor.owner}`, 'logo');
+                existingInvestor.image = logoLink;
+            }
+
+            const savedInvestor = await existingInvestor.save();
+            await ActivityHistoryService.createActivityHistory(
+                userId,
+                actionType,
+                { targetName: companyData.companyName, targetDesc: `` }
+            );
+
+            return {
+                message: 'Investisseur mis à jour avec succès',
+                company: savedInvestor,
+            };
+        }
+
+        throw new Error("L'investisseur n'existe pas pour cet utilisateur");
+    } catch (error) {
+        throw new Error("Impossible de créer ou mettre à jour l'investisseur : " + error.message);
+    }
+};
+
+const createOrUpdatePartner = async (userId, companyData, logo) => {
+    try {
+        const existingPartner = await Partner.findOne({ owner: userId });
+        const actionType = existingPartner ? 'company_updated' : 'company_created';
+
+        if (existingPartner) {
+            existingPartner.companyName = companyData.companyName;
+            existingPartner.legalName = companyData.legalName;
+            existingPartner.website = companyData.website;
+            existingPartner.contactEmail = companyData.contactEmail;
+            existingPartner.desc = companyData.desc;
+            existingPartner.country = companyData.country;
+            existingPartner.city = companyData.city?.name;
+            existingPartner.stage = companyData.stage;
+            existingPartner.companyType = companyData.companyType;
+            existingPartner.taxNbr = companyData.taxIdentfier;
+            existingPartner.corporateNbr = companyData.corporateNbr;
+            existingPartner.address = companyData.address;
+
+            if (logo) {
+                const logoLink = await uploadService.uploadFile(logo, `Partners/${existingPartner.owner}`, 'logo');
+                existingPartner.logo = logoLink;
+            }
+
+            const savedPartner = await existingPartner.save();
+            await ActivityHistoryService.createActivityHistory(
+                userId,
+                actionType,
+                { targetName: companyData.companyName, targetDesc: `` }
+            );
+
+            return {
+                message: 'Partenaire mis à jour avec succès',
+                company: savedPartner,
+            };
+        }
+
+        throw new Error("Le partenaire n'existe pas pour cet utilisateur");
+    } catch (error) {
+        throw new Error("Impossible de créer ou mettre à jour le partenaire : " + error.message);
+    }
+};
+
+const createTestCompany = async (userId, role, companyData, logo) => {
+    switch (role) {
+        case 'member':
+            return await createOrUpdateMember(userId, companyData, logo);
+        case 'investor':
+            return await createOrUpdateInvestor(userId, companyData, logo);
+        case 'partner':
+            return await createOrUpdatePartner(userId, companyData, logo);
+        default:
+            throw new Error('Rôle non valide fourni');
+    }
+};
+
+// const createTestCompany = async (userId, companyData , logo) => {
+//     try {
+//         const existingMember = await Member.findOne({ owner: userId });
+//         const actionType = existingMember?.companyName ? 'company_updated' : 'company_created';
+//         if (existingMember) {
+//             existingMember.companyName = companyData.companyName;
+//             existingMember.legalName = companyData.legalName;
+//             existingMember.website = companyData.website;
+//             existingMember.contactEmail = companyData.contactEmail;
+//             existingMember.desc = companyData.desc;
+//             existingMember.country = companyData.country;
+//             existingMember.city = companyData.city;
+//             existingMember.stage = companyData.stage;
+//             existingMember.companyType = companyData.companyType;
+//             existingMember.taxNbr = companyData.taxIdentfier;
+//             existingMember.corporateNbr = companyData.corporateNbr;
+
+//             if (logo) {
+//                 let logoLink = await uploadService.uploadFile(logo, "Members/" + existingMember.owner + "", 'logo')
+//                 existingMember.logo = logoLink
+//             }
+
+//             const savedMember = await existingMember.save();
+//             await ActivityHistoryService.createActivityHistory(
+//                 userId,
+//                 actionType,
+//                 { targetName: companyData.companyName, targetDesc: `` }
+//             );
+
+//             return {
+//                 message: 'Nouvelle entreprise ajoutée avec succès',
+//                 company: savedMember,
+//             };
+//         }
+//         throw new Error("Le membre n'existe pas pour cet utilisateur");
+//     } catch (error) {
+//         throw new Error("Impossible de créer l'entreprise : " + error.message);
+//     }
+// };
 
 const CreateMember = async (userId, member) => {
     try {
@@ -547,10 +690,14 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
 
 async function getAllProjectsForMember(memberId, args) {
     try {
+        const page = args.page || 1;
+        const pageSize = args.pageSize || 8;
+        const skip = (page - 1) * pageSize;
+
         const filter = { owner: memberId };
 
         if (args.visibility) {
-            filter.visbility = args.visibility;
+            filter.visibility = args.visibility;
         }
 
         if (args.status) {
@@ -562,10 +709,38 @@ async function getAllProjectsForMember(memberId, args) {
             filter.dateCreated = { $gte: date };
         }
 
+        const totalCount = await Project.countDocuments(filter);
+        const totalPages = Math.ceil(totalCount / pageSize);
+        
+        const projects = await Project.find(filter)
+            .skip(skip)
+            .limit(pageSize);
+        return { projects, totalPages };
+    } catch (error) {
+        throw new Error('Error fetching projects for member: ' + error.message);
+    }
+}
+
+async function getAllProjectsForMemberWithoutPagination(memberId , args) {
+    try {
+        const filter = { owner: memberId };
+
+        if (args.visibility) {
+            filter.visibility = args.visibility;
+        }
+
+        if (args.status) {
+            filter.status = args.status;
+        }
+
+        if (args.date) {
+            const date = new Date(args.date);
+            filter.dateCreated = { $gte: date };
+        }
         const projects = await Project.find(filter);
         return projects;
     } catch (error) {
-        throw new Error('Error fetching projects for member');
+        throw new Error('Error fetching projects for member: ' + error.message);
     }
 }
 
@@ -659,25 +834,232 @@ const checkSubscriptionStatus = async () => {
     }
 };
 
-const getInvestorsForMember = async (memberId) => {
+// const getInvestorsForMember = async (memberId, args) => {
+//     try {
+//         const member = await Member.findById(memberId);
+
+//         if (!member) {
+//             throw new Error('Member not found');
+//         }
+//         const investorIdsSet = new Set(member.investorsRequestsAccepted);
+//         const uniqueInvestorIds = Array.from(investorIdsSet);
+
+//         const page = args?.page || 1;
+//         const pageSize = args?.pageSize || 8;
+//         const skip = (page - 1) * pageSize;
+
+//         // Construire le filtre
+//         const filter = { _id: { $in: uniqueInvestorIds } };
+
+//         if (args.type) {
+//             filter.type = { $in: args.type.split(',') }; 
+//         }
+
+//         if (args.location) {
+//             filter.location = { $regex: new RegExp(args.location, 'i') };
+//         }
+
+//         if (args.industries && args.industries.length > 0) {
+//             filter.PreferredInvestmentIndustry = { $in: args.industries.split(',') };
+//         }
+
+//         const totalCount = await Investor.countDocuments(filter);
+//         const totalPages = Math.ceil(totalCount / pageSize);
+
+//         const investors = await Investor.find(filter)
+//             .skip(skip)
+//             .limit(pageSize);
+
+//         return { investors, totalPages };
+//     } catch (error) {
+//         throw new Error('Error retrieving investors for member: ' + error.message);
+//     }
+// };
+
+const getInvestorsForMember = async (memberId, args) => {
+    // Pagination
+    const page = args.page || 1;
+    const pageSize = args.pageSize || 10;
+    const skip = (page - 1) * pageSize;
+
+    // Construire le filtre de recherche pour les investisseurs
+    let investorQuery = {};
+
+    // Filtrage par type d'investissement (plusieurs types)
+    if (args?.type && args.type.length > 0) {
+        investorQuery.type = { $in: args.type.split(',') };
+    }
+
+    // Filtrage par pays (un seul pays)
+    if (args?.country) {
+        investorQuery.$or = [
+            { country: args.country },
+            { location: args.country }
+        ];
+    }
+
+    // Filtrage par secteur d'industrie préféré (plusieurs secteurs)
+    if (args?.preferredInvestmentIndustry && args.preferredInvestmentIndustry.length > 0) {
+        investorQuery.PreferredInvestmentIndustry = { $in: args.preferredInvestmentIndustry.split(',') };
+    }
+
+    // Rechercher les investisseurs qui correspondent aux critères de filtrage
+    const investors = await Investor.find(investorQuery).select('_id');
+    const investorIds = investors.map(investor => investor._id);
+
+    // Construire le filtre de recherche pour les demandes de contact
+    const query = {
+        member: memberId,
+        status: { $in: ['Accepted', 'Approved'] },
+    };
+
+    if (investorIds.length > 0) {
+        query.investor = { $in: investorIds };
+    } else {
+        // Si aucun investisseur n'a été trouvé, retourner une réponse vide
+        return { investors: [], totalPages: 0 };
+    }
+
+    // Compter le nombre total de documents correspondants
+    const totalCount = await ContactRequest.countDocuments(query);
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    // Récupérer les demandes de contact avec les investisseurs
+    const contactRequests = await ContactRequest.find(query)
+        .populate({
+            path: 'investor',
+            model: 'Investor',
+        })
+        .skip(skip)
+        .limit(pageSize);
+
+    // Supprimer les doublons d'investisseurs par leur _id
+    const uniqueInvestors = [];
+    const seenIds = new Set();
+
+    for (const request of contactRequests) {
+        const investor = request.investor;
+        if (investor && !seenIds.has(investor._id.toString())) {
+            uniqueInvestors.push(investor);
+            seenIds.add(investor._id.toString());
+        }
+    }
+
+    return { investors: uniqueInvestors, totalPages };
+};
+
+const getInvestorsForMemberWithoutPagination = async (memberId) => {
+    try {
+        // Rechercher toutes les demandes de contact approuvées ou acceptées pour un membre donné
+        const contactRequests = await ContactRequest.find({
+            member: memberId,
+            status: { $in: ['Accepted', 'Approved'] }
+        }).populate({
+            path: 'investor',
+            model: 'Investor'
+        });
+
+        // Extraire les investisseurs et supprimer les doublons
+        const investors = contactRequests.map(request => request.investor);
+        const uniqueInvestors = [];
+        const seenIds = new Set();
+
+        for (const investor of investors) {
+            if (investor && !seenIds.has(investor._id.toString())) {
+                uniqueInvestors.push(investor);
+                seenIds.add(investor._id.toString());
+            }
+        }
+
+        return uniqueInvestors;
+    } catch (error) {
+        throw new Error('Error retrieving investors: ' + error.message);
+    }
+};
+
+
+const getContactRequestsForMember = async (memberId, args) => {
+    // Pagination
+    const page = args.page || 1;
+    const pageSize = args.pageSize || 10;
+    const skip = (page - 1) * pageSize;
+
+    // Construire le filtre de recherche
+    const query = {
+        member: memberId,
+    };
+
+    // Filtrage par nom d'investisseur (plusieurs noms)
+    let investorIds = [];
+    if (args?.investorNames && args.investorNames.length > 0) {
+        const investors = await Investor.find({ name: { $in: args.investorNames.split(',') } }).select('_id');
+        investorIds = investors.map(investor => investor._id);
+        
+        if (investorIds.length > 0) {
+            query.investor = { $in: investorIds };
+        } else {
+            // Si aucun investisseur n'a été trouvé, retourner une réponse vide
+            return { contactRequests: [], totalPages: 0 };
+        }
+    }
+
+    // Filtrage par statut de la demande (plusieurs statuts)
+    if (args?.status && args.status.length > 0) {
+        query.status = { $in: args.status.split(',') };
+    }
+
+    // Compter le nombre total de documents correspondants
+    const totalCount = await ContactRequest.countDocuments(query);
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    // Récupérer les demandes de contact
+    const contactRequests = await ContactRequest.find(query)
+        .populate({
+            path: 'investor',
+            model: 'Investor',
+        })
+        .populate({
+            path: 'member',
+        })
+        .populate({
+            path: 'project',
+            model: 'Project',
+        })
+        .skip(skip)
+        .limit(pageSize)
+        .sort({ dateCreated: 'desc' });
+
+    return { contactRequests, totalPages };
+};
+
+const getDistinctInvestorsValuesForMember = async (memberId, field) => {
     try {
         const member = await Member.findById(memberId);
-
         if (!member) {
             throw new Error('Member not found');
         }
 
         const investorIdsSet = new Set(member.investorsRequestsAccepted);
-
         const uniqueInvestorIds = Array.from(investorIdsSet);
 
-        const investors = await Investor.find({ _id: { $in: uniqueInvestorIds } });
+        if (field === 'PreferredInvestmentIndustry') {
+            const distinctValues = await Investor.aggregate([
+                { $match: { _id: { $in: uniqueInvestorIds } } },
+                { $unwind: '$PreferredInvestmentIndustry' }, 
+                { $group: { _id: '$PreferredInvestmentIndustry' } }, // Regrouper par valeur unique
+                { $project: { _id: 0, value: '$_id' } } // Projeter les résultats
+            ]);
+            return distinctValues.map(item => item.value); // Retourner un tableau des valeurs distinctes
+        }
 
-        return investors;
+        const distinctValues = await Investor.distinct(field, { _id: { $in: uniqueInvestorIds } });
+        return distinctValues;
+
     } catch (error) {
-        throw new Error('Error retrieving investors for member: ' + error.message);
+        throw new Error('Error retrieving distinct values for member: ' + error.message);
     }
-}
+};
+
 
 const searchInvestorsForMember = async (user, searchQuery) => {
     try {
@@ -776,4 +1158,6 @@ const checkMemberStatus = async (memberId) => {
     CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, getMemberByUserId, 
     checkSubscriptionStatus ,createCompany , getTestAllMembers , createTestProject , getInvestorsForMember ,
      getAllProjectsForMember , updateProject , updateMember , createTestCompany , updateMember , 
-     getMemberInfoByUserId , CreateMemberWithLogo , searchProjects , searchMembers , searchInvestorsForMember} 
+     getMemberInfoByUserId , CreateMemberWithLogo , searchProjects , searchMembers , searchInvestorsForMember , 
+     getDistinctInvestorsValuesForMember , getAllProjectsForMemberWithoutPagination , 
+    getContactRequestsForMember , getInvestorsForMemberWithoutPagination} 

@@ -19,6 +19,19 @@ const getInvestors = async (req, res) => {
     }
 };
 
+const getAllInvestorsWithoutPagination = async (req, res) => {
+    try {
+       
+        const result = await InvestorService.getAllInvestorsWithoutPagination(req.query);
+        
+        res.status(200).json(result);
+        return;
+    } catch (error) {
+        
+        res.status(500).json( error );
+    }
+};
+
 const getAllInvestors = async (req, res) => {
     try {
        
@@ -70,6 +83,7 @@ const getContactRequests = async (req, res) => {
         const result = await InvestorContactService.getAllContactRequest(req.query, "investor", req.investorId)
         res.status(200).json(result);
     } catch (error) {
+        console.log(error)
         res.status(500).json({ message: "Something went wrong!" });
     }
 }
@@ -162,6 +176,32 @@ async function getInvestorDetails(req, res) {
     }
 }
 
+const getDistinctRequestProjectFields = async (req, res) => {
+    try {
+        const { field, status } = req.query;
+        const id = req.investorId;
+
+        const distinctValues = await InvestorContactService.getDistinctProjectFieldValues("investor", id, field, status);
+
+        // Envoyer la réponse avec les valeurs distinctes
+        res.status(200).json({ distinctValues });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+const getDistinctRequestValues = async (req, res) => {
+    const {field } = req.params;
+    const investorId = req.investorId ;
+    try {
+        const distinctValues = await InvestorContactService.getDistinctFieldValues("investor", investorId, field);
+        res.status(200).json({ distinctValues });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = { getInvestorRequests,updateContactStatus, addInvestor, getInvestors, 
     getContactRequests, getContacts, getProjects , getContactRequestsForInvestor , updateInvestor , 
-    getAllInvestors , getDistinctInvestorData , getInvestorById , getInvestorDetails}
+    getAllInvestors , getDistinctInvestorData , getInvestorById , getInvestorDetails , 
+getAllInvestorsWithoutPagination , getDistinctRequestProjectFields , getDistinctRequestValues}

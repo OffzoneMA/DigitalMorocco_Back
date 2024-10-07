@@ -54,12 +54,12 @@ const updateLegalDocument = async (documentId, updateData, docFile) => {
         }
         document.lastModifiedDate = Date.now();
         document.title = updateData.title;
-        document.updatedBy = updateData.updatedBy;
+        document.updatedBy = updateData.updatedBy || document.createdBy ;
         await document.save();
 
         const extension = document.name?.split('.')?.pop();
         await ActivityHistoryService.createActivityHistory(
-            document.updatedBy,
+            document?.updatedBy || document?.createdBy,
             'legal_document_updated',
             { targetName: `${document?.title}.${extension}`, targetDesc: `` }
         );
@@ -109,13 +109,21 @@ const getLegalDocuments = async () => {
     }
 };
 
-const getLegalDocumentsByUser = async (userId) => {
+const getLegalDocumentsByUser = async (userId, args) => {
     try {
+        const page = args.page || 1;
+        const pageSize = args.pageSize || 8;
+        const skip = (page - 1) * pageSize;
+        const totalCount = await LegalDocument.countDocuments({ createdBy: userId });
+        const totalPages = Math.ceil(totalCount / pageSize);
         const documents = await LegalDocument.find({ createdBy: userId })
-            .populate('createdBy') 
-        return documents;
+            .populate('createdBy')
+            .skip(skip)
+            .limit(pageSize);
+
+        return { documents, totalPages };
     } catch (error) {
-        throw error;
+        throw new Error('Error fetching legal documents by user: ' + error.message);
     }
 };
 

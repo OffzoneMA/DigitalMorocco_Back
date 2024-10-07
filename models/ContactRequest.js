@@ -30,9 +30,28 @@ const ContactRequestSchema = new mongoose.Schema({
     status: {
         type: String,
         enum: ['Pending', 'Approved' , 'Accepted', 'Rejected' ,'In Progress'],
-        default: 'Pending'
+        default: 'In Progress'
     },
-
+    approval: {
+        typeInvestment: {
+            type: String,
+        },
+        approvalDate: {
+            type: Date,
+            default: null
+        },
+        approvalNotes: String 
+    },
+    rejection: {
+        reason: {
+            type: String,
+        },
+        rejectionDate: {
+            type: Date,
+            default: null
+        },
+        rejectionNotes: String 
+    },
     dateCreated: { type: Date, default: Date.now },
 
 })

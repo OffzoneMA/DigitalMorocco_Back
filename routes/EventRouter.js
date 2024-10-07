@@ -401,6 +401,38 @@ router.get('/', EventController.getEvents);
  *   get:
  *     summary: Get all events for the authenticated user
  *     tags: [Events]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: The page number to retrieve
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           example: 10
+ *         description: The number of records per page
+ *       - in: query
+ *         name: eventNames
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by the investor type
+ *       - in: query
+ *         name: physicalLocation
+ *         schema:
+ *           type: string
+ *         description: Filter by location
+ *       - in: query
+ *         name: industries
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by preferred investment industries
  *     description: Retrieves all events in which the authenticated user has participated.
  *     security:
  *       - bearerAuth: []
@@ -438,7 +470,34 @@ router.get('/authuser', AuthController.AuthenticateUser, EventController.getEven
  *       404:
  *         description: Event not found
  */
-router.get('/:id', EventController.getEventById);
+router.get('/:id/withParticipate', AuthController.AuthenticateUser , EventController.getEventByIdWithParticipate);
+
+/**
+ * @swagger
+ * /events/{id}:
+ *   get:
+ *     summary: Get an event by ID
+ *     description: Retrieve an event by its ID
+ *     tags: [Events]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the event
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Event details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Event'
+ *       404:
+ *         description: Event not found
+ */
+router.get('/:id' , EventController.getEventById);
+
 
 /**
  * @swagger
@@ -499,9 +558,12 @@ router.get('/:id', EventController.getEventById);
  *                 type: string
  *                 enum: [online, physical]
  *                 description: The type of event location
+ *               status:
+ *                 type: string
+ *                 enum: [past, upcoming , ongoing]
+ *                 description: The type of event location
  *               category:
  *                 type: string
- *                 enum: [Workshop, Seminar, Conference, Other]
  *                 description: The category of the event
  *               industry:
  *                 type: string
@@ -775,6 +837,19 @@ router.get('/distinct/:field', EventController.getDistinctFieldValues);
  *   get:
  *     summary: Get past events with user participation status
  *     tags: [Events]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: The page number to retrieve
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           example: 10
+ *         description: The number of records per page
  *     responses:
  *       200:
  *         description: List of past events with user participation status
@@ -789,6 +864,19 @@ router.get('/past/participate', AuthController.AuthenticateUser, EventController
  *   get:
  *     summary: Get past events with user participation status
  *     tags: [Events]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: The page number to retrieve
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           example: 10
+ *         description: The number of records per page
  *     responses:
  *       200:
  *         description: List of past events with user participation status

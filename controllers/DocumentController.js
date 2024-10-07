@@ -3,7 +3,7 @@ const DocumentService = require("../services/DocumentService");
 async function getDocumentsForUser(req, res) {
     try {
         const userId = req.userId;
-        const documents = await DocumentService.getDocumentsForUser(userId);
+        const documents = await DocumentService.getDocumentsForUser(userId , req.query);
         res.status(200).json(documents);
     } catch (error) {
         console.log(error)

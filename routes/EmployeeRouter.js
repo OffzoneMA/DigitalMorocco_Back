@@ -221,6 +221,17 @@ router.put("/:employeeId", upload.single("image"), EmployeeController.updateEmpl
  *      summary: Get all employees
  *      description: Get all employees by user
  *      tags: [Employees]
+ *      parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: string
+ *         description: page
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: string
+ *         description: pageSize
  *      responses:
  *        200:
  *          description: Successful response
@@ -232,6 +243,25 @@ router.put("/:employeeId", upload.single("image"), EmployeeController.updateEmpl
  *                  $ref: '#/components/schemas/Employee'
  */
 router.get("/byuser", AuthController.AuthenticateUser , EmployeeController.getAllEmployeesByUser);
+
+/**
+ * @swagger
+ *  /employee/byuser:
+ *    get:
+ *      summary: Get all employees
+ *      description: Get all employees by user
+ *      tags: [Employees]
+ *      responses:
+ *        200:
+ *          description: Successful response
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: array
+ *                items:
+ *                  $ref: '#/components/schemas/Employee'
+ */
+router.get("/byuserWithoutPage", AuthController.AuthenticateUser , EmployeeController.getAllEmployeesByUserWithoutPagination);
 
 
 /**

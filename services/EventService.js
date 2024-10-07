@@ -168,6 +168,25 @@ async function getEventById(eventId) {
     }
 }
 
+const getEventByIdWithParticipate = async (eventId, userId) => {
+  try {
+    const event = await Event.findById(eventId).populate('attendeesUsers.userId', 'displayName email image');
+    
+    if (!event) {
+      throw new Error('Event not found');
+    }
+
+    const userParticipated = event.attendeesUsers.some(user => user.userId.equals(userId));
+
+    return {
+      ...event.toObject(),
+      userParticipated,
+    };
+  } catch (error) {
+    throw new Error('Error retrieving event: ' + error.message);
+  }
+};
+
 // Update event by ID
 async function updateEvent(eventId, eventData, imageData, headerImage, organizerLogo) {
   try {
@@ -260,12 +279,44 @@ const countEventsByUserId = async (userId) => {
 };
 
 
-async function getEventsForUser(userId) {
+async function getEventsForUser(userId, args) {
   try {
-      const events = await Event.find({ 'attendeesUsers.userId': userId });
-      return events;
+    const page = args?.page || 1; 
+    const pageSize = args?.pageSize || 8; 
+    const skip = (page - 1) * pageSize; 
+
+    // Construire le filtre de recherche
+    const query = { 'attendeesUsers.userId': userId };
+    // Filtrage par location
+    if (args?.physicalLocation) {
+      query.physicalLocation = { $regex: new RegExp(args.physicalLocation, 'i') }; 
+    }
+
+    // Filtrage par eventNames
+    if (args?.eventNames) {
+      const eventNamesArray = args.eventNames.split(',').map(name => name.trim()).filter(name => name.length > 0);
+      
+      if (eventNamesArray.length > 0) {
+          const orConditions = eventNamesArray.map(name => ({
+              title: { $regex: new RegExp(name, 'i') } 
+          }));
+          query.$or = orConditions; 
+        }
+      }
+
+    // Trouve les événements selon le filtre
+    const events = await Event.find(query)
+      .skip(skip) 
+      .limit(pageSize); 
+
+    // Compte le total d'événements pour la pagination
+    const totalCount = await Event.countDocuments(query);
+    const totalPages = Math.ceil(totalCount / pageSize); 
+
+    return { events, totalPages }; 
   } catch (error) {
-      throw new Error('Failed to fetch events for user' , error);
+    console.log(error)
+    throw new Error('Failed to fetch events for user: ' + error.message);
   }
 }
 
@@ -369,45 +420,65 @@ const getDistinctValues = async (field) => {
   }
 };
 
-const getPastEventsWithUserParticipation = async (userId) => {
+const getPastEventsWithUserParticipation = async (userId, args) => {
   try {
-      // Date actuelle pour filtrer les événements passés
-      const currentDate = new Date();
+    const page = args?.page || 1; 
+    const pageSize = args?.pageSize || 8; 
+    const skip = (page - 1) * pageSize; 
 
-      // Requête pour obtenir les événements passés
-      const pastEvents = await Event.find({ endDate: { $lt: currentDate } })
-          .populate('attendeesUsers.userId', 'displayName email image'); // Populate pour obtenir les détails de l'utilisateur
+    // Date actuelle pour filtrer les événements passés
+    const currentDate = new Date();
 
-      // Transformation des données pour inclure l'indicateur de participation
-      const eventsWithParticipation = pastEvents.map(event => {
-          const userParticipated = event.attendeesUsers.some(user => user.userId.equals(userId));
-          return {
-              ...event.toObject(),
-              userParticipated
-          };
-      });
+    const pastEvents = await Event.find({ endDate: { $lt: currentDate } })
+      .populate('attendeesUsers.userId', 'displayName email image') 
+      .skip(skip)
+      .limit(pageSize); 
 
-      return eventsWithParticipation;
+    // Transformation des données pour inclure l'indicateur de participation
+    const eventsWithParticipation = pastEvents.map(event => {
+      const userParticipated = event.attendeesUsers.some(user => user.userId.equals(userId));
+      return {
+        ...event.toObject(),
+        userParticipated
+      };
+    });
+
+    // Compter le total d'événements passés pour le calcul des pages
+    const totalCount = await Event.countDocuments({ endDate: { $lt: currentDate } });
+    const totalPages = Math.ceil(totalCount / pageSize); 
+
+    return { events: eventsWithParticipation, totalPages };
   } catch (error) {
-      throw new Error(error.message);
+    throw new Error('Error retrieving past events: ' + error.message);
   }
 };
 
-async function getAllUpcommingEvents(userId) {
+
+async function getAllUpcommingEvents(userId, args) {
   try {
-      const events = await Event.find({status : 'upcoming'});
+    const page = args?.page || 1; 
+    const pageSize = args?.pageSize || 8; 
+    const skip = (page - 1) * pageSize; 
 
-      const eventsWithParticipation = events.map(event => {
-          const userParticipated = event.attendeesUsers.some(user => user.userId.equals(userId));
-          return {
-              ...event.toObject(), 
-              userParticipated    
-          };
-      });
+    const events = await Event.find({ status: 'upcoming' })
+      .skip(skip)
+      .limit(pageSize); 
 
-      return eventsWithParticipation;
+    // Ajouter la participation de l'utilisateur
+    const eventsWithParticipation = events.map(event => {
+      const userParticipated = event.attendeesUsers.some(user => user.userId.equals(userId));
+      return {
+        ...event.toObject(), 
+        userParticipated    
+      };
+    });
+
+    const totalCount = await Event.countDocuments({ status: 'upcoming' });
+    const totalPages = Math.ceil(totalCount / pageSize); 
+
+    return { events: eventsWithParticipation, totalPages };
   } catch (error) {
-      throw new Error('Error retrieving events: ' + error.message);
+    throw new Error('Error retrieving events: ' + error.message);
   }
 }
 
@@ -444,5 +515,5 @@ module.exports = {
     supprimerCollection , addConnectedAttendee , updateConnectedAttendee , deleteConnectedAttendee , addPromoCode ,
     countEventsByUserId , getEventsForUser , getDistinctValues , getPastEventsWithUserParticipation ,
     getDistinctValuesByUser , createEventWithJson , searchParticipateEvents , searchUpcomingEvents ,
-    searchPastEvents , getAllUpcommingEvents 
+    searchPastEvents , getAllUpcommingEvents , getEventByIdWithParticipate
 };

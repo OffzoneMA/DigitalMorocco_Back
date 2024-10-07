@@ -42,6 +42,16 @@ const getEventById=async(req,res)=>{
     }
 }
 
+const getEventByIdWithParticipate=async(req,res)=>{
+  try {
+      const eventId = req.params.id;
+      const event = await EventService.getEventByIdWithParticipate(eventId , req.userId);
+      res.status(200).json(event);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+}
+
 async function getAllEventsByUser(req, res) {
     const { userId } = req.params;
   
@@ -149,7 +159,7 @@ async function deleteConnectedAttendee(req, res) {
 async function getEventsForUser(req, res) {
   const userId = req.userId; 
   try {
-      const events = await EventService.getEventsForUser(userId);
+      const events = await EventService.getEventsForUser(userId , req.query);
       res.json(events);
   } catch (error) {
       res.status(500).json({ message: error });
@@ -170,7 +180,7 @@ const getDistinctFieldValues = async (req, res) => {
 const getPastEventsForUserParticipate = async (req, res) => {
   try {
       const userId = req.userId;
-      const events = await EventService.getPastEventsWithUserParticipation(userId);
+      const events = await EventService.getPastEventsWithUserParticipation(userId , req.query);
       res.status(200).json(events);
   } catch (error) {
       res.status(500).json({ error: error.message });
@@ -180,7 +190,7 @@ const getPastEventsForUserParticipate = async (req, res) => {
 const getAllUpcomingEventsForUserParticipate = async (req, res) => {
   try {
       const userId = req.userId;
-      const events = await EventService.getAllUpcommingEvents(userId);
+      const events = await EventService.getAllUpcommingEvents(userId , req.query);
       res.status(200).json(events);
   } catch (error) {
       res.status(500).json({ error: error.message });
@@ -211,5 +221,5 @@ module.exports = {
     createEvent, getEvents, getEventById, updateEvent, deleteEvent, getAllEventsByUser, addAttendeeToEvent,
     sendTicketToUser, supprimerCollection , addConnectedAttendee , updateConnectedAttendee , deleteConnectedAttendee ,
     addPromoCode , getEventsForUser , getDistinctFieldValues , getPastEventsForUserParticipate , getDistinctValuesForUser , 
-    createEventWithJson , getAllUpcomingEventsForUserParticipate
+    createEventWithJson , getAllUpcomingEventsForUserParticipate , getEventByIdWithParticipate
 };

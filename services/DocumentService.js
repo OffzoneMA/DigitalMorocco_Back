@@ -121,14 +121,27 @@ async function getDocumentById(documentId) {
     }
 }
 
-async function getDocumentsForUser(userId) {
+async function getDocumentsForUser(userId, args) {
     try {
-        const documents = await Document.find({ owner: userId }).populate('owner');
-        return documents;
+        const page = args?.page || 1; 
+        const pageSize = args?.pageSize || 8; 
+        const skip = (page - 1) * pageSize; 
+
+        const documents = await Document.find({ owner: userId })
+            .populate('owner')
+            .skip(skip) 
+            .limit(pageSize); 
+
+        // Compter le total de documents pour le calcul des pages
+        const totalCount = await Document.countDocuments({ owner: userId });
+        const totalPages = Math.ceil(totalCount / pageSize); 
+
+        return { documents, totalPages }; 
     } catch (error) {
         throw new Error('Error getting documents for member: ' + error.message);
     }
 }
+
 
 async function searchDocuments(user, searchTerm) {
     try {
@@ -193,15 +206,14 @@ async function getShareWithData(userId) {
         if (!user) {
             throw new Error('User not found');
         }
-    
         let employees = [];
         let investors = [];
 
-        employees = await EmployeeService.getAllEmployeesByUser(userId);
+        employees = await EmployeeService.getAllEmployeesByUserWithoutPagination(userId);
 
         if (user.role?.toLocaleLowerCase() === 'member') {
             const member = await MemberService.getMemberByUserId(userId);
-            investors = await MemberService.getInvestorsForMember(member?._id);
+            investors = await MemberService.getInvestorsForMemberWithoutPagination(member?._id);
         }
 
         const result = [

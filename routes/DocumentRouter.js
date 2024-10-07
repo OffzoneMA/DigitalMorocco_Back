@@ -29,6 +29,19 @@ router.get('/all', DocumentController.getAllDocuments);
  *   get:
  *     summary: Récupérer la liste des documents pour un membre donné.
  *     tags: [Documents]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: The page number to retrieve
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           example: 10
+ *         description: The number of records per page
  *     responses:
  *       200:
  *         description: Liste des documents récupérée avec succès.

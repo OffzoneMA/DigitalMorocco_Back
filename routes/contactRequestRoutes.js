@@ -255,4 +255,68 @@ router.put('/:id', contactRequestController.updateContactRequest);
  */
 router.delete('/:id', contactRequestController.deleteContactRequest);
 
+/**
+ * @swagger
+ * /contact-requests/{id}/approve:
+ *   put:
+ *     summary: Approve a contact request
+ *     tags: [ContactRequests]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID of the contact request to approve
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               approvalNotes:
+ *                 type: string
+ *               typeInvestment:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Successfully approved the request
+ *       400:
+ *         description: Invalid request
+ */
+router.put('/:id/approve', contactRequestController.approveRequest);
+
+/**
+ * @swagger
+ * /contact-requests/{id}/reject:
+ *   put:
+ *     summary: Reject a contact request
+ *     tags: [ContactRequests]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID of the contact request to reject
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               reason:
+ *                 type: string
+ *               rejectionNotes:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Successfully rejected the request
+ *       400:
+ *         description: Invalid request
+ */
+router.put('/:id/reject' , contactRequestController.rejectRequest);
+
 module.exports = router;

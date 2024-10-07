@@ -103,13 +103,31 @@ async function getAllEmployees() {
     }
 }
 
-async function getAllEmployeesByUser(userId) {
+async function getAllEmployeesByUserWithoutPagination(userId) {
     try {
         return await Employee.find({ createdBy: userId });
     } catch (error) {
         throw new Error('Error getting all employees by user: ' + error.message);
     }
 }
+
+async function getAllEmployeesByUser(userId, args) {
+    try {
+        const page = args.page || 1;
+        const pageSize = args.pageSize || 8;
+        const skip = (page - 1) * pageSize;
+        const totalCount = await Employee.countDocuments({ createdBy: userId });
+        const totalPages = Math.ceil(totalCount / pageSize);
+        const employees = await Employee.find({ createdBy: userId })
+            .skip(skip)
+            .limit(pageSize);
+        
+        return { employees, totalPages };
+    } catch (error) {
+        throw new Error('Error getting all employees by user: ' + error.message);
+    }
+}
+
 
 async function searchEmployees(user, searchTerm) {
     try {
@@ -161,5 +179,5 @@ module.exports = {
     deleteEmployee,
     getAllEmployees,
     getAllEmployeesByUser,
-    getEmployeeByUser , searchEmployees
+    getEmployeeByUser , searchEmployees , getAllEmployeesByUserWithoutPagination
 };

@@ -45,10 +45,29 @@ const deleteContactRequest = async (req, res) => {
     }
 };
 
+const approveRequest = async (req, res) => {
+    try {
+        const requestId = req.params.id;
+        const approvalData = req.body;
+        const updatedRequest = await contactRequestService.approveContactRequest(requestId, approvalData);
+        return res.status(200).json(updatedRequest);
+    } catch (error) {
+        return res.status(400).json({ message: error.message });
+    }
+};
+
+const rejectRequest = async (req, res) => {
+    try {
+        const requestId = req.params.id;
+        const rejectionData = req.body;
+        const updatedRequest = await contactRequestService.rejectContactRequest(requestId, rejectionData);
+        return res.status(200).json(updatedRequest);
+    } catch (error) {
+        return res.status(400).json({ message: error.message });
+    }
+};
+
 module.exports = {
-    getAllContactRequests,
-    getContactRequestById,
-    createContactRequest,
-    updateContactRequest,
-    deleteContactRequest
+    getAllContactRequests, getContactRequestById, createContactRequest, updateContactRequest,
+    deleteContactRequest , approveRequest , rejectRequest
 };

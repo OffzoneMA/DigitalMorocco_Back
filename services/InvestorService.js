@@ -9,17 +9,56 @@ const ActivityHistoryService = require('../services/ActivityHistoryService');
 
 const getAllInvestors = async (args) => {
     const page = args?.page || 1;
-    const pageSize = args?.pageSize || 10;
+    const pageSize = args?.pageSize || 8;
     const skip = (page - 1) * pageSize;
-    const totalCount = await Investor.countDocuments();
+
+    const filter = {};
+
+    if (args.type) {
+        filter.type = { $in: args.type.split(',') }; 
+    }
+
+    if (args.location) {
+        filter.location = { $regex: new RegExp(args.location, 'i') }; 
+    }
+
+    if (args.industries && args.industries.length > 0) {
+        filter.PreferredInvestmentIndustry = { $in: args.industries.split(',') }; 
+    }
+    const totalCount = await Investor.countDocuments(filter);
     const totalPages = Math.ceil(totalCount / pageSize);
-    const investors = await Investor.find()
+    const investors = await Investor.find(filter)
         // .select("name description image linkedin_link type location PreferredInvestmentIndustry dateCreated numberOfInvestment numberOfExits document")
         .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } } })
         .skip(skip)
         .limit(pageSize);
-    return { investors, totalPages }
+
+    return { investors, totalPages };
 }
+
+const getAllInvestorsWithoutPagination = async (args) => {
+
+    const filter = {};
+
+    if (args.type) {
+        filter.type = { $in: args.type.split(',') }; 
+    }
+
+    if (args.location) {
+        filter.location = { $regex: new RegExp(args.location, 'i') }; 
+    }
+
+    if (args.industries && args.industries.length > 0) {
+        filter.PreferredInvestmentIndustry = { $in: args.industries }; 
+    }
+
+    const investors = await Investor.find(filter)
+        // .select("name description image linkedin_link type location PreferredInvestmentIndustry dateCreated numberOfInvestment numberOfExits document")
+        .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } } });
+
+    return  investors;
+}
+
 
 const getInvestors = async () => {
     const totalCount = await Investor.countDocuments();
@@ -161,8 +200,19 @@ const updateInvestor = async (id, data) => {
 
 const getDistinctValues = async (field) => {
     try {
+        if (field === 'PreferredInvestmentIndustry') {
+            const distinctValues = await Investor.aggregate([
+                { $match: { PreferredInvestmentIndustry: { $ne: null } } },
+                { $unwind: '$PreferredInvestmentIndustry' }, 
+                { $group: { _id: '$PreferredInvestmentIndustry' } }, 
+                { $project: { _id: 0, value: '$_id' } } 
+            ]);
+            return distinctValues.map(item => item.value); 
+        }
+
         const distinctValues = await Investor.distinct(field, { [field]: { $ne: null } });
         return distinctValues;
+
     } catch (error) {
         throw new Error(`Error fetching distinct ${field}: ${error.message}`);
     }
@@ -216,4 +266,4 @@ async function getInvestorDetailsRequest(memberId, investorId) {
 module.exports = { deleteInvestor,getContacts, getProjects, CreateInvestor, 
     getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, 
     updateContactStatus , updateInvestor , getInvestors  , getDistinctValues , 
-    getInvestorDetailsRequest , searchInvestors}
+    getInvestorDetailsRequest , searchInvestors , getAllInvestorsWithoutPagination}
