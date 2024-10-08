@@ -88,6 +88,16 @@ const getContactRequests = async (req, res) => {
     }
 }
 
+const getContactRequestsByInvestor = async (req, res) => {
+    try {
+        const result = await InvestorContactService.getAllContactRequest(req.query, "investor", req.params.investorId)
+        res.status(200).json(result);
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: "Something went wrong!" });
+    }
+}
+
 const getContacts = async (req, res) => {
     try {
         const result = await InvestorService.getContacts( req.investorId)
@@ -204,4 +214,5 @@ const getDistinctRequestValues = async (req, res) => {
 module.exports = { getInvestorRequests,updateContactStatus, addInvestor, getInvestors, 
     getContactRequests, getContacts, getProjects , getContactRequestsForInvestor , updateInvestor , 
     getAllInvestors , getDistinctInvestorData , getInvestorById , getInvestorDetails , 
-getAllInvestorsWithoutPagination , getDistinctRequestProjectFields , getDistinctRequestValues}
+getAllInvestorsWithoutPagination , getDistinctRequestProjectFields , getDistinctRequestValues , 
+getContactRequestsByInvestor}

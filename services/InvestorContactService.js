@@ -12,6 +12,7 @@ const ActivityHistoryService = require('../services/ActivityHistoryService');
 const uploadService = require('./FileService')
 const Project = require('../models/Project');
 const User = require("../models/User");
+const NotificationService = require('../services/NotificationService');
 
 const CreateInvestorContactReq = async (memberId, investorId) => {
     const cost = process.env.credits || 3

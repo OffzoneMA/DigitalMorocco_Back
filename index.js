@@ -29,7 +29,9 @@ const PaymentMethodRouter = require('./routes/PaymentMethodRouter');
 const ActivityHistoryRouter = require('./routes/ActivityHistoryRouter');
 const EmployeeRouter = require('./routes/EmployeeRouter');
 const LegalDocumentRouter = require('./routes/LegalDocumentRouter');
-const SearchRouter = require('./routes/SearchRouter')
+const SearchRouter = require('./routes/SearchRouter');
+const BillingRouter = require('./routes/BillingRouter');
+const NotificationRouter = require('./routes/NotificationRouter');
 
 const session = require('express-session');
 const { passport } = require("./config/passport-setup");
@@ -158,6 +160,8 @@ app.use('/payment-methods', PaymentMethodRouter);
 app.use('/employee', EmployeeRouter);
 app.use('/legal-documents', LegalDocumentRouter);
 app.use('/search' , SearchRouter);
+app.use('/billing' , BillingRouter);
+app.use('/notifications' , NotificationRouter)
 
 const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css";
 

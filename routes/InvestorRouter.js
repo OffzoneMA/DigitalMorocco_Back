@@ -482,6 +482,86 @@ router.route("/ContactRequest").get(AuthController.AuthenticateInvestor, Investo
 
 /**
  * @swagger
+ * /investors/ContactRequestByUser/{investorId}:
+ *   get:
+ *     summary: Get all contact requests from the member 
+ *     description: list of all the sent member's contact requets the pending ones rejected and accepted
+ *     tags: [Investors]
+ *     parameters:
+ *       - in: path
+ *         name: investorId
+ *         required: true
+ *         description: ID of the investor
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           default: 8
+ *         description: Number of records per page for pagination
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by status of the contact request
+ *       - in: query
+ *         name: country
+ *         schema:
+ *           type: string
+ *         description: Filter by country of the contact request project
+ *       - in: query
+ *         name: projectStage
+ *         schema:
+ *           type: string
+ *         description: Filter by stage of the contact request project
+ *       - in: query
+ *         name: projectSectors
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *       - in: query
+ *         name: projectStatus
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *       - in: query
+ *         name: dateCreated
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Date for filtering contact requests by creation date.
+ *       - in: query
+ *         name: funding
+ *         schema:
+ *           type: number
+ *           example: 500000
+ *         description: Filter contact requests by funding amount of the project.
+ *     security:
+ *       - jwtToken: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ */
+router.route("/ContactRequestByUser/:investorId").get(InvestorController.getContactRequestsByInvestor)
+
+
+/**
+ * @swagger
  * /investors/ContactRequest/{requestId}/{status}:
  *   put:
  *     summary: Update contact request status

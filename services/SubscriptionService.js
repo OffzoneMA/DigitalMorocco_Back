@@ -275,18 +275,19 @@ async function renewSubscription(subscriptionId) {
             throw new Error('Subscription is not active, cannot renew.');
         }
 
-        const plan = SubscriptionPlan.findById(subscription?.plan)
+        const plan = await SubscriptionPlan.findById(subscription?.plan)
         if (!plan) {
             throw new Error('Subscription plan not found');
         }
 
         const newExpirationDate = subscription.billing === 'year' ? dateIn1Year() : dateIn1Month();
         subscription.dateExpired = newExpirationDate;
+        subscription.totalCredits = subscription.totalCredits + plan.credits;
 
         // Créer un log de renouvellement
         const logData = {
             credits: plan.credits,
-            totalCredits: subscription.credits + plan.credits,
+            totalCredits: subscription.totalCredits + plan.credits,
             subscriptionExpireDate: newExpirationDate,
             type: 'Renew',
             transactionId: 'TXN987654321', 
@@ -308,6 +309,7 @@ async function renewSubscription(subscriptionId) {
         );
         return subscription;
     } catch (error) {
+        console.log(error)
         throw new Error('Error renewing subscription: ' + error.message);
     }
 }

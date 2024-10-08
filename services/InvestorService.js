@@ -225,11 +225,21 @@ async function getInvestorDetailsRequest(memberId, investorId) {
         if (!member) {
             throw new Error("Member not found");
         }
+
         // Check if the investor has accepted the request
         const acceptedInvestor = member.investorsRequestsAccepted.find(inv => inv?._id.toString() === investorId);
 
-        if (acceptedInvestor) {
-            // If the investor has accepted, retrieve full details
+        // Check if the investor has any accepted or approved requests with this member
+        const existingRequests = await ContactRequest.find({
+            member: memberId,
+            investor: investorId,
+            status: { $in: ['Approved', 'Accepted'] }
+        });
+
+        const hasApprovedRequests = existingRequests.length > 0;
+
+        if (acceptedInvestor || hasApprovedRequests) {
+            // If the investor has accepted or approved at least one request, retrieve full details
             const investorDetails = await Investor.findById(investorId);
 
             return {
@@ -240,7 +250,7 @@ async function getInvestorDetailsRequest(memberId, investorId) {
             const investor = await Investor.findById(investorId);
 
             const fakeData = {
-                ...investor._doc, // copy all original fields
+                ...investor?._doc, // copy all original fields
                 image: "fake_image_url.jpg",
                 name: "The Investor Name",
                 legalName: "Fake Company Legal Name",
@@ -250,7 +260,6 @@ async function getInvestorDetailsRequest(memberId, investorId) {
                 email: "fake@example.com",
                 desc: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
             };
-
 
             return {
                 status: "pending",
@@ -262,6 +271,7 @@ async function getInvestorDetailsRequest(memberId, investorId) {
         throw new Error("An error occurred while checking the investor request");
     }
 }
+
 
 module.exports = { deleteInvestor,getContacts, getProjects, CreateInvestor, 
     getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, 
