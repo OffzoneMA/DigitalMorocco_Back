@@ -128,4 +128,4 @@ const deleteSubscription = async (req, res) => {
 
 module.exports = { getSubscriptions, createSubscriptionForUser, upgradeSubscription, getSubscriptionById,
     cancelSubscription, autoCancelExpiredSubscriptions, pauseSubscription, updateSubscription,
-    getSubscriptionsByUser, renewSubscription  , checUserkSubscription ,  deleteSubscription}
+    getSubscriptionsByUser, renewSubscription  ,  deleteSubscription}

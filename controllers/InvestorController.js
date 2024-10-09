@@ -1,8 +1,8 @@
 const InvestorService = require('../services/InvestorService');
-const MemberService = require('../services/MemberService');
-const UserLogService = require('../services/UserLogService');
+//const MemberService = require('../services/MemberService');
+//const UserLogService = require('../services/UserLogService');
 const investorRequest = require('../models/Requests/Investor');
-const User = require('../models/User');
+//const User = require('../models/User');
 
 const InvestorContactService = require('../services/InvestorContactService');
 
@@ -12,7 +12,7 @@ const getInvestors = async (req, res) => {
         const result = await InvestorService.getAllInvestors(req.query);
         
         res.status(200).json(result);
-        return;
+
     } catch (error) {
         
         res.status(500).json( error );
@@ -25,7 +25,7 @@ const getAllInvestorsWithoutPagination = async (req, res) => {
         const result = await InvestorService.getAllInvestorsWithoutPagination(req.query);
         
         res.status(200).json(result);
-        return;
+
     } catch (error) {
         
         res.status(500).json( error );
@@ -38,7 +38,7 @@ const getAllInvestors = async (req, res) => {
         const result = await InvestorService.getInvestors();
         
         res.status(200).json(result);
-        return;
+
     } catch (error) {
         
         res.status(500).json( error );

@@ -1,4 +1,5 @@
 const EventService =require('../services/EventService');
+const EmailingService = require('../services/EmailingService');
 
 const createEvent=async(req,res)=>{
     try {

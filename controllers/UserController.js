@@ -5,7 +5,6 @@ const AuthService = require("../services/AuthService");
 const UserLogService = require("../services/UserLogService");
 const User = require('../models/User');
 const mongoose = require('mongoose');
-const { ObjectId } = require('mongodb');
 const bcrypt = require('bcrypt');
 const NewsletterService = require('../services/NewsletterService');
 const TokenShortCode = require('../models/TokenShortCode')

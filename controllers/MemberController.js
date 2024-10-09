@@ -2,11 +2,11 @@ const MemberService = require('../services/MemberService');
 const InvestorService = require('../services/InvestorService');
 const InvestorContactService = require('../services/InvestorContactService');
 const UserLogService = require('../services/UserLogService');
-const UserService = require('../services/UserService');
-const EmailingService = require('../services/EmailingService');
+//const UserService = require('../services/UserService');
+//const EmailingService = require('../services/EmailingService');
 const Member = require("../models/Member");
-const User = require("../models/User");
-const ActivityHistoryService = require('../services/ActivityHistoryService');
+//const User = require("../models/User");
+//const ActivityHistoryService = require('../services/ActivityHistoryService');
 
 
 const getMembers = async (req, res) => {
@@ -336,6 +336,6 @@ const getDistinctRequestFieldValues = async (req, res) => {
 module.exports = {  addCompanyToMember,getContacts,getMembers, createEnterprise, getByName, createProject, 
     contactRequest, getContactRequests , createCompany  ,createMember ,getTestAllMembers , 
     getInvestorsForMember , getContactRequestsForMember , getAllProjectsForMember , updateProject , 
-    updateMember , getUniqueCountries , getUniqueStages , getUniqueCompanyTypes , createTestCompany , 
+     getUniqueCountries , getUniqueStages , getUniqueCompanyTypes , createTestCompany ,
     updateMember , shareProject , CreateMemberWithLogo , getDistinctInvestorFieldValues ,
 getDistinctRequestFieldValues , getAllProjectsForMemberWithoutPagination }

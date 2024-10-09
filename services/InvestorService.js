@@ -142,8 +142,8 @@ const updateContactStatus=async(requestId , response)=>{
         if (!request) {
             throw new Error('Request doesn t exist')
         }
-        if (response == "accepted") return await acceptContact(request?.investor,requestId, request.member);
-        if (response == "rejected") return await rejectContact(request?.investor, requestId, request.member);
+        if (response === "accepted") return await acceptContact(request?.investor,requestId, request.member);
+        if (response === "rejected") return await rejectContact(request?.investor, requestId, request.member);
 }
 
 const acceptContact = async (investorId, requestId, memberId) => {

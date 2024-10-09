@@ -11,11 +11,18 @@ const NotificationSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    message2: {
+        type: String,
+        required: true,
+    },
     reference: {
         type: mongoose.Schema.Types.ObjectId,
         required: false, 
     },
     referenceName: {
+        type: String,
+    },
+    referenceName2: {
         type: String,
     },
     sender: {

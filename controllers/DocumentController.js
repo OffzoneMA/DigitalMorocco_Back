@@ -33,7 +33,7 @@ async function getDocumentsByUploader(req, res) {
 async function updateDocument(req, res) {
     try {
         const documentId = req.params.documentId;
-        const updateData = isJsonString(req?.body.documentData) ? JSON.parse(req?.body.documentData) : req?.body.documentData;
+        const updateData = isJsonString(req?.body?.documentData) ? JSON.parse(req?.body.documentData) : req?.body.documentData;
         const shareWithUsers = req?.body?.shareWithUsers;
         const docFile = req.files['docFile'];
         console.log(updateData)

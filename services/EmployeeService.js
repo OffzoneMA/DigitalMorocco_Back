@@ -49,7 +49,7 @@ async function updateEmployee(employeeId ,updateData , image) {
         if (image) {
             const logoURL = await uploadService.uploadFile(
                 image,
-                `Users/${employee.createdBy}/employees/${employee._id}`, 
+                `Users/${employee?.createdBy}/employees/${employee?._id}`,
                 image.originalname
             );
             updateData.image = logoURL;

@@ -66,7 +66,7 @@ const AuthenticateAdmin = async (req, res, next) => {
   if (token == null) return res.sendStatus(401)
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
     if (err) return res.sendStatus(403)
-    if (user?.user?.role == "Admin") {
+    if (user?.user?.role === "Admin") {
       next()
     }
     else {
@@ -99,7 +99,7 @@ const AuthenticateUserOrAdmin = async (req, res, next) => {
   if (token == null) return res.sendStatus(401)
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, u) => {
     if (err) { return res.sendStatus(403) }
-    if (user?.user?.role == "Admin") {
+    if (user?.user?.role === "Admin") {
       next()
     }
     const user = await UserService.getUserByID(u?.user?._id)
@@ -163,7 +163,7 @@ const AuthenticateSubMember = async (req, res, next) => {
     const userMember = await UserService.getUserByID(user?.user?._id)
     const subscription = await SusbcriptionService.getSubscriptionsByUser(userMember?._id)
 
-    if (subscription && subscription.subscriptionStatus =="active") {
+    if (subscription && subscription.subscriptionStatus ==="active") {
       req.userId = subscription.user
       next()
     }
@@ -201,7 +201,7 @@ const AuthenticateSubMemberOrAdmin = async (req, res, next) => {
   if (token == null) return res.sendStatus(401)
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
     if (err) { return res.sendStatus(403) }
-    if (user?.user?.role == "Admin") {
+    if (user?.user?.role === "Admin") {
       next()
     }
     const userMember = await UserService.getUserByID(user?.user?._id)
