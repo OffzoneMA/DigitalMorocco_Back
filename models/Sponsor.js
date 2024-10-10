@@ -18,19 +18,23 @@ const SponsorSchema = new mongoose.Schema({
     sponsorshipType: {
         type: String,
         enum: ['Financial', 'Venue Partner', 'Prize Sponsors' , 'Other'],
-        required: true
     },
     letter: {
         type: String,
+    },
+    requestType: {
+        type: String,
+        enum: ['Sent', 'Received'],
+        required: true
     },
     status: {
         type: String,
         enum: ['Pending', 'Approved', 'Rejected'],
         default: 'Pending'
     },
+
     reasonForRejection: {
         type: String,
-        default: null
     },
     dateCreated: {
         type: Date,

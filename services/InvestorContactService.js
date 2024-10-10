@@ -78,7 +78,7 @@ const CreateInvestorContactReq = async (memberId, investorId) => {
         historyData 
     );
 
-    await NotificationService.createNotification(investor?.owner , '' , '' , member?.owner , '' ,'')
+    // await NotificationService.createNotification(investor?.owner , '' , '' , member?.owner , '' ,'')
 
     //Send Email Notification to the investor
     await EmailingService.sendNewContactRequestEmail(investor.owner, member?.companyName, member?.country);
@@ -167,13 +167,13 @@ const CreateInvestorContactReqForProject = async (memberId, investorId , project
         { targetName: `${investor?.companyName || investor?.name}`, targetDesc: `Contact request from member to investor ${investorId} for project ${projectId}` , for: project?.name }
     );
 
-    // await ActivityHistoryService.createActivityHistory(
-    //     investor.owner,
-    //     'contact_request_received',
-    //     { targetName: `${project?.name}`, targetDesc: `Contact request received from member ${memberId} for project ${projectId}` , from: member?.companyName }
-    // );
+    await ActivityHistoryService.createActivityHistory(
+        investor.owner,
+        'contact_request_received',
+        { targetName: `${project?.name}`, targetDesc: `Contact request received from member ${memberId} for project ${projectId}` , from: member?.companyName }
+    );
 
-    await NotificationService.createNotification(investor?.owner , 'Contact request received for project' , member?.owner , project?._id , project?.name)
+    // await NotificationService.createNotification(investor?.owner , 'Contact request received for project' , member?.owner , project?._id , project?.name)
 
 
     //Send Email Notification to the investor
@@ -591,7 +591,7 @@ const approveContactRequest = async (requestId, approvalData) => {
 
     await contactRequest.save();
 
-    await NotificationService.createNotification(member?.owner , 'Contact request approved for project' , 'from' , investor?.owner , project?.name , investor?.name || investor?.companyName)
+    // await NotificationService.createNotification(member?.owner , 'Contact request approved for project' , 'from' , investor?.owner , project?.name , investor?.name || investor?.companyName)
 
     return contactRequest;
 };

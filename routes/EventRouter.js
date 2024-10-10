@@ -817,6 +817,22 @@ router.delete('/supprimer-collection', EventController.supprimerCollection);
  *         schema:
  *           type: string
  *         description: The field to get distinct values for
+ *       - name: status
+ *         in: query
+ *         description: Filter by event status (e.g., upcoming, past)
+ *         schema:
+ *           type: string
+ *       - name: date
+ *         in: query
+ *         description: Filter by event date
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: type
+ *         in: query
+ *         description: Filter by event type
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: List of distinct values
@@ -862,7 +878,7 @@ router.get('/past/participate', AuthController.AuthenticateUser, EventController
  * @swagger
  * /events/upcoming/participate:
  *   get:
- *     summary: Get past events with user participation status
+ *     summary: Get upcoming events with user participation status
  *     tags: [Events]
  *     parameters:
  *       - in: query
@@ -877,14 +893,36 @@ router.get('/past/participate', AuthController.AuthenticateUser, EventController
  *           type: integer
  *           example: 10
  *         description: The number of records per page
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: Filter events by location
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter events starting from this date
  *     responses:
  *       200:
- *         description: List of past events with user participation status
+ *         description: List of upcoming events with user participation status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 events:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Event'
+ *                 totalPages:
+ *                   type: integer
+ *                   description: The total number of pages
  *       500:
  *         description: Server error
  */
 router.get('/upcoming/participate', AuthController.AuthenticateUser, EventController.getAllUpcomingEventsForUserParticipate);
-
 
 /**
  * @swagger

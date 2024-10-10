@@ -167,13 +167,31 @@ async function getEventsForUser(req, res) {
   }
 }
 
+// const getDistinctFieldValues = async (req, res) => {
+//   try {
+//       const field = req.params.field;
+//       const distinctValues = await EventService.getDistinctValues(field);
+//       res.status(200).json(distinctValues);
+//   } catch (error) {
+//       res.status(500).json({ error: error.message });
+//   }
+// };
+
 const getDistinctFieldValues = async (req, res) => {
   try {
-      const field = req.params.field;
-      const distinctValues = await EventService.getDistinctValues(field);
-      res.status(200).json(distinctValues);
+    const { field } = req.params; 
+    const filter = req.query || {}; 
+
+    if (!field) {
+      return res.status(400).json({ message: "Field is required" });
+    }
+
+    // Récupère les valeurs distinctes pour le champ donné avec un filtre
+    const distinctValues = await EventService.getDistinctValues(field, filter);
+    res.status(200).json({ distinctValues });
   } catch (error) {
-      res.status(500).json({ error: error.message });
+    console.error("Error fetching distinct values:", error.message);
+    res.status(500).json({ message: "Server error" });
   }
 };
 

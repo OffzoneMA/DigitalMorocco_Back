@@ -32,6 +32,7 @@ const LegalDocumentRouter = require('./routes/LegalDocumentRouter');
 const SearchRouter = require('./routes/SearchRouter');
 const BillingRouter = require('./routes/BillingRouter');
 const NotificationRouter = require('./routes/NotificationRouter');
+const SponsorRouter =  require('./routes/SponsorRouter');
 
 const session = require('express-session');
 const { passport } = require("./config/passport-setup");
@@ -161,7 +162,8 @@ app.use('/employee', EmployeeRouter);
 app.use('/legal-documents', LegalDocumentRouter);
 app.use('/search' , SearchRouter);
 app.use('/billing' , BillingRouter);
-app.use('/notifications' , NotificationRouter)
+app.use('/notifications' , NotificationRouter);
+app.use('/sponsors' , SponsorRouter)
 
 const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css";
 

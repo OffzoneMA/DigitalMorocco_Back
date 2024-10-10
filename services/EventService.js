@@ -382,8 +382,6 @@ async function searchPastEvents(searchTerm) {
   }
 }
 
-
-
 cron.schedule('0 0 * * *', async () => {
   try {
       const events = await Event.find();
@@ -411,14 +409,16 @@ cron.schedule('0 0 * * *', async () => {
   }
 });
 
-const getDistinctValues = async (field) => {
+const getDistinctValues = async (field, filter = {}) => {
   try {
-      const distinctValues = await Event.distinct(field);
-      return distinctValues;
+    // Applique le filtre pour les événements (par exemple { status: 'upcoming' })
+    const distinctValues = await Event.distinct(field, filter);
+    return distinctValues;
   } catch (error) {
-      throw new Error(error.message);
+    throw new Error(error.message);
   }
 };
+
 
 const getPastEventsWithUserParticipation = async (userId, args) => {
   try {
@@ -459,22 +459,42 @@ async function getAllUpcommingEvents(userId, args) {
     const page = args?.page || 1; 
     const pageSize = args?.pageSize || 8; 
     const skip = (page - 1) * pageSize; 
+    
+    // Construire le filtre de base pour les événements à venir
+    const filter = { status: 'upcoming' };
+    
+    // Ajouter le filtre par localisation si présent
+    if (args?.location) {
+      filter.physicalLocation = args.location;
+    }
 
-    const events = await Event.find({ status: 'upcoming' })
+    // Ajouter le filtre par date de début si présent
+    if (args.startDate) {
+      const startOfDay = new Date(args.startDate);
+      startOfDay.setHours(0, 0, 0, 0);  // Début de la journée
+      const endOfDay = new Date(args.startDate);
+      endOfDay.setHours(23, 59, 59, 999);  // Fin de la journée
+
+      filter.startDate = { $gte: startOfDay, $lte: endOfDay };
+    }
+
+    // Trouver les événements en appliquant les filtres
+    const events = await Event.find(filter)
       .skip(skip)
-      .limit(pageSize); 
+      .limit(pageSize);
 
     // Ajouter la participation de l'utilisateur
     const eventsWithParticipation = events.map(event => {
       const userParticipated = event.attendeesUsers.some(user => user.userId.equals(userId));
       return {
-        ...event.toObject(), 
+        ...event.toObject(),
         userParticipated    
       };
     });
 
-    const totalCount = await Event.countDocuments({ status: 'upcoming' });
-    const totalPages = Math.ceil(totalCount / pageSize); 
+    // Compter le nombre total d'événements correspondant aux critères de filtrage
+    const totalCount = await Event.countDocuments(filter);
+    const totalPages = Math.ceil(totalCount / pageSize);
 
     return { events: eventsWithParticipation, totalPages };
   } catch (error) {
