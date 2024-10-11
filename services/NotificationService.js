@@ -76,6 +76,7 @@ const markNotificationsAsRead = async (notificationIds) => {
 
         return result;
     } catch (error) {
+        console.log(error)
         throw new Error(`Error marking notifications as read: ${error.message}`);
     }
 };

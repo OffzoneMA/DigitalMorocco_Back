@@ -204,6 +204,7 @@ const createOrUpdateInvestor = async (userId, companyData, logo) => {
             existingInvestor.emailAddress = companyData.contactEmail;
             existingInvestor.desc = companyData.desc;
             existingInvestor.country = companyData.country;
+            existingInvestor.location = companyData.country;
             existingInvestor.city = companyData.city?.name;
             existingInvestor.stage = companyData.stage;
             existingInvestor.companyType = companyData.companyType;

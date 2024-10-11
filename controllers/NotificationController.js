@@ -52,7 +52,6 @@ const getNotificationsWithUnreadCount = async (req, res) => {
 const markNotificationsAsRead = async (req, res) => {
     try {
         const { notificationIds } = req.body;
-
         if (!notificationIds || !Array.isArray(notificationIds)) {
             return res.status(400).json({ message: 'Invalid notification IDs provided' });
         }

@@ -39,7 +39,7 @@ const languages = [
   };
 
 const getUsers = async (args) => {
-    return await User.find().skip(args.start ? args.start : null).limit(args.qt ? args.qt : null);
+    return await User.find().skip(args.start ? args.start : null).limit(args.qt ? args.qt : null).sort({ dateCreated: -1 });
 }
 
 const deleteUser = async (id) => {
