@@ -1034,32 +1034,38 @@ const getContactRequestsForMember = async (memberId, args) => {
 
 const getDistinctInvestorsValuesForMember = async (memberId, field) => {
     try {
-        const member = await Member.findById(memberId);
-        if (!member) {
-            throw new Error('Member not found');
+        // Récupérer tous les investisseurs associés au membre dans ContactRequest avec status 'Approved' ou 'Accepted'
+        const contactRequests = await ContactRequest.find({
+            member: memberId,
+            status: { $in: ['Approved', 'Accepted'] }
+        }).select('investor');
+
+        if (!contactRequests || contactRequests.length === 0) {
+            throw new Error('No approved or accepted contact requests found for the member');
         }
 
-        const investorIdsSet = new Set(member.investorsRequestsAccepted);
-        const uniqueInvestorIds = Array.from(investorIdsSet);
+        // Extraire les identifiants des investisseurs et les dédupliquer
+        const investorIds = [...new Set(contactRequests.map(request => request.investor))];
 
+        // Si le champ est 'PreferredInvestmentIndustry', utiliser l'aggregation pour obtenir les valeurs distinctes
         if (field === 'PreferredInvestmentIndustry') {
             const distinctValues = await Investor.aggregate([
-                { $match: { _id: { $in: uniqueInvestorIds } } },
-                { $unwind: '$PreferredInvestmentIndustry' }, 
-                { $group: { _id: '$PreferredInvestmentIndustry' } }, // Regrouper par valeur unique
-                { $project: { _id: 0, value: '$_id' } } // Projeter les résultats
+                { $match: { _id: { $in: investorIds } } },
+                { $unwind: '$PreferredInvestmentIndustry' },
+                { $group: { _id: '$PreferredInvestmentIndustry' } },
+                { $project: { _id: 0, value: '$_id' } }
             ]);
             return distinctValues.map(item => item.value); // Retourner un tableau des valeurs distinctes
         }
 
-        const distinctValues = await Investor.distinct(field, { _id: { $in: uniqueInvestorIds } });
+        // Sinon, utiliser distinct pour récupérer les valeurs uniques du champ spécifié
+        const distinctValues = await Investor.distinct(field, { _id: { $in: investorIds } });
         return distinctValues;
 
     } catch (error) {
         throw new Error('Error retrieving distinct values for member: ' + error.message);
     }
 };
-
 
 const searchInvestorsForMember = async (user, searchQuery) => {
     try {
