@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const NotificationController = require('../controllers/NotificationController');
+const AuthController = require("../controllers/AuthController")
+
 
 /**
  * @swagger
@@ -42,45 +44,32 @@ router.post('/', NotificationController.createNotification);
 
 /**
  * @swagger
- * /notifications/{userId}:
+ * /notifications:
  *   get:
  *     summary: Get all notifications for a user
  *     tags: [Notifications]
- *     parameters:
- *       - in: path
- *         name: userId
- *         schema:
- *           type: string
- *         required: true
- *         description: ID of the user
  *     responses:
  *       200:
  *         description: List of notifications for the user
  *       500:
  *         description: Internal server error
  */
-router.get('/:userId', NotificationController.getNotificationsByUserId);
+router.get('/', AuthController.AuthenticateUser , NotificationController.getNotificationsByUserId);
 
 /**
  * @swagger
- * /notifications/{userId}/summary:
+ * /notifications/summary:
  *   get:
  *     summary: Get all notifications for a user with the unread count in the last 30 days
  *     tags: [Notifications]
  *     parameters:
- *       - in: path
- *         name: userId
- *         schema:
- *           type: string
- *         required: true
- *         description: ID of the user
  *     responses:
  *       200:
  *         description: List of notifications with unread count
  *       500:
  *         description: Internal server error
  */
-router.get('/notifications/:userId/summary', NotificationController.getNotificationsWithUnreadCount);
+router.get('/summary', AuthController.AuthenticateUser , NotificationController.getNotificationsWithUnreadCount);
 
 /**
  * @swagger
@@ -109,7 +98,7 @@ router.get('/notifications/:userId/summary', NotificationController.getNotificat
  *       500:
  *         description: Internal server error
  */
-router.put('/notifications/mark-as-read', NotificationController.markNotificationsAsRead);
+router.put('/mark-as-read', NotificationController.markNotificationsAsRead);
 
 /**
  * @swagger

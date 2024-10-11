@@ -173,11 +173,11 @@ const CreateInvestorContactReqForProject = async (memberId, investorId , project
         { targetName: `${project?.name}`, targetDesc: `Contact request received from member ${memberId} for project ${projectId}` , from: member?.companyName }
     );
 
-    // await NotificationService.createNotification(investor?.owner , 'Contact request received for project' , member?.owner , project?._id , project?.name)
+    await NotificationService.createNotification(investor?.owner , 'Contact request received for project' , 'from' , project?._id , project?.name , member?.companyName , member?.owner)
 
 
     //Send Email Notification to the investor
-    await EmailingService.sendNewContactRequestEmail(investor.owner, member?.companyName, member?.country);
+    // await EmailingService.sendNewContactRequestEmail(investor.owner, member?.companyName, member?.country);
 
     return contact
 }
@@ -591,7 +591,13 @@ const approveContactRequest = async (requestId, approvalData) => {
 
     await contactRequest.save();
 
-    // await NotificationService.createNotification(member?.owner , 'Contact request approved for project' , 'from' , investor?.owner , project?.name , investor?.name || investor?.companyName)
+    await ActivityHistoryService.createActivityHistory(
+        investor.owner,
+        'contact_request_approved',
+        { targetName: `${project?.name}`, targetDesc: `Contact request approved by ${investor?.name} for project ${project?.name}` , from: investor?.companyName }
+    );
+
+    await NotificationService.createNotification(member?.owner , 'Contact request approved for project' , 'from' , project?._id  , project?.name , investor?.name || investor?.companyName  , investor?.owner)
 
     return contactRequest;
 };
@@ -602,12 +608,24 @@ const rejectContactRequest = async (requestId, rejectionData) => {
         throw new Error('Contact request not found');
     }
 
+    const member = await MemberService.getMemberById(contactRequest?.member);
+    const investor = await InvestorService.getInvestorById(contactRequest?.investor);
+    const project = await ProjectService.getProjectById(contactRequest?.project);
+
     contactRequest.status = 'Rejected';
     contactRequest.rejection.rejectionDate = new Date();
     contactRequest.rejection.reason = rejectionData.reason;
     contactRequest.rejection.rejectionNotes = rejectionData.rejectionNotes;
 
     await contactRequest.save();
+    await ActivityHistoryService.createActivityHistory(
+        investor.owner,
+        'contact_request_rejected',
+        { targetName: `${project?.name}`, targetDesc: `Contact request rejected by ${investor?.name} for project ${project?.name}` , from: investor?.companyName }
+    );
+
+    await NotificationService.createNotification(member?.owner , 'Contact request rejected for project' , 'from' , project?._id  , project?.name , investor?.name || investor?.companyName  , investor?.owner)
+
     return contactRequest;
 };
 

@@ -523,7 +523,7 @@ async function sendNewContactRequestEmail(userId, companyName,country) {
       body: htmlContent2,
     });
 
-   const messageId = await sendEmail(user.email, title, htmlContent, true);
+   const messageId = await sendEmail(user?.email, title, htmlContent, true);
     return messageId;
   } catch (err) {
     throw err;

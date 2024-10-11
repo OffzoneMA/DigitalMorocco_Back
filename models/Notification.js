@@ -13,7 +13,7 @@ const NotificationSchema = new mongoose.Schema({
     },
     message2: {
         type: String,
-        required: true,
+        required: false,
     },
     reference: {
         type: mongoose.Schema.Types.ObjectId,

@@ -296,7 +296,7 @@ const rejectUser = async (req, res) => {
 const deleteUser = async (req, res) => {
   try {
     const result = await UserService.deleteUser(req?.userId);
-    //const log = await UserLogService.createUserLog('Account Delete', req.params.id);
+    const log = await UserLogService.createUserLog('Account Delete', req.params.id);
     res.status(204).json(result);
   } catch (error) {
     console.log(error)
@@ -314,10 +314,10 @@ const deleteOneUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const isMatch = bcrypt.compare(user.password, password);
+    const isMatch = await bcrypt.compare(password, user.password); 
 
     if (!isMatch) {
-      return res.status(401).json({ message: 'Incorrect password' });
+      return res.status(401).json({ message: 'Incorrect password' }); 
     }
 
     // await User.deleteOne({ _id: user._id });
@@ -341,10 +341,10 @@ const deleteOneOfUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    await User.deleteOne({ _id: user._id });
-    // user.isDeleted = true;
-    // user.deletionDate = new Date();
-    // await user.save();
+    // await User.deleteOne({ _id: user._id });
+    user.isDeleted = true;
+    user.deletionDate = new Date();
+    await user.save();
 
     res.status(200).json({ message: 'Account marked for deletion. You have 14 days to restore it.' });
   } catch (err) {

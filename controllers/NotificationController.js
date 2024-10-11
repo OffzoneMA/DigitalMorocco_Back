@@ -13,8 +13,7 @@ const createNotification = async (req, res) => {
 
 const getNotificationsByUserId = async (req, res) => {
     try {
-        const { userId } = req.params;
-        const notifications = await NotificationService.getNotificationsByUserId(userId);
+        const notifications = await NotificationService.getNotificationsByUserId(req.userId);
         return res.status(200).json(notifications);
     } catch (error) {
         return res.status(500).json({ error: error.message });
@@ -43,8 +42,7 @@ const deleteNotification = async (req, res) => {
 
 const getNotificationsWithUnreadCount = async (req, res) => {
     try {
-        const { userId } = req.params;
-        const result = await NotificationService.getNotificationsWithUnreadCount(userId);
+        const result = await NotificationService.getNotificationsWithUnreadCount(req.userId);
         return res.status(200).json(result);
     } catch (error) {
         return res.status(500).json({ error: error.message });
