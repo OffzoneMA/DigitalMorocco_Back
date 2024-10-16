@@ -130,6 +130,7 @@ async function getDocumentsForUser(userId, args) {
         const documents = await Document.find({ owner: userId })
             .populate('owner')
             .skip(skip) 
+            .sort({ uploadDate: 'desc' })
             .limit(pageSize); 
 
         // Compter le total de documents pour le calcul des pages
@@ -172,7 +173,7 @@ async function searchDocuments(user, searchTerm) {
 
 async function getDocumentsByUploader(userId) {
     try {
-        const documents = await Document.find({ uploadBy: userId });
+        const documents = await Document.find({ uploadBy: userId }).sort({ uploadDate: 'desc' });
         return documents;
     } catch (error) {
         throw new Error('Error getting documents by uploader: ' + error.message);

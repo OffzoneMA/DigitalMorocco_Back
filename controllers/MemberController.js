@@ -312,7 +312,6 @@ const createTestCompany = async (req, res) => {
 const shareProject = async (req, res) => {
     try {
         const { projectId,  investorIds } = req.body;
-        console.log(req.body)
         const memberId = req.memberId;
         const contact = await InvestorContactService.shareProjectWithInvestors(projectId, memberId, investorIds);
         res.status(200).json(contact);

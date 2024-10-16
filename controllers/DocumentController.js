@@ -36,7 +36,6 @@ async function updateDocument(req, res) {
         const updateData = isJsonString(req?.body?.documentData) ? JSON.parse(req?.body.documentData) : req?.body.documentData;
         const shareWithUsers = req?.body?.shareWithUsers;
         const docFile = req.files['docFile'];
-        console.log(updateData)
         const updatedDocument = await DocumentService.updateDocument(documentId, updateData, docFile?.[0]);
         res.status(200).json(updatedDocument);
     } catch (error) {
@@ -79,7 +78,6 @@ async function createDocument(req, res) {
         const userId = req.userId; 
         const documentData = isJsonString(req?.body.documentData) ? JSON.parse(req?.body.documentData) : req?.body.documentData;
         const docFile = req.files['docFile'];
-        console.log(documentData)
         const document = await DocumentService.createDocument(userId, documentData, docFile?.[0]);
         res.status(201).json(document);
     } catch (error) {

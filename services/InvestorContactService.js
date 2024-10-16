@@ -233,27 +233,18 @@ const shareProjectWithInvestors = async (projectId, memberId, investorIds) => {
         const contact = await ContactRequest.create({ member: memberId, investor: investorId, cost , project: projectId});
         await Member.findByIdAndUpdate(memberId, { $push: { investorsRequestsPending: investorId }});
         await Investor.findByIdAndUpdate(investorId, { $push: { membersRequestsPending: memberId } });
+        await Project.findByIdAndUpdate(projectId , {$push : {shareWithInvestors: investorId}} );
         
         await Subscription.findByIdAndUpdate(subscription._id, {
             $inc: { totalCredits: -cost }
         });
 
-        const historyData = {
-            member: memberId,
-            eventType: 'contact_request_sent',
-            eventDetails: 'Send Contact Request to',
-            timestamp: new Date(),
-            user: member.owner,
-            actionTargetType: 'Project',
-            actionTarget: projectId,
-            targetUser: {
-                usertype: 'Investor',
-                userId: investor?.owner
-            }
-        };
-
-        await ActivityHistoryService.createActivityHistory(historyData);
-        await EmailingService.sendNewProjectShareRequestEmail(investor.owner, member.companyName, member.country, project);
+        // await ActivityHistoryService.createActivityHistory(
+        //     member.owner,
+        //     'project_shared',
+        //     { targetName: `${project?.name}`, targetDesc: `Project shared from member ${memberId} for project ${projectId}` , from: member?.companyName }
+        // );
+        // await EmailingService.sendNewProjectShareRequestEmail(investor.owner, member.companyName, member.country, project);
 
         results.push({ investorId, status: 'Request sent successfully' });
     }
@@ -271,7 +262,6 @@ const getAllContactRequest = async (args, role, id) => {
     const page = args.page || 1;
     const pageSize = args.pageSize || 8;
     const skip = (page - 1) * pageSize;
-
     // Construire le filtre de recherche
     const query = {};
     if (role === "member") query.member = id;

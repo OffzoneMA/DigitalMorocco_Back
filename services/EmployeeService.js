@@ -97,7 +97,7 @@ async function deleteEmployee(employeeId) {
 
 async function getAllEmployees() {
     try {
-        return await Employee.find();
+        return await Employee.find().sort({ dateCreated: 'desc' });
     } catch (error) {
         throw new Error('Error getting all employees: ' + error.message);
     }
@@ -105,7 +105,7 @@ async function getAllEmployees() {
 
 async function getAllEmployeesByUserWithoutPagination(userId) {
     try {
-        return await Employee.find({ createdBy: userId });
+        return await Employee.find({ createdBy: userId }).sort({ dateCreated: 'desc' });
     } catch (error) {
         throw new Error('Error getting all employees by user: ' + error.message);
     }
@@ -120,6 +120,7 @@ async function getAllEmployeesByUser(userId, args) {
         const totalPages = Math.ceil(totalCount / pageSize);
         const employees = await Employee.find({ createdBy: userId })
             .skip(skip)
+            .sort({ dateCreated: 'desc' })
             .limit(pageSize);
         
         return { employees, totalPages };

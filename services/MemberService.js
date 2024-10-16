@@ -715,6 +715,7 @@ async function getAllProjectsForMember(memberId, args) {
         
         const projects = await Project.find(filter)
             .skip(skip)
+            .sort({ dateCreated: 'desc' })
             .limit(pageSize);
         return { projects, totalPages };
     } catch (error) {
@@ -738,7 +739,7 @@ async function getAllProjectsForMemberWithoutPagination(memberId , args) {
             const date = new Date(args.date);
             filter.dateCreated = { $gte: date };
         }
-        const projects = await Project.find(filter);
+        const projects = await Project.find(filter).sort({ dateCreated: 'desc' });
         return projects;
     } catch (error) {
         throw new Error('Error fetching projects for member: ' + error.message);
@@ -892,16 +893,16 @@ const getInvestorsForMember = async (memberId, args) => {
     }
 
     // Filtrage par pays (un seul pays)
-    if (args?.country) {
+    if (args?.location) {
         investorQuery.$or = [
-            { country: args.country },
-            { location: args.country }
+            { country: args.location },
+            { location: args.location }
         ];
     }
 
     // Filtrage par secteur d'industrie préféré (plusieurs secteurs)
-    if (args?.preferredInvestmentIndustry && args.preferredInvestmentIndustry.length > 0) {
-        investorQuery.PreferredInvestmentIndustry = { $in: args.preferredInvestmentIndustry.split(',') };
+    if (args?.industries && args.industries.length > 0) {
+        investorQuery.PreferredInvestmentIndustry = { $in: args.industries.split(',') };
     }
 
     // Rechercher les investisseurs qui correspondent aux critères de filtrage
@@ -931,6 +932,7 @@ const getInvestorsForMember = async (memberId, args) => {
             path: 'investor',
             model: 'Investor',
         })
+        .sort({ dateCreated: 'desc' })
         .skip(skip)
         .limit(pageSize);
 
@@ -958,7 +960,7 @@ const getInvestorsForMemberWithoutPagination = async (memberId) => {
         }).populate({
             path: 'investor',
             model: 'Investor'
-        });
+        }).sort({ dateCreated: 'desc' });
 
         // Extraire les investisseurs et supprimer les doublons
         const investors = contactRequests.map(request => request.investor);
@@ -1003,7 +1005,6 @@ const getContactRequestsForMember = async (memberId, args) => {
             return { contactRequests: [], totalPages: 0 };
         }
     }
-
     // Filtrage par statut de la demande (plusieurs statuts)
     if (args?.status && args.status.length > 0) {
         query.status = { $in: args.status.split(',') };

@@ -31,6 +31,7 @@ const getAllInvestors = async (args) => {
         // .select("name description image linkedin_link type location PreferredInvestmentIndustry dateCreated numberOfInvestment numberOfExits document")
         .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } } })
         .skip(skip)
+        .sort({ dateCreated: 'desc' })
         .limit(pageSize);
 
     return { investors, totalPages };
@@ -54,7 +55,7 @@ const getAllInvestorsWithoutPagination = async (args) => {
 
     const investors = await Investor.find(filter)
         // .select("name description image linkedin_link type location PreferredInvestmentIndustry dateCreated numberOfInvestment numberOfExits document")
-        .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } } });
+        .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } } }).sort({ dateCreated: 'desc' });
 
     return  investors;
 }
@@ -64,7 +65,7 @@ const getInvestors = async () => {
     const totalCount = await Investor.countDocuments();
     const investors = await Investor.find()
         .select("name description image linkedin_link type location PreferredInvestmentIndustry dateCreated numberOfInvestment numberOfExits document")
-        .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } } }); 
+        .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } } }).sort({ dateCreated: 'desc' }); 
 
     return { investors, totalCount }
 }
@@ -272,8 +273,20 @@ async function getInvestorDetailsRequest(memberId, investorId) {
     }
 }
 
+const deleteInvestorById = async (investorId) => {
+    try {
+        const investor = await Investor.findByIdAndDelete(investorId);
+        if (!investor) {
+            throw new Error('Investor not found');
+        }
+        return investor;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
 
 module.exports = { deleteInvestor,getContacts, getProjects, CreateInvestor, 
     getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, 
     updateContactStatus , updateInvestor , getInvestors  , getDistinctValues , 
-    getInvestorDetailsRequest , searchInvestors , getAllInvestorsWithoutPagination}
+    getInvestorDetailsRequest , searchInvestors , getAllInvestorsWithoutPagination , deleteInvestorById}

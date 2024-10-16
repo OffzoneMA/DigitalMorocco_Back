@@ -46,6 +46,8 @@ const getUsers = async (req, res) => {
     res.status(500).json(error);
   }
 }
+
+
 const updateUser = async (req, res) => {
   try {
   const result = await UserService.updateUser(req.userId, req.body);

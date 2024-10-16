@@ -930,6 +930,26 @@ router.get('/contactRequests/distinct-project-fields', AuthController.Authentica
  */
 router.get('/request/distinct/:field', AuthController.AuthenticateInvestor ,  InvestorController.getDistinctRequestValues);
 
+/**
+ * @swagger
+ * /investors/{investorId}:
+ *   delete:
+ *     summary: Delete an investor by ID
+ *     tags: [Investors]
+ *     parameters:
+ *       - in: path
+ *         name: investorId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the investor to delete
+ *     responses:
+ *       200:
+ *         description: Investor deleted successfully
+ *       404:
+ *         description: Investor not found
+ */
+router.delete('/:investorId', InvestorController.deleteInvestorById);
 
 
 module.exports = router

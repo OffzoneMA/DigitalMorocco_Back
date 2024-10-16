@@ -51,7 +51,8 @@ const ProjectSchema = new mongoose.Schema({
         default :"In Progress"
     },
     // stages: [String],
-    stage: String
+    stage: String ,
+    shareWithInvestors :[String]
 
 })
 

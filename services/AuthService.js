@@ -73,7 +73,7 @@ const createUser = async (u) => {
 
 const getAllUsers = async () => {
   try {
-    const users = await User.find({ isDeleted: false });
+    const users = await User.find({ isDeleted: false }).sort({ dateCreated: 'desc' });
     return users;
   } catch (error) {
     throw new Error(`Error getting list of users: ${error.message}`);

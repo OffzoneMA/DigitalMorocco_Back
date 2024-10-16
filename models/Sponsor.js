@@ -32,10 +32,15 @@ const SponsorSchema = new mongoose.Schema({
         enum: ['Pending', 'Approved', 'Rejected'],
         default: 'Pending'
     },
-
+    document: [{
+        name: String,
+        link: String,
+    }],
     reasonForRejection: {
         type: String,
     },
+    approvalLetter: String ,
+    rejectLetter : String,
     dateCreated: {
         type: Date,
         default: Date.now

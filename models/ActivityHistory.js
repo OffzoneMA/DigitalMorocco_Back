@@ -15,7 +15,9 @@ const ActivityHistorySchema  = new mongoose.Schema({
             'event_attended' , 'password_changed', 'account_deleted', 'password_reset',
             'new_subscription' , 'subscription_upgraded', 'subscription_renew' ,
             'subscription_canceled' , 'subscription_auto_canceled' ,'profile_update_lang_reg' , 'profile_update_password',
-            'profile_updated' ,'contact_request_accepted' ,'contact_request_approved'  ,'contact_request_rejected' , 'contact_request_received'
+            'profile_updated' ,'contact_request_accepted' ,'contact_request_approved'  ,'contact_request_rejected' , 
+            'contact_request_received' , 'sponsor_request_send' , 'sponsor_request_received' , 'sponsor_request_approved' ,
+            'sponsor_reques_rejected'
         ],
         required: true
     },

@@ -211,8 +211,19 @@ const getDistinctRequestValues = async (req, res) => {
     }
 };
 
+const deleteInvestorById = async (req, res) => {
+    const { investorId } = req.params;
+
+    try {
+        const deletedInvestor = await InvestorService.deleteInvestorById(investorId);
+        return res.status(200).json({ message: 'Investor deleted successfully', investor: deletedInvestor });
+    } catch (error) {
+        return res.status(404).json({ message: error.message });
+    }
+};
+
 module.exports = { getInvestorRequests,updateContactStatus, addInvestor, getInvestors, 
     getContactRequests, getContacts, getProjects , getContactRequestsForInvestor , updateInvestor , 
     getAllInvestors , getDistinctInvestorData , getInvestorById , getInvestorDetails , 
 getAllInvestorsWithoutPagination , getDistinctRequestProjectFields , getDistinctRequestValues , 
-getContactRequestsByInvestor}
+getContactRequestsByInvestor , deleteInvestorById}

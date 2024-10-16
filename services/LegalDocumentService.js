@@ -102,7 +102,7 @@ const getLegalDocumentById = async (documentId) => {
 const getLegalDocuments = async () => {
     try {
         const documents = await LegalDocument.find({})
-            .populate('createdBy') 
+            .populate('createdBy').sort({ dateCreated: 'desc' })
         return documents;
     } catch (error) {
         throw error;
@@ -119,6 +119,7 @@ const getLegalDocumentsByUser = async (userId, args) => {
         const documents = await LegalDocument.find({ createdBy: userId })
             .populate('createdBy')
             .skip(skip)
+            .sort({ dateCreated: 'desc' })
             .limit(pageSize);
 
         return { documents, totalPages };
