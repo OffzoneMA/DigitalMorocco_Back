@@ -51,7 +51,7 @@ const createSponsor = async (partnerId, eventId, sponsorshipAmount, sponsorshipT
         // Mise à jour de l'événement pour y ajouter le sponsor
         await Event.findByIdAndUpdate(eventId, { 
             $push: { 
-                sponsors: sponsor?._id, 
+                sponsorsRequests: sponsor?._id, 
                 sponsorsPartners: partner?._id 
             } 
         });

@@ -139,7 +139,13 @@ const eventSchema = new mongoose.Schema({
         enum: ['past', 'upcoming', 'ongoing'],
         default: 'upcoming'
     },
-    sponsors: [String] ,
+    sponsors: [
+        {
+            logo: String,
+            name: String
+        }
+    ],
+    sponsorsRequests: [String] ,
     sponsorsPartners : [String],
 })
 
