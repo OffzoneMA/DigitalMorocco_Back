@@ -122,14 +122,14 @@ const getApprovedSponsorsForPartner = async (req, res) => {
 const getDistinctEventFieldsByPartner =  async (req, res) => {
     try {
         const { field } = req.query;
-        const { status } = req.query; // Récupérer le statut depuis les paramètres de requête
+        const { eventStatus , sponsorStatus } = req.query; // Récupérer le statut depuis les paramètres de requête
 
         // Vérifiez que le champ est fourni
         if (!field) {
             return res.status(400).json({ message: 'Field query parameter is required.' });
         }
 
-        const distinctValues = await SponsorService.getDistinctEventFieldsByPartner(req.partnerId, field, status); // Passer le statut à la fonction
+        const distinctValues = await SponsorService.getDistinctEventFieldsByPartner(req.partnerId, field, eventStatus , sponsorStatus); // Passer le statut à la fonction
 
         return res.status(200).json(distinctValues);
     } catch (error) {

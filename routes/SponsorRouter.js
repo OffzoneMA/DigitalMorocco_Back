@@ -311,7 +311,9 @@ router.delete('/:sponsorId', SponsorController.deleteSponsor);
  *         in: query
  *         description: Status of the sponsor (Pending, Approved, Rejected)
  *         schema:
- *           type: string
+ *           type: array
+ *           items:
+ *             type: string
  *       - name: sponsorshipType
  *         in: query
  *         description: Type of sponsorship
@@ -399,6 +401,11 @@ router.get('/past-events', SponsorController.getApprovedSponsorsForPastEvents);
  *         description: Type of sponsorship to filter by
  *         schema:
  *           type: string
+ *       - name: location
+ *         in: query
+ *         description: Event location
+ *         schema:
+ *           type: string
  *       - name: exactDate
  *         in: query
  *         description: Exact date to filter sponsors
@@ -430,11 +437,21 @@ router.get('/approved-sponsors', AuthController.AuthenticatePartner , SponsorCon
  *         schema:
  *           type: string
  *       - in: query
- *         name: status
+ *         name: eventStatus
  *         required: false
  *         description: The status of the events to filter by (e.g., upcoming, past)
  *         schema:
- *           type: string
+ *           type: array
+ *           items:
+ *             type: string
+ *       - in: query
+ *         name: sponsorStatus
+ *         required: false
+ *         description: The status of the events to filter by (e.g., upcoming, past)
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
  *     responses:
  *       200:
  *         description: Distinct values retrieved successfully

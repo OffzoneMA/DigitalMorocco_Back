@@ -166,10 +166,16 @@ const getSponsorById = async (sponsorId) => {
 // Approuver un sponsor avec une lettre d'approbation
 const approveSponsor = async (sponsorId, sponsorshipType , letter) => {
     try {
-        const sponsor = await Sponsor.findByIdAndUpdate(sponsorId, { status: 'Approved', sponsorshipType: sponsorshipType , approvalLetter: letter }, { new: true });
+        const sponsor = await Sponsor.findByIdAndUpdate(sponsorId, { status: 'Approved', sponsorshipType: sponsorshipType , approvalLetter: letter }, { new: true }).populate("partnerId eventId");
         if (!sponsor) {
             throw new Error('Sponsor not found');
         }
+
+        await ActivityHistoryService.createActivityHistory(
+            sponsor?.partnerId?.owner,
+            'sponsor_request_approved',
+            { targetName: sponsor?.eventId?.title, targetDesc: `` }
+        );
         return sponsor;
     } catch (error) {
         console.error(`Error approving sponsor: ${error.message}`);
@@ -188,11 +194,17 @@ const rejectSponsor = async (sponsorId, reasonForRejection , letter) => {
             sponsorId,
             { status: 'Rejected', reasonForRejection , rejectLetter: letter},
             { new: true }
-        );
+        ).populate("partnerId eventId");
 
         if (!sponsor) {
             throw new Error('Sponsor not found');
         }
+
+        await ActivityHistoryService.createActivityHistory(
+            sponsor?.partnerId?.owner,
+            'sponsor_request_rejected',
+            { targetName: sponsor?.eventId?.title, targetDesc: `` }
+        );
 
         return sponsor;
     } catch (error) {
@@ -237,12 +249,10 @@ const getSponsorsByPartner = async (partnerId, args) => {
         // Extraction des paramètres de filtrage
         const { status, requestType, exactDate, location, sponsorshipType } = args;
         const query = { partnerId };
-
         // Filtrage par statut si fourni
-        if (status) {
-            query.status = status;
+        if (status && status?.length > 0) {
+            query.status = { $in: status.split(',') };
         }
-
         // Filtrage par type de requête (envoyée ou reçue)
         if (requestType && requestType.length > 0) {
             query.requestType = { $in: requestType.split(',') };
@@ -266,8 +276,81 @@ const getSponsorsByPartner = async (partnerId, args) => {
         }
 
         // Filtrage par type de sponsoring si fourni
-        if (sponsorshipType) {
-            query.sponsorshipType = sponsorshipType;
+        if (sponsorshipType && sponsorshipType?.length > 0) {
+            query.sponsorshipType = { $in: sponsorshipType.split(',') };
+        }
+
+        // Récupération des sponsors avec la requête construite
+        const sponsors = await Sponsor.find(query)
+            .populate("eventId")
+            .skip((page - 1) * pageSize)
+            .limit(pageSize)
+            .sort({ dateCreated: 'desc' });
+
+        // Comptage du total des documents correspondant à la requête
+        const total = await Sponsor.countDocuments(query);
+
+        // Gestion des cas où aucun sponsor n'est trouvé
+        if (total === 0) {
+            return {
+                data: [],
+                total,
+                page,
+                pageSize,
+                totalPages: 0,
+                message: 'No sponsors found for the given criteria.'
+            };
+        }
+
+        return {
+            data: sponsors,
+            total,
+            page,
+            pageSize,
+            totalPages: Math.ceil(total / pageSize)
+        };
+    } catch (error) {
+        console.error(`Error fetching sponsors by partner: ${error.message}`);
+        throw new Error(`Error fetching sponsors by partner: ${error.message}`);
+    }
+};
+
+const getSponsorsHistoryByPartner = async (partnerId, args) => {
+    try {
+        const page = args?.page || 1;
+        const pageSize = args?.pageSize || 8;
+        // Extraction des paramètres de filtrage
+        const { status, requestType, exactDate, location, sponsorshipType } = args;
+        const query = { partnerId };
+        // Filtrage par statut si fourni
+        if (status && status?.length > 0) {
+            query.status = { $in: status.split(',') };
+        }
+        // Filtrage par type de requête (envoyée ou reçue)
+        if (requestType && requestType.length > 0) {
+            query.requestType = { $in: requestType.split(',') };
+        }
+           
+        // Filtrage par date si une date précise est fournie
+        if (exactDate) {
+            const startOfDay = new Date(exactDate);
+            startOfDay.setHours(0, 0, 0, 0);  // Début de la journée
+            const endOfDay = new Date(exactDate);
+            endOfDay.setHours(23, 59, 59, 999);  // Fin de la journée
+            query.dateCreated = { $gte: startOfDay, $lt: endOfDay };
+        }
+
+        // Filtrage par emplacement de l'événement si fourni
+        let eventIds = [];
+        if (location) {
+            const eventsWithLocation = await Event.find({ physicalLocation: location }).select('_id');
+            eventIds = eventsWithLocation.map(event => event._id);
+            query.eventId = { $in: eventIds };
+        }
+
+        // Filtrage par type de sponsoring si fourni
+        if (sponsorshipType && sponsorshipType?.length > 0) {
+            query.sponsorshipType = { $in: sponsorshipType.split(',') };
         }
 
         // Récupération des sponsors avec la requête construite
@@ -361,8 +444,19 @@ const getApprovedSponsorsForPartner = async (partnerId, args) => {
         // Récupérer la date actuelle
         const currentDate = new Date();
 
-        // Récupérer les événements passés
-        const pastEvents = await Event.find({ startDate: { $lt: currentDate } }).select('_id');
+        // Extraction des paramètres de filtrage
+        const { sponsorshipType, exactDate, page = 1, pageSize = 8, location } = args;
+
+        // Récupérer les événements passés et appliquer le filtre de localisation si fourni
+        let eventQuery = { startDate: { $lt: currentDate } };
+
+        // Si l'emplacement est fourni, ajouter le filtre par emplacement
+        if (location) {
+            eventQuery.physicalLocation = location;
+        }
+
+        // Récupérer les événements passés et filtrer par emplacement si fourni
+        const pastEvents = await Event.find(eventQuery).select('_id');
         const pastEventIds = pastEvents.map(event => event._id);
 
         // Construire la requête de base pour récupérer les sponsors
@@ -372,12 +466,9 @@ const getApprovedSponsorsForPartner = async (partnerId, args) => {
             eventId: { $in: pastEventIds }
         };
 
-        // Extraction des paramètres de filtrage
-        const { sponsorshipType, exactDate, page = 1, pageSize = 8 } = args;
-
         // Filtrage par type de sponsoring si fourni
-        if (sponsorshipType) {
-            query.sponsorshipType = sponsorshipType;
+        if (sponsorshipType && sponsorshipType?.length > 0) {
+            query.sponsorshipType = { $in: sponsorshipType.split(',') };
         }
 
         // Filtrage par date si une date précise est fournie
@@ -419,10 +510,18 @@ const getApprovedSponsorsForPartner = async (partnerId, args) => {
 };
 
 
-const getDistinctEventFieldsByPartner = async (partnerId, field, status) => {
+
+const getDistinctEventFieldsByPartner = async (partnerId, field, eventStatus, sponsorStatus) => {
     try {
-        // Récupérer les sponsors associés au partenaire
-        const sponsors = await Sponsor.find({ partnerId }).select('eventId');
+        const sponsorQuery = { partnerId };
+
+        // Ajouter le filtre par statut du sponsor si fourni
+        if (sponsorStatus) {
+            sponsorQuery.status = { $in: sponsorStatus.split(',') };
+        }
+
+        // Récupérer les sponsors associés au partenaire et au statut du sponsor
+        const sponsors = await Sponsor.find(sponsorQuery).select('eventId');
 
         const eventIds = sponsors.map(sponsor => sponsor.eventId);
 
@@ -434,16 +533,16 @@ const getDistinctEventFieldsByPartner = async (partnerId, field, status) => {
             };
         }
 
-        // Construire la requête de filtrage des événements par ID et par statut
-        const query = { _id: { $in: eventIds } };
+        // Construire la requête de filtrage des événements par ID et par statut de l'événement
+        const eventQuery = { _id: { $in: eventIds } };
 
-        // Ajouter le filtre de statut si fourni
-        if (status) {
-            query.status = status;
+        // Ajouter le filtre de statut d'événement si fourni
+        if (eventStatus) {
+            eventQuery.status = { $in: eventStatus.split(',') };
         }
 
         // Récupérer les valeurs distinctes du champ spécifié
-        const distinctValues = await Event.distinct(field, query);
+        const distinctValues = await Event.distinct(field, eventQuery);
 
         return {
             data: distinctValues,
@@ -453,7 +552,6 @@ const getDistinctEventFieldsByPartner = async (partnerId, field, status) => {
         throw new Error(`Error fetching distinct event fields: ${error.message}`);
     }
 };
-
 
 
 module.exports = {

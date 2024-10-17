@@ -17,7 +17,7 @@ const ActivityHistorySchema  = new mongoose.Schema({
             'subscription_canceled' , 'subscription_auto_canceled' ,'profile_update_lang_reg' , 'profile_update_password',
             'profile_updated' ,'contact_request_accepted' ,'contact_request_approved'  ,'contact_request_rejected' , 
             'contact_request_received' , 'sponsor_request_send' , 'sponsor_request_received' , 'sponsor_request_approved' ,
-            'sponsor_reques_rejected'
+            'sponsor_request_rejected'
         ],
         required: true
     },
