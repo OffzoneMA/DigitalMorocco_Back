@@ -49,8 +49,6 @@ passport.use(
     )
 );
 
-
-
 passport.use('google-signup',
     new GoogleStrategy(
         {
@@ -340,9 +338,6 @@ passport.use('facebook-signin',
         }
     )
 );
-
-
-
 
 
 passport.serializeUser((user, done) => {

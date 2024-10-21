@@ -272,7 +272,7 @@ const getAllContactRequest = async (args, role, id) => {
         query.status = { $in: args.status.split(',') }; 
     }
 
-    if (args?.dateCreated) {
+    if (args?.dateCreated && args?.dateCreated !== 'Invalid Date') {
         const startOfDay = new Date(args.dateCreated);
         startOfDay.setHours(0, 0, 0, 0);
         const endOfDay = new Date(args.dateCreated);
@@ -370,6 +370,42 @@ const getAllContactRequest = async (args, role, id) => {
 
     return { ContactsHistory, totalPages };
 };
+
+const getRecentApprovedContactRequests = async (role, id) => {
+    try {
+        const query = {};
+
+        // Add filter based on role (member or investor)
+        if (role === "member") query.member = id;
+        if (role === "investor") query.investor = id;
+
+        // Filter by status 'Approved'
+        query.status = 'Approved';
+
+        // Retrieve the most recent 5 approved contact requests
+        const recentApprovedContacts = await ContactRequest.find(query)
+            .populate(role === "member" ? {
+                path: 'investor',
+                model: 'Investor',
+                select: '_id name image linkedin_link'
+            } : {
+                path: 'member',
+                model: 'Member',
+                select: '_id companyName website city contactEmail logo country'
+            })
+            .populate({ path: 'project', model: 'Project' })
+            .sort({ dateCreated: 'desc' })  // Sort by most recent
+            .limit(5);  // Limit to 5 results
+
+        return {
+            data: recentApprovedContacts,
+            message: 'Successfully retrieved the 5 most recent approved contact requests.'
+        };
+    } catch (error) {
+        throw new Error(`Error fetching recent approved contact requests: ${error.message}`);
+    }
+};
+
 
 const getDistinctFieldValues = async (role, id, field) => {
     try {
@@ -619,11 +655,49 @@ const rejectContactRequest = async (requestId, rejectionData) => {
     return contactRequest;
 };
 
+const countApprovedInvestments = async (role, id) => {
+    try {
+        // Filtrer les requêtes approuvées
+        const query = {
+            status: 'Approved'
+        };
+
+        // Ajouter le filtre basé sur le rôle
+        if (role === "member") {
+            query.member = id;
+
+            // Trouver les investisseurs distincts pour les requêtes approuvées pour ce membre
+            const distinctInvestors = await ContactRequest.distinct('investor', query);
+
+            return {
+                count: distinctInvestors.length,
+                message: `Distinct investors for approved requests for member ${id}: ${distinctInvestors.length}`
+            };
+        } else if (role === "investor") {
+            query.investor = id;
+
+            // Compter le nombre total de requêtes approuvées pour l'investisseur
+            const approvedInvestmentCount = await ContactRequest.countDocuments(query);
+
+            return {
+                count: approvedInvestmentCount,
+                message: `Approved investments for investor ${id}: ${approvedInvestmentCount}`
+            };
+        } else {
+            throw new Error("Invalid role provided");
+        }
+    } catch (error) {
+        console.error(`Error counting approved investments: ${error.message}`);
+        throw new Error(`Error counting approved investments: ${error.message}`);
+    }
+};
+
+
 
 module.exports = { CreateInvestorContactReq, getAllContactRequest ,
     getContactRequestsForInvestor , getContactRequestsForMember  , 
     shareProjectWithInvestors , CreateInvestorContactReqForProject ,
     getContactRequestById, createContactRequest, updateContactRequest, deleteContactRequest ,
      getAllContactRequestsAll, searchContactRequests , getDistinctFieldValues , getDistinctProjectFieldValues ,
-     approveContactRequest , rejectContactRequest
+     approveContactRequest , rejectContactRequest , getRecentApprovedContactRequests , countApprovedInvestments
  }

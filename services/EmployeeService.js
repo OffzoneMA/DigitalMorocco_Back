@@ -95,13 +95,22 @@ async function deleteEmployee(employeeId) {
 }
 
 
+// async function getAllEmployees() {
+//     try {
+//         return await Employee.find().sort({ dateCreated: 'desc' });
+//     } catch (error) {
+//         throw new Error('Error getting all employees: ' + error.message);
+//     }
+// }
+
 async function getAllEmployees() {
     try {
-        return await Employee.find().sort({ dateCreated: 'desc' });
+        return await Employee.find().sort({ dateCreated: 'desc' }).exec();
     } catch (error) {
         throw new Error('Error getting all employees: ' + error.message);
     }
 }
+
 
 async function getAllEmployeesByUserWithoutPagination(userId) {
     try {

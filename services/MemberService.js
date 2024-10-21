@@ -705,7 +705,7 @@ async function getAllProjectsForMember(memberId, args) {
             filter.status = args.status;
         }
 
-        if (args.date) {
+        if (args.date && args?.date !== 'Invalid Date') {
             const date = new Date(args.date);
             filter.dateCreated = { $gte: date };
         }

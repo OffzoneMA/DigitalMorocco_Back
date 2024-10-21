@@ -1,362 +1,249 @@
-// const request = require('supertest');
-// const mongoose = require('mongoose');
-// const index = require('../index'); 
-// const Blog = require('../models/Blog');
-
-// // Mock upload service for integration tests
-// jest.mock('../services/FileService', () => ({
-//     uploadFile: jest.fn().mockResolvedValue('mocked-url')
-// }));
-
-// describe('Blog API Integration Tests', () => {
-//     let mockUserId;
-//     let mockBlogData;
-//     let mockImageData;
-//     let testConnection;
-
-//     beforeAll(async () => {
-//         // Connect to the test database
-//         testConnection = await mongoose.createConnection('mongodb://localhost:27017/blog_test_db', { useNewUrlParser: true, useUnifiedTopology: true });
-//     });
-
-//     beforeEach(async () => {
-//         mockUserId = new mongoose.Types.ObjectId();
-//         mockBlogData = {
-//             title: 'Test Blog',
-//             resume: 'Test Resume',
-//             details: 'Test Details',
-//             content: 'Test Content',
-//             tags: ['test'],
-//             // date: new Date(),
-//             date: '2024-03-15',
-//             creator: mockUserId
-//         };
-//         mockImageData = { originalname: 'test-image.png' };
-
-//         // Reset the database
-//         await Blog.deleteMany({});
-//     });
-
-//     afterAll(async () => {
-//         await testConnection.close();
-//     });
-
-//     it('should create a blog', async () => {
-//         const response = await request(index)
-//             .post('/blogs/createBlog')
-//             .field('title', mockBlogData.title)
-//             .field('resume', mockBlogData.resume)
-//             .field('details', mockBlogData.details)
-//             .field('content', mockBlogData.content)
-//             .field('tags', mockBlogData.tags)
-//             .field('date', mockBlogData.date)
-//             .field('creator', mockBlogData.creator)
-//             .attach('imageData', Buffer.from('test image data'), {
-//                 filename: 'test-image.png'
-//             });
-    
-//         expect(response.status).toBe(201);
-//         expect(response.body).toHaveProperty('_id');
-//         expect(response.body).toHaveProperty('image', 'mocked-url');
-//     });
-    
-
-//     it('should get all blogs', async () => {
-//         const blog = new Blog(mockBlogData);
-//         await blog.save();
-
-//         const response = await request(index).get('/blogs');
-
-//         expect(response.status).toBe(200);
-//         expect(response.body.blogs.length).toBe(1);
-//         expect(response.body.blogs[0]._id).toBe(blog._id.toString());
-//     });
-
-//     it('should get a blog by ID', async () => {
-//         const blog = new Blog(mockBlogData);
-//         await blog.save();
-
-//         const response = await request(index).get(`/blogs/${blog._id}`);
-
-//         expect(response.status).toBe(200);
-//         expect(response.body._id).toBe(blog._id.toString());
-//     });
-
-//     it('should update a blog', async () => {
-//         const blog = new Blog(mockBlogData);
-//         await blog.save();
-
-//         const updatedData = { title: 'Updated Title' };
-
-//         const response = await request(index)
-//             .put(`/blogs/update/${blog._id}`)
-//             .send(updatedData);
-
-//         expect(response.status).toBe(200);
-//         expect(response.body.title).toBe(updatedData.title);
-//     });
-
-//     it('should delete a blog', async () => {
-//         const blog = new Blog(mockBlogData);
-//         await blog.save();
-
-//         const response = await request(index).delete(`/blogs/delete/${blog._id}`);
-
-//         expect(response.status).toBe(204);
-//         const deletedBlog = await Blog.findById(blog._id);
-//         expect(deletedBlog).toBeNull();
-//     });
-// });
-
-
+// __tests__/blogService.test.js
 const Blog = require('../models/Blog');
 const uploadService = require('../services/FileService');
-const blogController = require('../controllers/BlogController'); 
+const {
+  createBlog,
+  getAllBlogs,
+  getBlogById,
+  updateBlog,
+  deleteBlog,
+  getAllBlogsByUser,
+  getLatestBlogs,
+} = require('../services/BlogService');
 
+// Mocking dependencies
 jest.mock('../models/Blog');
 jest.mock('../services/FileService');
 
-describe('Blog Controller', () => {
-    let mockBlogData;
-    let mockUserId;
-    let mockImageData;
-    let mockCoverImage;
+describe('Blog Service', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-    beforeAll(() => {
-        // Connect to the test database if necessary
+  describe('createBlog', () => {
+    it('should create a new blog with images and coverImage', async () => {
+      const blogData = { title: 'New Blog', content: 'Blog content' };
+      const imageData = { originalname: 'image.png' };
+      const coverImage = { originalname: 'cover.png' };
+      const userId = 'user123';
+      const mockBlog = { save: jest.fn().mockResolvedValue(blogData) };
+
+      Blog.mockImplementation(() => mockBlog);
+      uploadService.uploadFile
+        .mockResolvedValueOnce('image_url')
+        .mockResolvedValueOnce('cover_image_url');
+
+      const result = await createBlog(userId, blogData, imageData, coverImage);
+
+      expect(uploadService.uploadFile).toHaveBeenCalledWith(
+        imageData,
+        `Blogs/${userId}/images/`,
+        imageData.originalname
+      );
+      expect(uploadService.uploadFile).toHaveBeenCalledWith(
+        coverImage,
+        `Blogs/${userId}/images/`,
+        coverImage.originalname
+      );
+      expect(mockBlog.image).toEqual('image_url');
+      expect(mockBlog.coverImage).toEqual('cover_image_url');
+      expect(mockBlog.save).toHaveBeenCalled();
+      expect(result).toEqual(blogData);
     });
 
-    beforeEach(() => {
-        mockUserId = 'userId123';
-        mockBlogData = {
-            title: 'Test Blog',
-            resume: 'Test Resume',
-            details: 'Test Details',
-            content: 'Test Content',
-            tags: ['test'],
-            date: new Date()
-        };
-        mockImageData = {
-            originalname: 'test-image.png'
-        };
-        mockCoverImage = {
-            originalname: 'test-cover.png'
-        };
+    it('should create a new blog without images if no image data is provided', async () => {
+      const blogData = { title: 'New Blog', content: 'Blog content' };
+      const userId = 'user123';
+      const mockBlog = { save: jest.fn().mockResolvedValue(blogData) };
+
+      Blog.mockImplementation(() => mockBlog);
+
+      const result = await createBlog(userId, blogData, null, null);
+
+      expect(uploadService.uploadFile).not.toHaveBeenCalled();
+      expect(mockBlog.save).toHaveBeenCalled();
+      expect(result).toEqual(blogData);
     });
 
-    afterEach(() => {
-        jest.clearAllMocks();
+    it('should throw an error if creating blog fails', async () => {
+      const blogData = { title: 'New Blog' };
+      const userId = 'user123';
+      const mockError = new Error('Failed to create blog');
+      Blog.mockImplementation(() => {
+        throw mockError;
+      });
+
+      await expect(createBlog(userId, blogData)).rejects.toThrow(mockError);
+    });
+  });
+
+  describe('getAllBlogs', () => {
+    it('should return paginated blogs', async () => {
+      const args = { page: 1, pageSize: 2 };
+      const mockBlogs = [{ title: 'Blog 1' }, { title: 'Blog 2' }];
+      const mockTotalCount = 5;
+
+      Blog.countDocuments.mockResolvedValue(mockTotalCount);
+      Blog.find.mockReturnValue({
+        sort: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockResolvedValue(mockBlogs),
+      });
+
+      const result = await getAllBlogs(args);
+
+      expect(Blog.countDocuments).toHaveBeenCalled();
+      expect(Blog.find).toHaveBeenCalled();
+      expect(result).toEqual({
+        totalPages: Math.ceil(mockTotalCount / args.pageSize),
+        blogs: mockBlogs,
+      });
     });
 
-    afterAll(() => {
-        // Disconnect from the test database if necessary
+    it('should throw an error if fetching blogs fails', async () => {
+      const mockError = new Error('Failed to fetch blogs');
+      Blog.find.mockImplementation(() => {
+        throw mockError;
+      });
+
+      await expect(getAllBlogs({})).rejects.toThrow(mockError);
+    });
+  });
+
+  describe('getBlogById', () => {
+    it('should return a blog by ID', async () => {
+      const blogId = 'blog123';
+      const mockBlog = { _id: blogId, title: 'Test Blog' };
+      Blog.findById.mockResolvedValue(mockBlog);
+
+      const result = await getBlogById(blogId);
+
+      expect(Blog.findById).toHaveBeenCalledWith(blogId);
+      expect(result).toEqual(mockBlog);
     });
 
-    describe('createBlog', () => {
-        it('should create a blog with images', async () => {
-            uploadService.uploadFile.mockResolvedValueOnce('image-url').mockResolvedValueOnce('cover-url');
-            Blog.prototype.save = jest.fn().mockResolvedValue(mockBlogData);
+    it('should throw an error if blog is not found', async () => {
+      const blogId = 'invalidId';
+      Blog.findById.mockResolvedValue(null);
 
-            const result = await blogController.createBlog(mockUserId, mockBlogData, mockImageData, mockCoverImage);
+      await expect(getBlogById(blogId)).rejects.toThrow();
+    });
+  });
 
-            expect(uploadService.uploadFile).toHaveBeenCalledWith(mockImageData, `Blogs/${mockUserId}/images/`, mockImageData.originalname);
-            expect(uploadService.uploadFile).toHaveBeenCalledWith(mockCoverImage, `Blogs/${mockUserId}/images/`, mockCoverImage.originalname);
-            expect(result).toEqual(mockBlogData);
-        });
+  describe('updateBlog', () => {
+    it('should update the blog and upload new images', async () => {
+      const blogId = 'blog123';
+      const blogData = { title: 'Updated Blog' };
+      const imageData = { originalname: 'new_image.png' };
+      const coverImage = { originalname: 'new_cover.png' };
+      const mockBlog = {
+        _id: blogId,
+        save: jest.fn().mockResolvedValue(blogData),
+      };
 
-        it('should handle errors', async () => {
-            const error = new Error('Test Error');
-            Blog.prototype.save = jest.fn().mockRejectedValue(error);
+      Blog.findById.mockResolvedValue(mockBlog);
+      uploadService.uploadFile
+        .mockResolvedValueOnce('new_image_url')
+        .mockResolvedValueOnce('new_cover_image_url');
 
-            await expect(blogController.createBlog(mockUserId, mockBlogData, mockImageData, mockCoverImage)).rejects.toThrow('Test Error');
-        });
+      const result = await updateBlog(blogId, blogData, imageData, coverImage);
 
-        it('should create a blog without images', async () => {
-            Blog.prototype.save = jest.fn().mockResolvedValue(mockBlogData);
-
-            const result = await blogController.createBlog(mockUserId, mockBlogData);
-
-            expect(uploadService.uploadFile).not.toHaveBeenCalled();
-            expect(result).toEqual(mockBlogData);
-        });
-
-        it('should handle missing userId', async () => {
-            await expect(blogController.createBlog(null, mockBlogData, mockImageData, mockCoverImage)).rejects.toThrow();
-        });
+      expect(Blog.findById).toHaveBeenCalledWith(blogId);
+      expect(uploadService.uploadFile).toHaveBeenCalledWith(
+        imageData,
+        `Blogs/${mockBlog.creator}/images/`,
+        imageData.originalname
+      );
+      expect(uploadService.uploadFile).toHaveBeenCalledWith(
+        coverImage,
+        `Blogs/${mockBlog.creator}/images/`,
+        coverImage.originalname
+      );
+      expect(mockBlog.save).toHaveBeenCalled();
+      expect(result).toEqual(blogData);
     });
 
-    describe('getAllBlogs', () => {
-        it('should return paginated blogs', async () => {
-            const mockBlogs = [mockBlogData];
-            Blog.countDocuments.mockResolvedValue(1);
-            Blog.find.mockImplementation(() => ({
-                sort: jest.fn().mockImplementation(() => ({
-                    skip: jest.fn().mockImplementation(() => ({
-                        limit: jest.fn().mockResolvedValue(mockBlogs)
-                    }))
-                }))
-            }));
+    it('should throw an error if blog is not found', async () => {
+      const blogId = 'invalidId';
+      Blog.findById.mockResolvedValue(null);
 
-            const args = { page: 1, pageSize: 10 };
-            const result = await blogController.getAllBlogs(args);
+      await expect(updateBlog(blogId, {})).rejects.toThrow('Blog not found');
+    });
+  });
 
-            expect(result).toEqual({ totalPages: 1, blogs: mockBlogs });
-        });
+  describe('deleteBlog', () => {
+    it('should delete a blog by ID', async () => {
+      const blogId = 'blog123';
+      const mockBlog = { _id: blogId, title: 'Blog to delete' };
 
-        it('should handle errors', async () => {
-            const error = new Error('Test Error');
-            Blog.countDocuments.mockRejectedValue(error);
+      Blog.findByIdAndDelete.mockResolvedValue(mockBlog);
 
-            await expect(blogController.getAllBlogs({})).rejects.toThrow('Test Error');
-        });
+      const result = await deleteBlog(blogId);
 
-        it('should handle large datasets', async () => {
-            const mockBlogs = new Array(100).fill(mockBlogData);
-            Blog.countDocuments.mockResolvedValue(100);
-            Blog.find.mockImplementation(() => ({
-                sort: jest.fn().mockImplementation(() => ({
-                    skip: jest.fn().mockImplementation(() => ({
-                        limit: jest.fn().mockResolvedValue(mockBlogs)
-                    }))
-                }))
-            }));
-
-            const args = { page: 1, pageSize: 100 };
-            const result = await blogController.getAllBlogs(args);
-
-            expect(result.blogs.length).toBe(100);
-            expect(result.totalPages).toBe(1);
-        });
+      expect(Blog.findByIdAndDelete).toHaveBeenCalledWith(blogId);
+      expect(result).toEqual(mockBlog);
     });
 
-    describe('getAllBlogsByUser', () => {
-        it('should return blogs for a specific user', async () => {
-            const mockBlogs = [mockBlogData];
-            Blog.find.mockResolvedValue(mockBlogs);
+    it('should throw an error if deletion fails', async () => {
+      const blogId = 'blog123';
+      const mockError = new Error('Deletion failed');
+      Blog.findByIdAndDelete.mockImplementation(() => {
+        throw mockError;
+      });
 
-            const result = await blogController.getAllBlogsByUser(mockUserId);
+      await expect(deleteBlog(blogId)).rejects.toThrow(mockError);
+    });
+  });
 
-            expect(result).toEqual(mockBlogs);
-        });
+  describe('getAllBlogsByUser', () => {
+    it('should return all blogs for a specific user', async () => {
+      const userId = 'user123';
+      const mockBlogs = [{ title: 'Blog 1' }, { title: 'Blog 2' }];
 
-        it('should handle errors', async () => {
-            const error = new Error('Test Error');
-            Blog.find.mockRejectedValue(error);
+      Blog.find.mockResolvedValue(mockBlogs);
 
-            await expect(blogController.getAllBlogsByUser(mockUserId)).rejects.toThrow('Error fetching blogs for user userId123: Test Error');
-        });
+      const result = await getAllBlogsByUser(userId);
 
-        it('should handle non-existent user', async () => {
-            Blog.find.mockResolvedValue([]);
-
-            const result = await blogController.getAllBlogsByUser('nonExistentUserId');
-
-            expect(result).toEqual([]);
-        });
+      expect(Blog.find).toHaveBeenCalledWith({ creator: userId });
+      expect(result).toEqual(mockBlogs);
     });
 
-    describe('getBlogById', () => {
-        it('should return a blog by ID', async () => {
-            Blog.findById.mockResolvedValue(mockBlogData);
+    it('should throw an error if fetching blogs fails', async () => {
+      const userId = 'user123';
+      const mockError = new Error('Fetch failed');
+      Blog.find.mockImplementation(() => {
+        throw mockError;
+      });
 
-            const result = await blogController.getBlogById('blogId123');
+      await expect(getAllBlogsByUser(userId)).rejects.toThrow(mockError);
+    });
+  });
 
-            expect(result).toEqual(mockBlogData);
-        });
+  describe('getLatestBlogs', () => {
+    it('should return the latest blogs with a limit', async () => {
+      const limit = 5;
+      const mockBlogs = [{ title: 'Latest Blog 1' }, { title: 'Latest Blog 2' }];
 
-        it('should handle errors', async () => {
-            const error = new Error('Test Error');
-            Blog.findById.mockRejectedValue(error);
+      Blog.find.mockReturnValue({
+        sort: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockResolvedValue(mockBlogs),
+      });
 
-            await expect(blogController.getBlogById('blogId123')).rejects.toThrow('Test Error');
-        });
+      const result = await getLatestBlogs(limit);
 
-        it('should handle non-existent blog ID', async () => {
-            Blog.findById.mockResolvedValue(null);
-
-            const result = await blogController.getBlogById('nonExistentBlogId');
-
-            expect(result).toBeNull();
-        });
+      expect(Blog.find).toHaveBeenCalled();
+      expect(Blog.find().sort).toHaveBeenCalledWith({ date: -1 });
+      expect(Blog.find().limit).toHaveBeenCalledWith(limit);
+      expect(result).toEqual(mockBlogs);
     });
 
-    describe('updateBlog', () => {
-        it('should update a blog with new data and images', async () => {
-            Blog.findById.mockResolvedValue(mockBlogData);
-            uploadService.uploadFile.mockResolvedValueOnce('new-image-url').mockResolvedValueOnce('new-cover-url');
-            Blog.prototype.save = jest.fn().mockResolvedValue(mockBlogData);
+    it('should throw an error if fetching latest blogs fails', async () => {
+      const mockError = new Error('Fetch latest blogs failed');
+      Blog.find.mockImplementation(() => {
+        throw mockError;
+      });
 
-            const result = await blogController.updateBlog('blogId123', mockBlogData, mockImageData, mockCoverImage);
-
-            expect(uploadService.uploadFile).toHaveBeenCalledWith(mockImageData, `Blogs/${mockUserId}/images/`, mockImageData.originalname);
-            expect(uploadService.uploadFile).toHaveBeenCalledWith(mockCoverImage, `Blogs/${mockUserId}/images/`, mockCoverImage.originalname);
-            expect(result).toEqual(mockBlogData);
-        });
-
-        it('should handle errors', async () => {
-            const error = new Error('Test Error');
-            Blog.findById.mockRejectedValue(error);
-
-            await expect(blogController.updateBlog('blogId123', mockBlogData, mockImageData, mockCoverImage)).rejects.toThrow('Test Error');
-        });
-
-        it('should handle non-existent blog ID', async () => {
-            Blog.findById.mockResolvedValue(null);
-
-            await expect(blogController.updateBlog('nonExistentBlogId', mockBlogData, mockImageData, mockCoverImage)).rejects.toThrow('Blog not found');
-        });
+      await expect(getLatestBlogs(5)).rejects.toThrow(mockError);
     });
-
-    describe('deleteBlog', () => {
-        it('should delete a blog by ID', async () => {
-            Blog.findByIdAndDelete.mockResolvedValue(mockBlogData);
-
-            const result = await blogController.deleteBlog('blogId123');
-
-            expect(result).toEqual(mockBlogData);
-        });
-
-        it('should handle errors', async () => {
-            const error = new Error('Test Error');
-            Blog.findByIdAndDelete.mockRejectedValue(error);
-
-            await expect(blogController.deleteBlog('blogId123')).rejects.toThrow('Test Error');
-        });
-
-        it('should handle non-existent blog ID', async () => {
-            Blog.findByIdAndDelete.mockResolvedValue(null);
-
-            const result = await blogController.deleteBlog('nonExistentBlogId');
-
-            expect(result).toBeNull();
-        });
-    });
-
-    describe('getLatestBlogs', () => {
-        it('should return the latest blogs', async () => {
-            const mockBlogs = [mockBlogData];
-            Blog.find.mockImplementation(() => ({
-                sort: jest.fn().mockImplementation(() => ({
-                    limit: jest.fn().mockResolvedValue(mockBlogs)
-                }))
-            }));
-
-            const result = await blogController.getLatestBlogs(10);
-
-            expect(result).toEqual(mockBlogs);
-        });
-
-        it('should handle errors', async () => {
-            const error = new Error('Test Error');
-            Blog.find.mockRejectedValue(error);
-
-            await expect(blogController.getLatestBlogs(10)).rejects.toThrow('Error fetching latest blogs: Test Error');
-        });
-
-        it('should handle limit zero', async () => {
-            const result = await blogController.getLatestBlogs(0);
-
-            expect(result).toEqual([]);
-        });
-    });
+  });
 });

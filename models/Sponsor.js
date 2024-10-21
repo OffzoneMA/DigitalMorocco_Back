@@ -17,7 +17,7 @@ const SponsorSchema = new mongoose.Schema({
     },
     sponsorshipType: {
         type: String,
-        enum: ['Financial', 'Venue Partner', 'Prize Sponsors' , 'Other'],
+        enum: ['Financial', 'Venue Partner', 'Prize Sponsors' , 'Food Sponsors' , 'Other'],
     },
     letter: {
         type: String,

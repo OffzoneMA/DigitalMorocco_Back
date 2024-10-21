@@ -482,6 +482,26 @@ router.route("/ContactRequest").get(AuthController.AuthenticateInvestor, Investo
 
 /**
  * @swagger
+ * /investors/contact-requests/recent-approved:
+ *   get:
+ *     summary: Get 5 most recent approved contact requests
+ *     description: Retrieve the 5 most recent contact requests with status 'Approved' for the logged-in user (either investor or member).
+ *     tags:
+ *       - Investors
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved the 5 most recent approved contact requests
+ *       401:
+ *         description: Unauthorized, token missing or invalid
+ *       500:
+ *         description: Server error
+ */
+router.get('/contact-requests/recent-approved', AuthController.AuthenticateInvestor , InvestorController.getRecentApprovedContactRequests);
+
+/**
+ * @swagger
  * /investors/ContactRequestByUser/{investorId}:
  *   get:
  *     summary: Get all contact requests from the member 

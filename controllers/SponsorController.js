@@ -99,6 +99,15 @@ const getSponsorsByPartner = async (req, res) => {
     }
 };
 
+const getSponsorsHistoryByPartner = async (req, res) => {
+    try {
+        const sponsors = await SponsorService.getSponsorsHistoryByPartner(req.partnerId, req.query);
+        return res.status(200).json(sponsors);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+};
+
 // Récupérer les sponsors approuvés pour des événements passés
 const getApprovedSponsorsForPastEvents = async (req, res) => {
     try {
@@ -138,8 +147,28 @@ const getDistinctEventFieldsByPartner =  async (req, res) => {
     }
 }
 
+const getDistinctEventFieldsByPartnerHistory =  async (req, res) => {
+    try {
+        const { field } = req.query;
+        const { eventStatus , sponsorStatus } = req.query; // Récupérer le statut depuis les paramètres de requête
+
+        // Vérifiez que le champ est fourni
+        if (!field) {
+            return res.status(400).json({ message: 'Field query parameter is required.' });
+        }
+
+        const distinctValues = await SponsorService.getDistinctEventFieldsByPartnerHistory(req.partnerId, field, eventStatus , sponsorStatus); // Passer le statut à la fonction
+
+        return res.status(200).json(distinctValues);
+    } catch (error) {
+        console.error(`Error in getDistinctEventFieldsByPartner: ${error.message}`);
+        return res.status(500).json({ message: error.message });
+    }
+}
+
 module.exports = {
     createSponsor, getAllSponsors, getSponsorById, approveSponsor, rejectSponsor,
     updateSponsor, deleteSponsor, getSponsorsByPartner, getApprovedSponsorsForPastEvents,
-    getApprovedSponsorsForPartner, getDistinctEventFieldsByPartner , createSponsorForPartner
+    getApprovedSponsorsForPartner, getDistinctEventFieldsByPartner , createSponsorForPartner , 
+    getSponsorsHistoryByPartner , getDistinctEventFieldsByPartnerHistory
 };

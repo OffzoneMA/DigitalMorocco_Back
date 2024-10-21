@@ -926,6 +926,57 @@ router.get('/upcoming/participate', AuthController.AuthenticateUser, EventContro
 
 /**
  * @swagger
+ * /events/upcoming/partner:
+ *   get:
+ *     summary: Get upcoming events with user participation status with sponsor status
+ *     tags: [Events]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: The page number to retrieve
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           example: 10
+ *         description: The number of records per page
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: Filter events by location
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter events starting from this date
+ *     responses:
+ *       200:
+ *         description: List of upcoming events with user participation status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 events:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Event'
+ *                 totalPages:
+ *                   type: integer
+ *                   description: The total number of pages
+ *       500:
+ *         description: Server error
+ */
+router.get('/upcoming/partner', AuthController.AuthenticateUser, AuthController.AuthenticatePartner , EventController.getUpcomingEventsWithoutSponsorNotSent);
+
+
+/**
+ * @swagger
  * /events/distinct/user/{field}:
  *   get:
  *     summary: Get distinct values of a specific field from events attended by the user
@@ -952,5 +1003,35 @@ router.get('/upcoming/participate', AuthController.AuthenticateUser, EventContro
  *         description: Server error
  */
 router.get('/distinct/user/:field', AuthController.AuthenticateUser, EventController.getDistinctValuesForUser);
+
+/**
+ * @swagger
+ * /events/partner/distinct/{field}:
+ *   get:
+ *     summary: Get distinct values of a specific field from events not sponsor sent
+ *     tags: [Events]
+ *     parameters:
+ *       - in: path
+ *         name: field
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The field to get distinct values from
+ *     responses:
+ *       200:
+ *         description: List of distinct values
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Server error
+ */
+router.get('/partner/distinct/:field', AuthController.AuthenticatePartner , EventController.getDistinctFieldValuesUpcomingEventNotSent);
+
 
 module.exports = router

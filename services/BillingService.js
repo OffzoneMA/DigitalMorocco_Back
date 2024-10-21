@@ -3,35 +3,35 @@ const uploadService = require('./FileService');
 
 
 const createBillingForUser = async (userId, data, docFile) => {
-    try {
-      // Initialisation de la facture
-      const billing = new Billing({
-        userId,
-        amount: data?.amount,
-        dueDate: data?.dueDate,
-        status: data?.status,
-      });
-  
-      if (docFile) {
-        const docURL = await uploadService.uploadFile(
-          docFile,
-          `Billing/${userId}/uploadBy/${userId}`,
-          docFile.originalname
-        );
-  
-        billing.document = {
-          link: docURL,
-          mimeType: docFile.mimetype,
-          name: docFile.originalname,
-        };
-      }
-  
-      await billing.save();
-      return billing;
-    } catch (error) {
-      throw new Error(`Error creating billing for user: ${error.message}`);
+  try {
+    const billing = new Billing({
+      userId,
+      amount: data?.amount,
+      dueDate: data?.dueDate,
+      status: data?.status,
+    });
+
+    if (docFile) {
+      const docURL = await uploadService.uploadFile(
+        docFile,
+        `Billing/${userId}/uploadBy/${userId}`,
+        docFile.originalname
+      );
+
+      billing.document = {
+        link: docURL,
+        mimeType: docFile.mimetype,
+        name: docFile.originalname,
+      };
     }
-  };
+
+    const savedBilling = await billing.save();
+    return savedBilling; 
+  } catch (error) {
+    throw new Error(`Error creating billing for user: ${error.message}`);
+  }
+};
+
 
 const getBillingByUserId = async (userId) => {
   return await Billing.find({ userId });

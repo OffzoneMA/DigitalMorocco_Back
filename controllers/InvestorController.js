@@ -88,6 +88,16 @@ const getContactRequests = async (req, res) => {
     }
 }
 
+const getRecentApprovedContactRequests = async (req, res) => {
+    try {
+        const result = await InvestorContactService.getRecentApprovedContactRequests("investor", req.investorId)
+        res.status(200).json(result);
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: error?.message });
+    }
+}
+
 const getContactRequestsByInvestor = async (req, res) => {
     try {
         const result = await InvestorContactService.getAllContactRequest(req.query, "investor", req.params.investorId)
@@ -226,4 +236,4 @@ module.exports = { getInvestorRequests,updateContactStatus, addInvestor, getInve
     getContactRequests, getContacts, getProjects , getContactRequestsForInvestor , updateInvestor , 
     getAllInvestors , getDistinctInvestorData , getInvestorById , getInvestorDetails , 
 getAllInvestorsWithoutPagination , getDistinctRequestProjectFields , getDistinctRequestValues , 
-getContactRequestsByInvestor , deleteInvestorById}
+getContactRequestsByInvestor , deleteInvestorById , getRecentApprovedContactRequests}

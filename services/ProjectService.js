@@ -45,7 +45,7 @@ async function addMilestone(projectId, milestoneData) {
     );
       return updatedProject;
     } catch (error) {
-      throw new Error('Error adding milestone to project', error);
+      throw new Error(error?.message);
     }
   }
 
@@ -56,21 +56,22 @@ async function addMilestone(projectId, milestoneData) {
         { $pull: { milestones: { _id: milestoneId } } },
         { new: true }
       );
-
+  
       if (!project) {
-          return res.status(404).json({ message: "Project not found." });
+        throw new Error("Project not found");
       }
-      const member = await MemberService.getMemberById(project?.owner)
-
+  
+      const member = await MemberService.getMemberById(project?.owner);
+  
       await ActivityHistoryService.createActivityHistory(
         member.owner,
         'milestone_removed',
-        { targetName: milestoneId, targetDesc: `Milestone removed from project ${project._id}` , to: project?.name }
-    );
+        { targetName: milestoneId, targetDesc: `Milestone removed from project ${project._id}`, to: project?.name }
+      );
       return project;
     } catch (error) {
-      console.log(error)
-      throw new Error('Error removing milestone from project', error);
+      console.log(error);
+      throw error;
     }
   }
   

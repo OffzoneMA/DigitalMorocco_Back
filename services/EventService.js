@@ -4,7 +4,7 @@ const EmailService = require('./EmailingService');
 const ActivityHistoryService = require('../services/ActivityHistoryService');
 const uploadService = require('./FileService');
 const cron = require('node-cron');
-
+const Sponsor = require("../models/Sponsor"); 
 
 // Get all events
 async function getAllEvents(args) {
@@ -469,7 +469,7 @@ async function getAllUpcommingEvents(userId, args) {
     }
 
     // Ajouter le filtre par date de début si présent
-    if (args.startDate) {
+    if (args.startDate && args?.startDate !== 'Invalid Date') {
       const startOfDay = new Date(args.startDate);
       startOfDay.setHours(0, 0, 0, 0);  // Début de la journée
       const endOfDay = new Date(args.startDate);
@@ -502,6 +502,142 @@ async function getAllUpcommingEvents(userId, args) {
   }
 }
 
+async function getAllUpcomingEventsWithSponsors(userId, partnerId, args) {
+  try {
+    const page = args?.page || 1;
+    const pageSize = args?.pageSize || 8;
+    const skip = (page - 1) * pageSize;
+
+    // Base filter for upcoming events
+    const filter = { status: 'upcoming' };
+
+    // Add location filter if present
+    if (args?.location) {
+      filter.physicalLocation = args.location;
+    }
+
+    // Add start date filter if present
+    if (args.startDate && args?.startDate !== 'Invalid Date') {
+      const startOfDay = new Date(args.startDate);
+      startOfDay.setHours(0, 0, 0, 0);  // Start of the day
+      const endOfDay = new Date(args.startDate);
+      endOfDay.setHours(23, 59, 59, 999);  // End of the day
+
+      filter.startDate = { $gte: startOfDay, $lte: endOfDay };
+    }
+
+    // Fetch events based on filters
+    const events = await Event.find(filter)
+      .skip(skip)
+      .limit(pageSize);
+
+    // Add participation and sponsor status fields
+    const eventsWithDetails = await Promise.all(events.map(async (event) => {
+      // Check if the user participated
+      const userParticipated = event.attendeesUsers.some(user => user.userId.equals(userId));
+
+      // Check if the partner has sent a sponsor request for this event
+      const sponsorRequest = await Sponsor.findOne({ partnerId, eventId: event._id , requestType:'Sent' });
+      const partnerHasSentRequest = !!sponsorRequest;
+
+      // Check if the partner has approved at least one sponsorship request for this event
+      const approvedSponsorship = await Sponsor.findOne({
+        partnerId,
+        eventId: event._id,
+        status: 'Approved'
+      });
+      const partnerHasApprovedSponsorship = !!approvedSponsorship;
+
+      // Return event with added fields
+      return {
+        ...event.toObject(),
+        userParticipated,
+        partnerHasSentRequest,
+        partnerHasApprovedSponsorship
+      };
+    }));
+
+    // Count total events for pagination
+    const totalCount = await Event.countDocuments(filter);
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    return { events: eventsWithDetails, totalPages };
+  } catch (error) {
+    throw new Error('Error retrieving events: ' + error.message);
+  }
+}
+
+async function getAllUpcomingEventsWithSponsorsNotSent(userId, partnerId, args) {
+  try {
+    const page = args?.page || 1;
+    const pageSize = args?.pageSize || 8;
+    const skip = (page - 1) * pageSize;
+
+    // Base filter for upcoming events
+    const filter = { status: 'upcoming' };
+
+    // Add location filter if present
+    if (args?.location) {
+      filter.physicalLocation = args.location;
+    }
+
+    // Add start date filter if present
+    if (args?.startDate && args?.startDate !== 'Invalid Date') {
+      const startOfDay = new Date(args.startDate);
+      startOfDay.setHours(0, 0, 0, 0);  // Start of the day
+      const endOfDay = new Date(args.startDate);
+      endOfDay.setHours(23, 59, 59, 999);  // End of the day
+
+      filter.startDate = { $gte: startOfDay, $lte: endOfDay };
+    }
+
+    // Fetch events based on filters
+    const events = await Event.find(filter)
+      .skip(skip)
+      .limit(pageSize);
+
+    // Filter out events where the partner has already sent a sponsor request
+    const eventsWithoutSentRequest = await Promise.all(events.map(async (event) => {
+      // Check if the partner has NOT sent a sponsor request for this event
+      const sponsorRequest = await Sponsor.findOne({ partnerId, eventId: event._id, requestType: 'Sent' });
+      const partnerHasSentRequest = !!sponsorRequest;
+
+      // Only return events where the partner has NOT sent a request
+      if (!partnerHasSentRequest) {
+        // Check if the user participated
+        const userParticipated = event.attendeesUsers.some(user => user.userId.equals(userId));
+
+        // Check if the partner has approved at least one sponsorship request for this event
+        const approvedSponsorship = await Sponsor.findOne({
+          partnerId,
+          eventId: event._id,
+          status: 'Approved'
+        });
+        const partnerHasApprovedSponsorship = !!approvedSponsorship;
+
+        return {
+          ...event.toObject(),
+          userParticipated,
+          partnerHasSentRequest,
+          partnerHasApprovedSponsorship
+        };
+      } else {
+        return null;
+      }
+    }));
+
+    // Filter out any null values (events that were excluded)
+    const filteredEvents = eventsWithoutSentRequest.filter(event => event !== null);
+
+    // Count total events for pagination
+    const totalCount = filteredEvents.length;
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    return { events: filteredEvents, totalPages };
+  } catch (error) {
+    throw new Error('Error retrieving events: ' + error.message);
+  }
+}
 
 // const getDistinctValuesByUser = async (userId, field) => {
 //   try {
@@ -529,11 +665,34 @@ const getDistinctValuesByUser = async (field, userId) => {
   }
 };
 
+async function getDistinctFieldValuesForUpcomingEventsNotSent(partnerId, field) {
+  try {
+    // Base filter for upcoming events
+    const filter = { status: 'upcoming' };
+    // Fetch all upcoming events based on filters
+    const events = await Event.find(filter).lean();
+    // Filter out events where the partner has already sent a sponsor request
+    const eventsWithoutSentRequest = await Promise.all(events.map(async (event) => {
+      const sponsorRequest = await Sponsor.findOne({ partnerId, eventId: event._id, requestType: 'Sent' });
+      return !sponsorRequest ? event : null; // Return event if no sponsor request found
+    }));
+
+    // Filter out any null values
+    const validEvents = eventsWithoutSentRequest.filter(event => event !== null);
+    // Retrieve distinct values for the specified field
+    const distinctValues = [...new Set(validEvents.map(event => event[field]))];
+    return { distinctValues };
+  } catch (error) {
+    throw new Error('Error retrieving distinct field values: ' + error.message);
+  }
+}
+
 
 module.exports = {
     createEvent, getAllEvents, getEventById, updateEvent, deleteEvent, getAllEventsByUser, addAttendeeToEvent,
     supprimerCollection , addConnectedAttendee , updateConnectedAttendee , deleteConnectedAttendee , addPromoCode ,
     countEventsByUserId , getEventsForUser , getDistinctValues , getPastEventsWithUserParticipation ,
     getDistinctValuesByUser , createEventWithJson , searchParticipateEvents , searchUpcomingEvents ,
-    searchPastEvents , getAllUpcommingEvents , getEventByIdWithParticipate
+    searchPastEvents , getAllUpcommingEvents , getEventByIdWithParticipate , getAllUpcomingEventsWithSponsors , 
+    getAllUpcomingEventsWithSponsorsNotSent , getDistinctFieldValuesForUpcomingEventsNotSent
 };

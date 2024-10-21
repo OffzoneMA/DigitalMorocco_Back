@@ -348,6 +348,65 @@ router.get('/partners', AuthController.AuthenticatePartner , SponsorController.g
 
 /**
  * @swagger
+ * /sponsors/partners/history:
+ *   get:
+ *     summary: Get all sponsors hidtory for a specific partner
+ *     tags: [Sponsors]
+ *     parameters:
+ *       - name: page
+ *         in: query
+ *         description: Page number
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - name: pageSize
+ *         in: query
+ *         description: Number of sponsors per page
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *       - name: status
+ *         in: query
+ *         description: Status of the sponsor (Pending, Approved, Rejected)
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *       - name: sponsorshipType
+ *         in: query
+ *         description: Type of sponsorship
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: requestType
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *       - in: query
+ *         name: exactDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Date for filtering sponsor requests by creation date.
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: Filter by location of events
+ *     responses:
+ *       200:
+ *         description: A list of sponsors for the partner
+ *       404:
+ *         description: Partner not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/partners/history', AuthController.AuthenticatePartner , SponsorController.getSponsorsHistoryByPartner);
+
+
+/**
+ * @swagger
  * /sponsors/past-events:
  *   get:
  *     summary: Get approved sponsors for past events
@@ -474,6 +533,59 @@ router.get('/approved-sponsors', AuthController.AuthenticatePartner , SponsorCon
  *         description: Server error
  */
 router.get('/partner/distinct' , AuthController.AuthenticatePartner , SponsorController.getDistinctEventFieldsByPartner);
+
+/**
+ * @swagger
+ * /sponsors/partner/distinct:
+ *   get:
+ *     summary: Get distinct values of a specific field for sponsored events by a partner
+ *     tags: [Sponsors]
+ *     parameters:
+ *       - in: query
+ *         name: field
+ *         required: true
+ *         description: The field for which to retrieve distinct values (e.g., physicalLocation)
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: eventStatus
+ *         required: false
+ *         description: The status of the events to filter by (e.g., upcoming, past)
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *       - in: query
+ *         name: sponsorStatus
+ *         required: false
+ *         description: The status of the events to filter by (e.g., upcoming, past)
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *     responses:
+ *       200:
+ *         description: Distinct values retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Partner not found
+ *       500:
+ *         description: Server error
+ */
+router.get('/partner/history/distinct' , AuthController.AuthenticatePartner , SponsorController.getDistinctEventFieldsByPartnerHistory);
+
 
 /**
  * @swagger

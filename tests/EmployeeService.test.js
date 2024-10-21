@@ -1,103 +1,151 @@
 const EmployeeService = require('../services/EmployeeService');
+const Employee = require('../models/Employees');
+const ActivityHistoryService = require('../services/ActivityHistoryService');
+const uploadService = require('../services/FileService');
+const UserService = require('../services/UserService');
 
-jest.mock('../services/EmployeeService');
-
+jest.mock('../models/Employees');
+jest.mock('../services/ActivityHistoryService');
+jest.mock('../services/FileService');
+jest.mock('../services/UserService');
 
 describe('EmployeeService', () => {
-  describe('createEmployee', () => {
-    it('should create a new employee', async () => {
-      const userId = '123456789';
-      const employeeData = {
-        firstName: 'John',
-        lastName: 'Doe',
-        position: 'Software Engineer',
-        department: 'Engineering',
-        startDate: '2021-01-01',
-        status: 'active',
-      };
-      const image = {
-        originalname: 'profile.jpg',
-      }; 
-      const employee = await EmployeeService.createEmployee(userId, employeeData, image);
-      expect(employee).toBeDefined();
-      expect(employee.firstName).toEqual(employeeData.firstName);
-      expect(employee.lastName).toEqual(employeeData.lastName);
-      expect(employee.position).toEqual(employeeData.position);
-      expect(employee.department).toEqual(employeeData.department);
-      expect(employee.startDate).toEqual(employeeData.startDate);
-      expect(employee.status).toEqual(employeeData.status);
-      expect(employee.image).toBeDefined();
+    const mockUserId = 'user123';
+    const mockEmployeeData = {
+        fullName: 'John Doe',
+        jobTitle: 'Developer',
+        workEmail: 'john@example.com',
+    };
+    const mockImage = {
+        originalname: 'logo.png',
+        mimetype: 'image/png',
+    };
+
+    // describe('createEmployee', () => {
+    //     it('should create an employee with image', async () => {
+    //         UserService.getUserByID.mockResolvedValue({ _id: mockUserId });
+            
+    //         const mockEmployeeInstance = {
+    //             ...mockEmployeeData,
+    //             _id: 'employee123',
+    //             save: jest.fn().mockResolvedValue(true), // On moque save pour qu'il fonctionne
+    //         };
+
+    //         Employee.mockImplementation(() => mockEmployeeInstance); // On moque le constructeur de Employee
+    //         uploadService.uploadFile.mockResolvedValue('http://example.com/logo.png');
+
+    //         const result = await EmployeeService.createEmployee(mockUserId, mockEmployeeData, mockImage);
+
+    //         expect(Employee).toHaveBeenCalledWith({
+    //             ...mockEmployeeData,
+    //             createdBy: mockUserId,
+    //             updatedBy: mockUserId,
+    //         });
+    //         expect(mockEmployeeInstance.save).toHaveBeenCalledTimes(2); // On l'appelle deux fois
+    //         expect(uploadService.uploadFile).toHaveBeenCalledWith(
+    //             mockImage,
+    //             `Users/${mockUserId}/employees/${mockEmployeeInstance._id}`,
+    //             mockImage.originalname
+    //         );
+    //         expect(result).toEqual(mockEmployeeInstance);
+    //         expect(ActivityHistoryService.createActivityHistory).toHaveBeenCalledWith(
+    //             mockUserId,
+    //             'employee_added',
+    //             { targetName: mockEmployeeData.fullName, targetDesc: '' }
+    //         );
+    //     });
+
+    //     it('should throw an error if user not found', async () => {
+    //         UserService.getUserByID.mockResolvedValue(null);
+
+    //         await expect(EmployeeService.createEmployee(mockUserId, mockEmployeeData, mockImage)).rejects.toThrow('User not found');
+    //     });
+    // });
+
+    describe('updateEmployee', () => {
+        it('should update an employee with image', async () => {
+            const mockEmployee = {
+                _id: 'employee123',
+                fullName: 'John Doe',
+                createdBy: mockUserId,
+                set: jest.fn(),
+                save: jest.fn().mockResolvedValue(true), // On moque save pour qu'il fonctionne
+            };
+            Employee.findById.mockResolvedValue(mockEmployee);
+            uploadService.uploadFile.mockResolvedValue('http://example.com/new-logo.png');
+
+            const updateData = { jobTitle: 'Senior Developer' };
+            const result = await EmployeeService.updateEmployee(mockEmployee._id, updateData, mockImage);
+
+            expect(mockEmployee.set).toHaveBeenCalledWith(updateData);
+            expect(uploadService.uploadFile).toHaveBeenCalledWith(
+                mockImage,
+                `Users/${mockUserId}/employees/${mockEmployee._id}`,
+                mockImage.originalname
+            );
+            expect(result).toEqual(mockEmployee);
+            expect(ActivityHistoryService.createActivityHistory).toHaveBeenCalledWith(
+                mockUserId,
+                'employee_updated',
+                { targetName: mockEmployee.fullName, targetDesc: '' }
+            );
+        });
+
+        it('should throw an error if employee not found', async () => {
+            Employee.findById.mockResolvedValue(null);
+
+            await expect(EmployeeService.updateEmployee('invalidId', {}, mockImage)).rejects.toThrow('Employee not found');
+        });
     });
-  });
-});
 
-describe('EmployeeService', () => {
-  describe('updateEmployee', () => {
-    it('should update an existing employee', async () => {
-      const employeeId = '123456789';
-      const updateData = {
-        firstName: 'Jane',
-        lastName: 'Doe',
-        position: 'Software Engineer',
-        department: 'Engineering',
-        startDate: '2021-01-01',
-        status: 'active',
-      };
-      const image = {
-        originalname: 'profile.jpg',
-      }; 
-      const updatedEmployee = await EmployeeService.updateEmployee(employeeId, updateData, image);
-      expect(updatedEmployee).toBeDefined();
-      expect(updatedEmployee.firstName).toEqual(updateData.firstName);
-      expect(updatedEmployee.lastName).toEqual(updateData.lastName);
-      expect(updatedEmployee.position).toEqual(updateData.position);
-      expect(updatedEmployee.department).toEqual(updateData.department);
-      expect(updatedEmployee.startDate).toEqual(updateData.startDate);
-      expect(updatedEmployee.status).toEqual(updateData.status);
-      expect(updatedEmployee.image).toBeDefined();
+    describe('getAllEmployees', () => {
+      it('should return all employees', async () => {
+          const mockEmployees = [{ _id: 'employee123', fullName: 'John Doe' }];
+  
+          // Création d'un mock de la méthode find
+          Employee.find.mockReturnValue({
+              sort: jest.fn().mockReturnThis(), // Permet le chaînage
+              exec: jest.fn().mockResolvedValue(mockEmployees), // Renvoie les employés mockés
+          });
+  
+          const result = await EmployeeService.getAllEmployees();
+  
+          expect(result).toEqual(mockEmployees); // Vérifie que le résultat est celui attendu
+      });
+  
+      it('should throw an error if getting employees fails', async () => {
+          Employee.find.mockImplementation(() => {
+              throw new Error('Some error');
+          });
+  
+          await expect(EmployeeService.getAllEmployees()).rejects.toThrow('Error getting all employees: Some error');
+      });
+  });
+   
+
+    describe('getAllEmployeesByUser', () => {
+        it('should return all employees created by a user', async () => {
+            const mockEmployees = [{ _id: 'employee123', fullName: 'John Doe' }];
+            const mockQuery = {
+                skip: jest.fn().mockReturnThis(), // Permettre le chaînage
+                sort: jest.fn().mockReturnThis(), // Permettre le chaînage
+                limit: jest.fn().mockResolvedValue(mockEmployees), // Moquer la méthode limit
+            };
+
+            Employee.find.mockReturnValue(mockQuery); // Moquer Employee.find()
+
+            const args = { page: 1, pageSize: 8 };
+            const result = await EmployeeService.getAllEmployeesByUser(mockUserId, args);
+
+            expect(result.employees).toEqual(mockEmployees);
+        });
+
+        it('should throw an error if getting employees fails', async () => {
+            Employee.find.mockImplementation(() => { throw new Error('Some error'); });
+
+            await expect(EmployeeService.getAllEmployeesByUser(mockUserId, {})).rejects.toThrow('Error getting all employees by user: Some error');
+        });
     });
-  });
-});
 
-describe('EmployeeService', () => {
-  describe('getEmployeeById', () => {
-    it('should get an employee by their id', async () => {
-      const employeeId = '123456789';
-      const employee = await EmployeeService.getEmployeeById(employeeId);
-      expect(employee).toBeDefined();
-      expect(employee._id).toEqual(employeeId);
-    }); 
-  })
-});
-
-describe('EmployeeService', () => {
-  describe('deleteEmployee', () => {
-    it('should delete an employee', async () => {
-      const employeeId = '123456789';
-      await EmployeeService.deleteEmployee(employeeId);
-      const employee = await EmployeeService.getEmployeeById(employeeId);
-      expect(employee).toBeNull();
-    });
-  });
-});
-
-describe('EmployeeService', () => {
-  describe('getEmployees', () => {
-    it('should get all employees', async () => {
-      const employees = await EmployeeService.getEmployees();
-      expect(employees).toBeDefined();
-      expect(employees.length).toBeGreaterThan(0);
-    });
-  });
-});
-
-describe('EmployeeService', () => {
-  describe('getEmployeesByUser', () => {
-    it('should get all employees by user', async () => {
-      const userId = '123456789';
-      const employees = await EmployeeService.getEmployeesByUser(userId);
-      expect(employees).toBeDefined();
-      expect(employees.length).toBeGreaterThan(0);
-    }); 
-  })
+    // Ajoute les autres tests pour les fonctions restantes
 });

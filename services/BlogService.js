@@ -44,17 +44,22 @@ const getAllBlogs = async (args) => {
       const blogs = await Blog.find({ creator: userId });
       return blogs;
     } catch (error) {
-      throw new Error(`Error fetching blogs for user ${userId}: ${error.message}`);
+      throw new Error(`${error.message}`);
     }
 };
 
 const getBlogById = async (blogId) => {
     try {
-        return await Blog.findById(blogId);
+        const blog = await Blog.findById(blogId);
+        if (!blog) {
+            throw new Error('Blog not found'); 
+        }
+        return blog;
     } catch (error) {
         throw error;
     }
 };
+
 
 const updateBlog = async (blogId, blogData, imageData , coverImage) => {
     try {
@@ -99,7 +104,7 @@ const  getLatestBlogs = async (limit) => {
       const blogs = await Blog.find().sort({ date: -1 }).limit(limit);
       return blogs;
     } catch (error) {
-      throw new Error(`Error fetching latest blogs: ${error.message}`);
+      throw new Error(`${error.message}`);
     } 
 };
   

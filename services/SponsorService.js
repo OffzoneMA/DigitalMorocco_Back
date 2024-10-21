@@ -92,7 +92,7 @@ const getAllSponsors = async (args) => {
         }
 
         // Filtrage par date si une date précise est fournie
-        if (exactDate) {
+        if (exactDate && exactDate !== 'Invalid Date') {
             const startOfDay = new Date(exactDate);
             startOfDay.setHours(0, 0, 0, 0);  // Début de la journée
             const endOfDay = new Date(exactDate);
@@ -259,7 +259,7 @@ const getSponsorsByPartner = async (partnerId, args) => {
         }
            
         // Filtrage par date si une date précise est fournie
-        if (exactDate) {
+        if (exactDate && exactDate !== 'Invalid Date') {
             const startOfDay = new Date(exactDate);
             startOfDay.setHours(0, 0, 0, 0);  // Début de la journée
             const endOfDay = new Date(exactDate);
@@ -319,20 +319,28 @@ const getSponsorsHistoryByPartner = async (partnerId, args) => {
     try {
         const page = args?.page || 1;
         const pageSize = args?.pageSize || 8;
+
         // Extraction des paramètres de filtrage
         const { status, requestType, exactDate, location, sponsorshipType } = args;
         const query = { partnerId };
+
+        // Exclusion des sponsors avec requestType 'Received' et status 'pending'
+        query.$nor = [
+            { requestType: 'Received', status: 'Pending' }
+        ];
+
         // Filtrage par statut si fourni
-        if (status && status?.length > 0) {
+        if (status && status.length > 0) {
             query.status = { $in: status.split(',') };
         }
+        
         // Filtrage par type de requête (envoyée ou reçue)
         if (requestType && requestType.length > 0) {
             query.requestType = { $in: requestType.split(',') };
         }
            
         // Filtrage par date si une date précise est fournie
-        if (exactDate) {
+        if (exactDate && exactDate !== 'Invalid Date') {
             const startOfDay = new Date(exactDate);
             startOfDay.setHours(0, 0, 0, 0);  // Début de la journée
             const endOfDay = new Date(exactDate);
@@ -349,7 +357,7 @@ const getSponsorsHistoryByPartner = async (partnerId, args) => {
         }
 
         // Filtrage par type de sponsoring si fourni
-        if (sponsorshipType && sponsorshipType?.length > 0) {
+        if (sponsorshipType && sponsorshipType.length > 0) {
             query.sponsorshipType = { $in: sponsorshipType.split(',') };
         }
 
@@ -418,7 +426,7 @@ const getApprovedSponsorsForPastEvents = async (args) => {
         }
 
         // Filtrage par date si une date précise est fournie
-        if (exactDate) {
+        if (exactDate && exactDate !== 'Invalid Date') {
             const startOfDay = new Date(exactDate);
             startOfDay.setHours(0, 0, 0, 0);  // Début de la journée
             const endOfDay = new Date(exactDate);
@@ -472,7 +480,7 @@ const getApprovedSponsorsForPartner = async (partnerId, args) => {
         }
 
         // Filtrage par date si une date précise est fournie
-        if (exactDate) {
+        if (exactDate && exactDate !== 'Invalid Date') {
             const startOfDay = new Date(exactDate);
             startOfDay.setHours(0, 0, 0, 0);  // Début de la journée
             const endOfDay = new Date(exactDate);
@@ -553,9 +561,57 @@ const getDistinctEventFieldsByPartner = async (partnerId, field, eventStatus, sp
     }
 };
 
+const getDistinctEventFieldsByPartnerHistory = async (partnerId, field, eventStatus, sponsorStatus) => {
+    try {
+        const sponsorQuery = { partnerId };
+
+        // Ajouter le filtre par statut du sponsor si fourni
+        if (sponsorStatus) {
+            sponsorQuery.status = { $in: sponsorStatus.split(',') };
+        }
+
+        // Exclure les sponsors avec requestType 'Received' et status 'Pending'
+        sponsorQuery.$nor = [
+            { requestType: 'Received', status: 'Pending' }
+        ];
+
+        // Récupérer les sponsors associés au partenaire et au statut du sponsor
+        const sponsors = await Sponsor.find(sponsorQuery).select('eventId');
+
+        const eventIds = sponsors.map(sponsor => sponsor.eventId);
+
+        // Vérifiez s'il n'y a pas d'événements sponsorisés
+        if (eventIds.length === 0) {
+            return {
+                data: [],
+                message: 'No sponsored events found for this partner.'
+            };
+        }
+
+        // Construire la requête de filtrage des événements par ID et par statut de l'événement
+        const eventQuery = { _id: { $in: eventIds } };
+
+        // Ajouter le filtre de statut d'événement si fourni
+        if (eventStatus) {
+            eventQuery.status = { $in: eventStatus.split(',') };
+        }
+
+        // Récupérer les valeurs distinctes du champ spécifié
+        const distinctValues = await Event.distinct(field, eventQuery);
+
+        return {
+            data: distinctValues,
+            message: `Distinct values for field '${field}' retrieved successfully.`
+        };
+    } catch (error) {
+        throw new Error(`Error fetching distinct event fields: ${error.message}`);
+    }
+};
+
+
 
 module.exports = {
     createSponsor, getAllSponsors,getSponsorById, approveSponsor, rejectSponsor, updateSponsor,
     deleteSponsor, getSponsorsByPartner , getApprovedSponsorsForPastEvents, getApprovedSponsorsForPartner,
-    getDistinctEventFieldsByPartner
+    getDistinctEventFieldsByPartner , getSponsorsHistoryByPartner , getDistinctEventFieldsByPartnerHistory
 };

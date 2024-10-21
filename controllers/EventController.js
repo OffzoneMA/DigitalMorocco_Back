@@ -216,6 +216,17 @@ const getAllUpcomingEventsForUserParticipate = async (req, res) => {
   }
 };
 
+const getUpcomingEventsWithoutSponsorNotSent = async (req, res) => {
+  try {
+    const args = req.query;
+    const result = await EventService.getAllUpcomingEventsWithSponsorsNotSent(req.userId, req.partnerId, args);
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const getDistinctValuesForUser = async (req, res) => {
   try {
       const distinctValues = await EventService.getDistinctValuesByUser(req.params.field, req.userId);
@@ -225,6 +236,17 @@ const getDistinctValuesForUser = async (req, res) => {
       res.status(500).json({ error: error.message });
   }
 };
+
+const getDistinctFieldValuesUpcomingEventNotSent = async (req, res) => {
+  const { field } = req.params;
+
+  try {
+    const result = await EventService.getDistinctFieldValuesForUpcomingEventsNotSent(req.partnerId, field);
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+}
 
 const createEventWithJson = async (req, res) => {
   try {
@@ -240,5 +262,6 @@ module.exports = {
     createEvent, getEvents, getEventById, updateEvent, deleteEvent, getAllEventsByUser, addAttendeeToEvent,
     sendTicketToUser, supprimerCollection , addConnectedAttendee , updateConnectedAttendee , deleteConnectedAttendee ,
     addPromoCode , getEventsForUser , getDistinctFieldValues , getPastEventsForUserParticipate , getDistinctValuesForUser , 
-    createEventWithJson , getAllUpcomingEventsForUserParticipate , getEventByIdWithParticipate
+    createEventWithJson , getAllUpcomingEventsForUserParticipate , getEventByIdWithParticipate , 
+    getUpcomingEventsWithoutSponsorNotSent , getDistinctFieldValuesUpcomingEventNotSent
 };
