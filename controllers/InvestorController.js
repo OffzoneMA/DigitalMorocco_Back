@@ -232,8 +232,20 @@ const deleteInvestorById = async (req, res) => {
     }
 };
 
+const getLastRecentContactRequests = async (req, res) => {
+    try {
+        const { status } = req.query;
+        const result = await InvestorContactService.getLastRecentContactRequests( "investor", req.investorId , status)
+        res.status(200).json(result);
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: "Something went wrong!" });
+    }
+}
+
 module.exports = { getInvestorRequests,updateContactStatus, addInvestor, getInvestors, 
     getContactRequests, getContacts, getProjects , getContactRequestsForInvestor , updateInvestor , 
     getAllInvestors , getDistinctInvestorData , getInvestorById , getInvestorDetails , 
 getAllInvestorsWithoutPagination , getDistinctRequestProjectFields , getDistinctRequestValues , 
-getContactRequestsByInvestor , deleteInvestorById , getRecentApprovedContactRequests}
+getContactRequestsByInvestor , deleteInvestorById , getRecentApprovedContactRequests , 
+getLastRecentContactRequests}

@@ -517,8 +517,6 @@ const getApprovedSponsorsForPartner = async (partnerId, args) => {
     }
 };
 
-
-
 const getDistinctEventFieldsByPartner = async (partnerId, field, eventStatus, sponsorStatus) => {
     try {
         const sponsorQuery = { partnerId };
@@ -608,10 +606,67 @@ const getDistinctEventFieldsByPartnerHistory = async (partnerId, field, eventSta
     }
 };
 
+const getRecentSponsorsByStatus = async (partnerId, status, requestType) => {
+    try {
+        const query = { 
+            partnerId 
+        };
+
+        // Filtrage par status
+        if (status != null && status !== '') {
+            query.status = status;
+        }
+
+        // Filtrage par requestType
+        if (requestType != null && requestType !== '') {
+            query.requestType = requestType;
+        }
+
+        // Récupérer les 3 sponsors les plus récents avec les filtres fournis
+        const recentSponsors = await Sponsor.find(query)
+            .populate("eventId")  
+            .limit(3) 
+            .sort({ dateCreated: 'desc' });
+
+        // Vérification si des sponsors sont trouvés
+        if (recentSponsors.length === 0) {
+            return {
+                data: [],
+                message: `No sponsors found with status: ${status} and request type: ${requestType}`
+            };
+        }
+
+        // Retourner les sponsors trouvés
+        return {
+            data: recentSponsors,
+            message: `Successfully retrieved recent sponsors with status: ${status} and request type: ${requestType}`
+        };
+    } catch (error) {
+        throw new Error(`Error fetching recent sponsors by status and request type: ${error.message}`);
+    }
+};
+
+const countApprovedSponsorsByPartner = async (partnerId) => {
+    try {
+        const query = { 
+            partnerId, 
+            status: 'Approved' 
+        };
+
+        const approvedSponsorsCount = await Sponsor.countDocuments(query);
+        return {
+            count: approvedSponsorsCount,
+            message: `Successfully counted ${approvedSponsorsCount} approved sponsors for partner: ${partnerId}`
+        };
+    } catch (error) {
+        throw new Error(`Error counting approved sponsors by partner: ${error.message}`);
+    }
+};
 
 
 module.exports = {
     createSponsor, getAllSponsors,getSponsorById, approveSponsor, rejectSponsor, updateSponsor,
     deleteSponsor, getSponsorsByPartner , getApprovedSponsorsForPastEvents, getApprovedSponsorsForPartner,
-    getDistinctEventFieldsByPartner , getSponsorsHistoryByPartner , getDistinctEventFieldsByPartnerHistory
+    getDistinctEventFieldsByPartner , getSponsorsHistoryByPartner , getDistinctEventFieldsByPartnerHistory ,
+    getRecentSponsorsByStatus , countApprovedSponsorsByPartner
 };

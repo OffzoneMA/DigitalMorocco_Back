@@ -166,9 +166,19 @@ const getDistinctEventFieldsByPartnerHistory =  async (req, res) => {
     }
 }
 
+const recentSponsorsByStatusController = async (req, res) => {
+    try {
+        const { status } = req.query;  
+        const result = await SponsorService.getRecentSponsorsByStatus(req.partnerId , status);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 module.exports = {
     createSponsor, getAllSponsors, getSponsorById, approveSponsor, rejectSponsor,
     updateSponsor, deleteSponsor, getSponsorsByPartner, getApprovedSponsorsForPastEvents,
     getApprovedSponsorsForPartner, getDistinctEventFieldsByPartner , createSponsorForPartner , 
-    getSponsorsHistoryByPartner , getDistinctEventFieldsByPartnerHistory
+    getSponsorsHistoryByPartner , getDistinctEventFieldsByPartnerHistory , recentSponsorsByStatusController
 };

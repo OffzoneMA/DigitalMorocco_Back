@@ -586,6 +586,31 @@ router.get('/partner/distinct' , AuthController.AuthenticatePartner , SponsorCon
  */
 router.get('/partner/history/distinct' , AuthController.AuthenticatePartner , SponsorController.getDistinctEventFieldsByPartnerHistory);
 
+/**
+ * @swagger
+ * /sponsors/recentByPartner:
+ *   get:
+ *     summary: Get the 3 most recent sponsors by partner and status
+ *     tags: [Sponsors]
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *         description: The status to filter sponsors by
+ *       - in: query
+ *         name: requestType
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of recent sponsors for the given partner and status
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/recentByPartner', AuthController.AuthenticatePartner ,  SponsorController.recentSponsorsByStatusController);
+
+
 
 /**
  * @swagger

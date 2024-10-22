@@ -971,5 +971,27 @@ router.get('/request/distinct/:field', AuthController.AuthenticateInvestor ,  In
  */
 router.delete('/:investorId', InvestorController.deleteInvestorById);
 
+/**
+ * @swagger
+ * /investors/recent-requests/last:
+ *   get:
+ *     summary: Get 5 most recent contact requests with optional status filter
+ *     description: Fetch the 5 most recent contact requests for a member or investor, with an optional status filter.
+ *     tags: [Investors]
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         required: false
+ *         schema:
+ *           type: string
+ *           description: Filter by status (e.g., 'Approved,Pending'). Multiple statuses can be separated by commas.
+ *     responses:
+ *       '200':
+ *         description: Successfully fetched the 5 most recent contact requests.
+ *       '500':
+ *         description: Internal Server Error.
+ */
+router.get('/recent-requests/last', AuthController.AuthenticateInvestor , InvestorController.getLastRecentContactRequests);
+
 
 module.exports = router

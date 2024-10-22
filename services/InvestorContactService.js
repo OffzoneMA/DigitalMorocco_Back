@@ -371,6 +371,38 @@ const getAllContactRequest = async (args, role, id) => {
     return { ContactsHistory, totalPages };
 };
 
+const getLastRecentContactRequests = async (role, id, status) => {
+    try {
+        // Construire le filtre de recherche
+        const query = {};
+        if (role === "member") query.member = id;
+        if (role === "investor") query.investor = id;
+
+        if (status && status.length > 0) {
+            query.status = { $in: status.split(',') }; 
+        }
+
+        const recentRequests = await ContactRequest.find(query)
+            .populate(role === "member" ? {
+                path: 'investor',
+                model: 'Investor',
+                select: '_id name image linkedin_link'
+            } : {
+                path: 'member',
+                model: 'Member',
+                select: '_id companyName website city contactEmail logo country'
+            })
+            .populate({ path: 'project', model: 'Project' })
+            .sort({ dateCreated: 'desc' })
+            .limit(5);
+
+        return { recentRequests };
+    } catch (error) {
+        throw new Error(`Error fetching recent contact requests: ${error.message}`);
+    }
+};
+
+
 const getRecentApprovedContactRequests = async (role, id) => {
     try {
         const query = {};
@@ -693,11 +725,11 @@ const countApprovedInvestments = async (role, id) => {
 };
 
 
-
 module.exports = { CreateInvestorContactReq, getAllContactRequest ,
     getContactRequestsForInvestor , getContactRequestsForMember  , 
     shareProjectWithInvestors , CreateInvestorContactReqForProject ,
     getContactRequestById, createContactRequest, updateContactRequest, deleteContactRequest ,
      getAllContactRequestsAll, searchContactRequests , getDistinctFieldValues , getDistinctProjectFieldValues ,
-     approveContactRequest , rejectContactRequest , getRecentApprovedContactRequests , countApprovedInvestments
+     approveContactRequest , rejectContactRequest , getRecentApprovedContactRequests , countApprovedInvestments , 
+     getLastRecentContactRequests
  }

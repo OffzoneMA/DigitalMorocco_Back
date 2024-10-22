@@ -8,6 +8,7 @@ const InvestorService = require('../services/InvestorService');
 const ProjectService = require('../services/ProjectService');
 const EventService = require('../services/EventService');
 const InvestorContactService = require('../services/InvestorContactService');
+const SponsorService = require('../services/SponsorService');
 
 
 const signInUser = async (u) => {
@@ -117,6 +118,7 @@ const generateUserInfosAll = async (user) => {
   let projectCount = 0;
   let eventCount = 0;
   let investmentCount = 0;
+  let sponsorCount = 0;
 
   if (user?.role?.toLowerCase() === "member") {
     const member = await MemberService.getMemberInfoByUserId(user._id);
@@ -129,7 +131,10 @@ const generateUserInfosAll = async (user) => {
     };
   } else if (user?.role?.toLowerCase() === "partner") {
     const partner = await PartnerService.getPartnerByUserId(user._id);
-    roleData = partner?._doc ? partner._doc : partner;
+    sponsorCount = await SponsorService.countApprovedSponsorsByPartner(partner?._id);
+    roleData ={ 
+      ...partner?._doc ? partner._doc : partner,
+    sponsorCount}
   } else if (user?.role?.toLowerCase() === "investor") {
     const investor = await InvestorService.getInvestorByUserId(user._id);
     investmentCount = await InvestorContactService.countApprovedInvestments('investor' ,investor?._id);
