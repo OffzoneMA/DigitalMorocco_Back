@@ -332,9 +332,19 @@ const getDistinctRequestFieldValues = async (req, res) => {
     }
 };
 
+const getInvestorsForMemberWithoutPagination = async (req, res) => {
+
+    try {
+        const investors = await MemberService.getInvestorsForMemberWithoutPagination(req.memberId);
+        res.status(200).json({ investors });
+    } catch (error) {
+        res.status(500).json({ error: 'Error retrieving investors: ' + error.message });
+    }
+};
+
 module.exports = {  addCompanyToMember,getContacts,getMembers, createEnterprise, getByName, createProject, 
     contactRequest, getContactRequests , createCompany  ,createMember ,getTestAllMembers , 
     getInvestorsForMember , getContactRequestsForMember , getAllProjectsForMember , updateProject , 
      getUniqueCountries , getUniqueStages , getUniqueCompanyTypes , createTestCompany ,
     updateMember , shareProject , CreateMemberWithLogo , getDistinctInvestorFieldValues ,
-getDistinctRequestFieldValues , getAllProjectsForMemberWithoutPagination }
+getDistinctRequestFieldValues , getAllProjectsForMemberWithoutPagination  , getInvestorsForMemberWithoutPagination}

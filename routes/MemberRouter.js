@@ -1274,6 +1274,19 @@ router.get('/my-investors', AuthController.AuthenticateMember , MemberController
 
 /**
  * @swagger
+ * /members/myinvestorsWithoutPage:
+ *   get:
+ *     summary: Get all investors for a member
+ *     description: Retrieve the list of all unique investors associated with a member.
+ *     responses:
+ *       200:
+ *       500:
+ *         description: Error retrieving investors
+ */
+router.get('/myinvestorsWithoutPage', AuthController.AuthenticateMember , MemberController.getInvestorsForMemberWithoutPagination);
+
+/**
+ * @swagger
  * /members/investors/distinct/{field}:
  *   get:
  *     summary: Get distinct values of a specified field from investors
