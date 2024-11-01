@@ -529,6 +529,45 @@ router.route("/UserInfo").get(AuthController.userInfo)
  */
 router.route("/Login").post(AuthController.login);
 
+
+/**
+ * @swagger
+ * /users/count-by-month:
+ *   get:
+ *     summary: Get cumulative user counts by month up to the current year
+ *     description: Retrieves the cumulative number of users registered up to each month of the current year.
+ *     tags:
+ *       - Users
+ *     responses:
+ *       200:
+ *         description: A JSON object with cumulative user counts by month
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 year:
+ *                   type: integer
+ *                   example: 2024
+ *                 monthlyCounts:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       month:
+ *                         type: string
+ *                         example: "Jan"
+ *                       count:
+ *                         type: integer
+ *                         example: 500
+ *                 message:
+ *                   type: string
+ *                   example: "Successfully counted users registered up to each month for the year 2024"
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/count-by-month', UserController.getUsersCountByMonth);
+
 /**
  * @swagger
  * /users/ApproveUser/{userId}:
@@ -1014,6 +1053,8 @@ router.post('/send-email', UserController.sendContactEmail);
  *       500:
  *         description: Server error
  */
-router.put('/:userId/changePassword',AuthController.AuthenticateUser, UserController.changePassword)
+router.put('/:userId/changePassword',AuthController.AuthenticateUser, UserController.changePassword);
+
+
 
 module.exports = router

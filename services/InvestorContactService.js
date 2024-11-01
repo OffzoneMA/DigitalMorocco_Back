@@ -725,11 +725,33 @@ const countApprovedInvestments = async (role, id) => {
 };
 
 
+async function countContactRequestsForInvestor(investorId) {
+    try {
+        // Count all contact requests for the given investor
+        const totalRequests = await ContactRequest.countDocuments({ investor: investorId });
+
+        // Count contact requests for the given investor with status 'In Progress'
+        const inProgressRequests = await ContactRequest.countDocuments({
+            investor: investorId,
+            status: 'In Progress'
+        });
+
+        return {
+            totalRequests,
+            inProgressRequests
+        };
+    } catch (error) {
+        throw new Error('Error counting contact requests for investor: ' + error.message);
+    }
+}
+
+
+
 module.exports = { CreateInvestorContactReq, getAllContactRequest ,
     getContactRequestsForInvestor , getContactRequestsForMember  , 
     shareProjectWithInvestors , CreateInvestorContactReqForProject ,
     getContactRequestById, createContactRequest, updateContactRequest, deleteContactRequest ,
      getAllContactRequestsAll, searchContactRequests , getDistinctFieldValues , getDistinctProjectFieldValues ,
      approveContactRequest , rejectContactRequest , getRecentApprovedContactRequests , countApprovedInvestments , 
-     getLastRecentContactRequests
+     getLastRecentContactRequests , countContactRequestsForInvestor
  }

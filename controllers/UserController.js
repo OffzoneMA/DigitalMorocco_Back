@@ -118,7 +118,7 @@ const getUserByEmail = async (req , res) => {
     if (user) {
         res.status(200).json(user);
     } else {
-        res.status(404).json({ message: 'Use not found for this e-mail.' });
+        res.status(404).json({ message: 'User not found for this e-mail.' });
     }
 } catch (error) {
     res.status(500).json({ message:  error.message });
@@ -402,7 +402,17 @@ const getUserByID = async (req, res) => {
   }
 };
 
+const getUsersCountByMonth = async (req, res) => {
+  try {
+      const result = await UserService.countUsersByMonth();
+      res.status(200).json(result);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = { updateUserLanguageRegion,changePassword,updateUserProfile, updateUser,addUser, approveUser, rejectUser, deleteUser, getUsers, 
   complete_signup, sendVerification, confirmVerification , sendForgotPassword , deleteOneOfUser ,
   resetPassword , getUserByEmail , deleteOneUser , updateFullName , sendContactEmail , verifyPasswordToken , 
-getUserByID}
+getUserByID , getUsersCountByMonth
+}

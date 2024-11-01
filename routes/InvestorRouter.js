@@ -993,5 +993,34 @@ router.delete('/:investorId', InvestorController.deleteInvestorById);
  */
 router.get('/recent-requests/last', AuthController.AuthenticateInvestor , InvestorController.getLastRecentContactRequests);
 
+/**
+ * @swagger
+ * /investors/contact-requests/count:
+ *   get:
+ *     summary: Get contact requests count for a specific investor
+ *     description: Retrieve the total number of contact requests and those with status "In Progress" for an investor.
+ *     tags: [ContactRequests]
+ *     responses:
+ *       200:
+ *         description: Counts of total and in-progress contact requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalRequests:
+ *                   type: integer
+ *                   description: Total number of contact requests
+ *                   example: 10
+ *                 inProgressRequests:
+ *                   type: integer
+ *                   description: Number of contact requests with status "In Progress"
+ *                   example: 3
+ *       500:
+ *         description: Server error
+ */
+router.get('/contact-requests/count', InvestorController.getContactRequestsCount);
+
+
 
 module.exports = router

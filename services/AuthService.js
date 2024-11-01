@@ -119,6 +119,8 @@ const generateUserInfosAll = async (user) => {
   let eventCount = 0;
   let investmentCount = 0;
   let sponsorCount = 0;
+  let sponsorRequest = 0;
+  let contactCount = 0;
 
   if (user?.role?.toLowerCase() === "member") {
     const member = await MemberService.getMemberInfoByUserId(user._id);
@@ -132,15 +134,19 @@ const generateUserInfosAll = async (user) => {
   } else if (user?.role?.toLowerCase() === "partner") {
     const partner = await PartnerService.getPartnerByUserId(user._id);
     sponsorCount = await SponsorService.countApprovedSponsorsByPartner(partner?._id);
+    sponsorRequest = await SponsorService.countRequestsByPartner(partner?._id);
     roleData ={ 
       ...partner?._doc ? partner._doc : partner,
-    sponsorCount}
+    sponsorCount , 
+    sponsorRequest}
   } else if (user?.role?.toLowerCase() === "investor") {
     const investor = await InvestorService.getInvestorByUserId(user._id);
     investmentCount = await InvestorContactService.countApprovedInvestments('investor' ,investor?._id);
+    contactCount = await InvestorContactService.countContactRequestsForInvestor(investor?._id);
     roleData = {
       ...investor?._doc ? investor._doc : investor ,
-      investmentCount
+      investmentCount ,
+      contactCount
     }
   }
 

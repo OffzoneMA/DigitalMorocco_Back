@@ -253,13 +253,14 @@ async function getInvestorDetailsRequest(memberId, investorId) {
             const fakeData = {
                 ...investor?._doc, // copy all original fields
                 image: "fake_image_url.jpg",
-                name: "The Investor Name",
-                legalName: "Fake Company Legal Name",
-                phone: "000-000-0000",
-                type: "Unknown",
-                website: "https://fakewebsite.com",
-                email: "fake@example.com",
-                desc: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+                name: "Digital Morocco Partner",
+                companyName: "Digital Morocco Partner",
+                legalName: "Digital Morocco Partner",
+                phone: "+212 6 00 00 00 00",
+                type: "Digital Morocco Partner",
+                website: "https://digitalmorocco.net/",
+                email: "info@digitalmorocco.net",
+                desc: "Oups ! Vous pensiez vraiment avoir trouvé la porte secrète ?! 😆 \n🚫 Pas si vite, pirate ! 🏴‍☠️ Le capitaine doit d’abord donner son feu vert avant de lever le voile. ⛵ En attendant, savourez ce suspense… C’est presque aussi captivant qu’une chasse au trésor ! 🗝️🗺️😉",
             };
 
             return {

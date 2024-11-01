@@ -243,9 +243,20 @@ const getLastRecentContactRequests = async (req, res) => {
     }
 }
 
+const getContactRequestsCount = async (req, res) => {
+
+    try {
+        const counts = await InvestorContactService.countContactRequestsForInvestor(req.investorId);
+        res.status(200).json(counts);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = { getInvestorRequests,updateContactStatus, addInvestor, getInvestors, 
     getContactRequests, getContacts, getProjects , getContactRequestsForInvestor , updateInvestor , 
     getAllInvestors , getDistinctInvestorData , getInvestorById , getInvestorDetails , 
 getAllInvestorsWithoutPagination , getDistinctRequestProjectFields , getDistinctRequestValues , 
 getContactRequestsByInvestor , deleteInvestorById , getRecentApprovedContactRequests , 
-getLastRecentContactRequests}
+getLastRecentContactRequests , getContactRequestsCount
+}

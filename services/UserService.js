@@ -224,7 +224,36 @@ const updateUserProfile = async (userId, updatedFields , image) => {
       throw new Error(`Error updating user profile: ${error.message}`);
     }
 };
+
+const countUsersByMonth = async () => {
+    try {
+        const currentYear = new Date().getFullYear();
+        const monthlyCounts = [];
+
+        for (let month = 0; month < 12; month++) {
+            const endDate = new Date(currentYear, month + 1, 0, 23, 59, 59); 
+
+            const usersCount = await User.countDocuments({
+                dateCreated: { $lte: endDate }
+            });
+
+            // Add the count for this month to the result array
+            monthlyCounts.push({
+                month: endDate.toLocaleString('en', { month: 'short' }),
+                count: usersCount
+            });
+        }
+
+        return {
+            year: currentYear,
+            monthlyCounts
+        };
+    } catch (error) {
+        throw new Error(`Error counting users by month: ${error.message}`);
+    }
+};
   
 module.exports = { getUserByID, deleteUser, approveUserService, rejectUser, getUsers, checkUserVerification, 
     updateUser , resetPassword , getUserByEmail , updateFullName,updateUserLanguageRegionService , 
-updateUserProfile}
+updateUserProfile , countUsersByMonth
+}

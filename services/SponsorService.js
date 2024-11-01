@@ -663,10 +663,33 @@ const countApprovedSponsorsByPartner = async (partnerId) => {
     }
 };
 
+const countRequestsByPartner = async (partnerId) => {
+    try {
+        // Count all requests for the given partner
+        const totalRequestsCount = await Sponsor.countDocuments({ partnerId });
+
+        // Count requests with both status 'Pending' and requestType 'Received'
+        const currentRequestsCount = await Sponsor.countDocuments({ 
+            partnerId, 
+            status: 'Pending', 
+            requestType: 'Received' 
+        });
+
+        return {
+            totalRequestsCount,
+            currentRequestsCount,
+            message: `Successfully counted ${totalRequestsCount} total requests and ${currentRequestsCount} pending received requests for partner: ${partnerId}`
+        };
+    } catch (error) {
+        throw new Error(`Error counting requests for partner: ${error.message}`);
+    }
+};
+
+
 
 module.exports = {
     createSponsor, getAllSponsors,getSponsorById, approveSponsor, rejectSponsor, updateSponsor,
     deleteSponsor, getSponsorsByPartner , getApprovedSponsorsForPastEvents, getApprovedSponsorsForPartner,
     getDistinctEventFieldsByPartner , getSponsorsHistoryByPartner , getDistinctEventFieldsByPartnerHistory ,
-    getRecentSponsorsByStatus , countApprovedSponsorsByPartner
+    getRecentSponsorsByStatus , countApprovedSponsorsByPartner , countRequestsByPartner
 };
