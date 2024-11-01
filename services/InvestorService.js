@@ -256,10 +256,10 @@ async function getInvestorDetailsRequest(memberId, investorId) {
                 name: "Digital Morocco Partner",
                 companyName: "Digital Morocco Partner",
                 legalName: "Digital Morocco Partner",
-                phone: "+212 6 00 00 00 00",
+                phoneNumber: "+212 6 00 00 00 00",
                 type: "Digital Morocco Partner",
                 website: "https://digitalmorocco.net/",
-                email: "info@digitalmorocco.net",
+                emailAddress: "info@digitalmorocco.net",
                 desc: "Oups ! Vous pensiez vraiment avoir trouvé la porte secrète ?! 😆 \n🚫 Pas si vite, pirate ! 🏴‍☠️ Le capitaine doit d’abord donner son feu vert avant de lever le voile. ⛵ En attendant, savourez ce suspense… C’est presque aussi captivant qu’une chasse au trésor ! 🗝️🗺️😉",
             };
 
