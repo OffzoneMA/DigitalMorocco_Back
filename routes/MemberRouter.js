@@ -1345,4 +1345,60 @@ router.get('/investors/distinct/:field', AuthController.AuthenticateMember , Mem
  */
 router.get('/request/distinct/:field', AuthController.AuthenticateMember ,  MemberController.getDistinctRequestFieldValues);
 
+/**
+ * @swagger
+ * /members/contact-requests/draft:
+ *   post:
+ *     summary: Create a draft contact request
+ *     description: Deduct credits and create a draft contact request between a member and an investor.
+ *     tags: [ContactRequests]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               investorId:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Draft contact request created successfully
+ *       400:
+ *         description: Error in request processing
+ */
+router.post('/contact-requests/draft', AuthController.AuthenticateMember , MemberController.createDraftContactRequest);
+
+/**
+ * @swagger
+ * /members/contact-requests/finalize:
+ *   put:
+ *     summary: Finalize a contact request
+ *     description: Finalize the contact request by providing a project, document, and other details.
+ *     tags: [ContactRequests]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               projectId:
+ *                 type: string
+ *               contactRequestId:
+ *                 type: string
+ *               document:
+ *                 type: string
+ *                 format: binary
+ *               data:
+ *                 type: string
+ *                 description: Additional information for the contact request
+ *     responses:
+ *       200:
+ *         description: Contact request finalized successfully
+ *       400:
+ *         description: Error in finalizing contact request
+ */
+router.put('/contact-requests/finalize', upload.single('document'), AuthController.AuthenticateMember , MemberController.finalizeContactRequest);
+
 module.exports = router;

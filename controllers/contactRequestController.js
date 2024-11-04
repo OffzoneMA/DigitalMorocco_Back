@@ -67,6 +67,7 @@ const rejectRequest = async (req, res) => {
     }
 };
 
+
 module.exports = {
     getAllContactRequests, getContactRequestById, createContactRequest, updateContactRequest,
     deleteContactRequest , approveRequest , rejectRequest

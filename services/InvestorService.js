@@ -37,6 +37,50 @@ const getAllInvestors = async (args) => {
     return { investors, totalPages };
 }
 
+const getAllInvestorsForMember = async (memberId, args) => {
+    const page = args?.page || 1;
+    const pageSize = args?.pageSize || 8;
+    const skip = (page - 1) * pageSize;
+    
+    const filter = {};
+
+    if (args.type) {
+        filter.type = { $in: args.type.split(',') }; 
+    }
+
+    if (args.location) {
+        filter.location = { $regex: new RegExp(args.location, 'i') }; 
+    }
+
+    if (args.industries && args.industries.length > 0) {
+        filter.PreferredInvestmentIndustry = { $in: args.industries.split(',') }; 
+    }
+
+    const totalCount = await Investor.countDocuments(filter);
+    const totalPages = Math.ceil(totalCount / pageSize);
+    
+    const investors = await Investor.find(filter)
+        .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } } })
+        .skip(skip)
+        .sort({ dateCreated: 'desc' })
+        .limit(pageSize)
+        .lean(); // Convert documents to plain JavaScript objects
+
+    // Check if there's a draft contact request for each investor
+    for (const investor of investors) {
+        const draftContactRequest = await ContactRequest.findOne({
+            investor: investor._id,
+            member: memberId,  
+            status: 'Draft'
+        });
+
+        investor.hasDraftContactRequest = !!draftContactRequest; 
+    }
+
+    return { investors, totalPages };
+}
+
+
 const getAllInvestorsWithoutPagination = async (args) => {
 
     const filter = {};
@@ -239,6 +283,16 @@ async function getInvestorDetailsRequest(memberId, investorId) {
 
         const hasApprovedRequests = existingRequests.length > 0;
 
+        // Check if there's a draft contact request for this investor
+        const draftRequest = await ContactRequest.findOne({
+            member: memberId,
+            investor: investorId,
+            status: 'Draft'
+        });
+
+        const hasDraftContactRequest = !!draftRequest; // true if a draft request exists
+        const draftRequestId = draftRequest?._id || null; // Get the draft request ID if it exists
+
         if (acceptedInvestor || hasApprovedRequests) {
             // If the investor has accepted or approved at least one request, retrieve full details
             const investorDetails = await Investor.findById(investorId);
@@ -246,8 +300,11 @@ async function getInvestorDetailsRequest(memberId, investorId) {
             return {
                 status: "accepted",
                 details: investorDetails,
+                hasDraftContactRequest,
+                draftRequestId
             };
         } else {
+            // Investor hasn't accepted/approved; provide restricted (fake) data
             const investor = await Investor.findById(investorId);
 
             const fakeData = {
@@ -266,6 +323,8 @@ async function getInvestorDetailsRequest(memberId, investorId) {
             return {
                 status: "pending",
                 details: fakeData,
+                hasDraftContactRequest,
+                draftRequestId
             };
         }
     } catch (error) {
@@ -290,4 +349,6 @@ const deleteInvestorById = async (investorId) => {
 module.exports = { deleteInvestor,getContacts, getProjects, CreateInvestor, 
     getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, 
     updateContactStatus , updateInvestor , getInvestors  , getDistinctValues , 
-    getInvestorDetailsRequest , searchInvestors , getAllInvestorsWithoutPagination , deleteInvestorById}
+    getInvestorDetailsRequest , searchInvestors , getAllInvestorsWithoutPagination , 
+    deleteInvestorById , getAllInvestorsForMember 
+}

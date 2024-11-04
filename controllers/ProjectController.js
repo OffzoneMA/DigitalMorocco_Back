@@ -82,6 +82,27 @@ async function addMilestone(req, res) {
     }
   };  
 
+
+ const getAllProjects = async (req, res) => {
+    try {
+        const args = req.query; 
+        const result = await ProjectService.getAllProjects(args);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const getDistinctValuesForField = async (req, res) => {
+  const { field } = req.params; 
+  try {
+      const values = await ProjectService.getDistinctValues(field);
+      res.status(200).json({ field, values });
+  } catch (error) {
+      res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {  getprojects , deleteProject , getProjectById , addMilestone , removeMilestone ,
-  updateProjectStatus , getTopSectors 
+  updateProjectStatus , getTopSectors , getAllProjects , getDistinctValuesForField
 }

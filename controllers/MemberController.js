@@ -342,9 +342,34 @@ const getInvestorsForMemberWithoutPagination = async (req, res) => {
     }
 };
 
+const createDraftContactRequest = async (req, res) => {
+    const { investorId } = req.body;
+    try {
+        const contact = await InvestorContactService.CreateDraftContactRequest(req.memberId, investorId);
+        res.status(201).json(contact);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+// Finalize Contact Request
+const finalizeContactRequest = async (req, res) => {
+    const { projectId, contactRequestId , letter } = req.body;
+    const document = req.file;
+
+    try {
+        const contact = await InvestorContactService.FinalizeContactRequest(contactRequestId, projectId, document, letter);
+        res.status(200).json(contact);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 module.exports = {  addCompanyToMember,getContacts,getMembers, createEnterprise, getByName, createProject, 
     contactRequest, getContactRequests , createCompany  ,createMember ,getTestAllMembers , 
     getInvestorsForMember , getContactRequestsForMember , getAllProjectsForMember , updateProject , 
      getUniqueCountries , getUniqueStages , getUniqueCompanyTypes , createTestCompany ,
     updateMember , shareProject , CreateMemberWithLogo , getDistinctInvestorFieldValues ,
-getDistinctRequestFieldValues , getAllProjectsForMemberWithoutPagination  , getInvestorsForMemberWithoutPagination}
+getDistinctRequestFieldValues , getAllProjectsForMemberWithoutPagination  , getInvestorsForMemberWithoutPagination , 
+createDraftContactRequest , finalizeContactRequest 
+};

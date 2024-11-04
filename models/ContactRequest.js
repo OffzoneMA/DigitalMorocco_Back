@@ -29,7 +29,7 @@ const ContactRequestSchema = new mongoose.Schema({
     notes: String,
     status: {
         type: String,
-        enum: ['Pending', 'Approved' , 'Accepted', 'Rejected' ,'In Progress'],
+        enum: ['Pending', 'Approved' , 'Accepted', 'Rejected' ,'In Progress' , 'Draft'],
         default: 'In Progress'
     },
     approval: {

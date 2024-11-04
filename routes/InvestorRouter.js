@@ -106,6 +106,77 @@ router.route("/").get(AuthController.AuthenticateSubMemberOrAdmin, InvestorContr
  * tags:
  *   name: Investors
  *   description: Managing API of the Investor
+ * /investors/forMember:
+ *   get:
+ *     summary: Get all investors from the DB
+ *     description: Get a list of all investors, with optional pagination and filtering.
+ *     tags: [Investors]
+ *     security:
+ *       - jwtToken: []  # Only admin or member user tokens are allowed; other users are forbidden
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: The page number to retrieve
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           example: 10
+ *         description: The number of records per page
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by the investor type
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: Filter by location
+ *       - in: query
+ *         name: industries
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by preferred investment industries
+ *     responses:
+ *       200:
+ *         description: A list of investors
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 investors:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Investor'
+ *                 totalPages:
+ *                   type: integer
+ *                   description: Total number of pages
+ *                 currentPage:
+ *                   type: integer
+ *                   description: Current page number
+ *       401:
+ *         description: Unauthorized - JWT token is missing or invalid
+ *       403:
+ *         description: Forbidden - Access denied for this user type
+ *       500:
+ *         description: Server error
+ */
+router.route("/forMember").get(AuthController.AuthenticateSubMemberOrAdmin, AuthController.AuthenticateMember , InvestorController.getInvestorsForMember)
+
+/**
+ * @swagger
+ * tags:
+ *   name: Investors
+ *   description: Managing API of the Investor
  * /investors/withoutPage:
  *   get:
  *     summary: Get all investors from the DB

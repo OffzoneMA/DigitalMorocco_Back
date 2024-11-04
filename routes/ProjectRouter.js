@@ -38,6 +38,66 @@ router.get('/top-sectors', ProjectController.getTopSectors);
 
 /**
  * @swagger
+ * /projects/all:
+ *   get:
+ *     summary: Get all projects
+ *     tags: [Projects]
+ *     description: Retrieve a list of all projects with optional filters for visibility, status, date, sector, stage, and country.
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination.
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           default: 15
+ *         description: Number of projects per page.
+ *       - in: query
+ *         name: visibility
+ *         schema:
+ *           type: string
+ *         description: Visibility of the project.
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *         description: Status of the project.
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter projects created after this date (YYYY-MM-DD).
+ *       - in: query
+ *         name: sectors
+ *         schema:
+ *           type: string
+ *         description: Comma-separated list of sectors for filtering.
+ *       - in: query
+ *         name: stages
+ *         schema:
+ *           type: string
+ *         description: Comma-separated list of stages for filtering.
+ *       - in: query
+ *         name: countries
+ *         schema:
+ *           type: string
+ *         description: Comma-separated list of countries for filtering.
+ *     responses:
+ *       200:
+ *         description: A list of projects with pagination info
+ *       500:
+ *         description: Server error
+ */
+router.get('/all', ProjectController.getAllProjects);
+
+
+/**
+ * @swagger
  * /projects/{projectId}:
  *   delete:
  *     summary: Delete a project
@@ -203,5 +263,39 @@ router.patch('/:projectId/status', ProjectController.updateProjectStatus);
  *         description: Failed to retrieve top sectors
  */
 router.get('/', ProjectController.getprojects);
+
+/**
+ * @swagger
+ * /projects/distinct/{field}:
+ *   get:
+ *     summary: Get distinct values for a specified field in projects
+ *     tags: [Projects]
+ *     description: Retrieve a list of unique values for a specific field (e.g., sector, country) in projects.
+ *     parameters:
+ *       - in: path
+ *         name: field
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The field to retrieve distinct values for (e.g., "sector", "stage", "country").
+ *     responses:
+ *       200:
+ *         description: A list of distinct values for the specified field
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 field:
+ *                   type: string
+ *                   description: The field name for which distinct values were requested.
+ *                 values:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       500:
+ *         description: Server error
+ */
+router.get('/distinct/:field', ProjectController.getDistinctValuesForField);
 
 module.exports = router

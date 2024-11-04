@@ -193,7 +193,76 @@ const getTopSectors = async () => {
   return sectors;
 };
 
+
+// services/projectService.js
+
+const getAllProjects = async (args) => {
+  try {
+      const page = args.page || 1;
+      const pageSize = args.pageSize || 15;
+      const skip = (page - 1) * pageSize;
+
+      // Base filter to find projects owned by the member
+      const filter = { };
+
+      // Filter by visibility if provided
+      if (args.visibility) {
+          filter.visibility = args.visibility;
+      }
+
+      // Filter by status if provided
+      if (args.status) {
+          filter.status = args.status;
+      }
+
+      // Filter by date if provided and valid
+      if (args.date && args?.date !== 'Invalid Date') {
+          const date = new Date(args.date);
+          filter.dateCreated = { $gte: date };
+      }
+
+      // Filter by sectors if provided (multiselect)
+      if (args.sectors && args.sectors.length > 0) {
+          filter.sector = { $in: args.sectors.split(',') };
+      }
+
+      // Filter by stages if provided (multiselect)
+      if (args.stages && args.stages.length > 0) {
+          filter.stage = { $in: args.stages.split(',') };
+      }
+
+      // Filter by countries if provided (multiselect)
+      if (args.countries && args.countries.length > 0) {
+          filter.country = { $in: args.countries.split(',') };
+      }
+
+      // Count total documents matching the filter
+      const totalCount = await Project.countDocuments(filter);
+      const totalPages = Math.ceil(totalCount / pageSize);
+
+      // Retrieve projects matching the filter with pagination
+      const projects = await Project.find(filter)
+          .skip(skip)
+          .sort({ dateCreated: 'desc' })
+          .limit(pageSize);
+
+      return { projects, totalPages };
+  } catch (error) {
+      throw new Error('Error fetching projects for member: ' + error.message);
+  }
+};
+
+const getDistinctValues = async (fieldName) => {
+  try {
+      const distinctValues = await Project.distinct(fieldName);
+      return distinctValues;
+  } catch (error) {
+      throw new Error(`Error retrieving distinct values for ${fieldName}: ${error.message}`);
+  }
+};
+
 module.exports = { getProjects , CreateProject, getProjectById, ProjectByNameExists, 
     getProjectByMemberId , deleteProject, addMilestone , removeMilestone , 
     countProjectsByMember , countProjectsByMemberId , updateProjectStatus , 
-  getTopSectors }; 
+  getTopSectors  , getAllProjects , getDistinctValues
+}; 

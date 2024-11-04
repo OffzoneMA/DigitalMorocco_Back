@@ -182,6 +182,93 @@ const CreateInvestorContactReqForProject = async (memberId, investorId , project
     return contact
 }
 
+// First part: Deduct credits and create draft contact request
+const CreateDraftContactRequest = async (memberId, investorId) => {
+    const cost = process.env.credits || 100;
+    const member = await MemberService.getMemberById(memberId);
+    const investor = await InvestorService.getInvestorById(investorId);
+    const subscription = await SubscriptionService.getSubscriptionsByUser(member.owner);
+
+    if (!member || !investor ) {
+        throw new Error("Member or Investor  doesn't exist");
+    }
+
+    if (subscription?.subscriptionStatus !== "active") {
+        throw new Error("Must subscribe!");
+    }
+    if (subscription?.totalCredits < cost) {
+        throw new Error("Not enough credits!");
+    }
+
+    // Deduct credits and create contact request with "Draft" status
+    await Subscription.findByIdAndUpdate(subscription._id, {
+        $inc: { totalCredits: -cost }
+    });
+
+    const contactRequestData = {
+        member: memberId,
+        investor: investorId,
+        cost,
+        status: "Draft"
+    };
+    const contact = new ContactRequest(contactRequestData);
+    await contact.save();
+
+    return contact;
+};
+
+
+const FinalizeContactRequest = async (contactRequestId, projectId, document, data) => {
+    const contactRequest = await ContactRequest.findById(contactRequestId);
+    const member = await MemberService.getMemberById(contactRequest?.member);
+    const investor = await InvestorService.getInvestorById(contactRequest?.investor);
+    if (!contactRequest || contactRequest.status !== "Draft") {
+        throw new Error("Invalid contact request or status is not 'Draft'");
+    }
+
+    const project = await ProjectService.getProjectById(projectId);
+    if (!project) {
+        throw new Error("Project doesn't exist");
+    }
+
+    let docLink = null;
+    if (document) {
+        docLink = await uploadService.uploadFile(document, `Members/${contactRequest.member}/Project_documents`, document.originalname);
+    }
+
+    const updateData = {
+        project: projectId,
+        document: docLink ? {
+            name: document.originalname,
+            link: docLink,
+            mimeType: document.mimetype
+        } : undefined,
+        requestLetter: data,
+        status: "In Progress"
+    };
+
+    // Update the contact request with project and document details
+    await ContactRequest.findByIdAndUpdate(contactRequestId, updateData);
+
+    await ActivityHistoryService.createActivityHistory(
+        member.owner,
+        'contact_sent',
+        { targetName: `${investor?.companyName || investor?.name}`, targetDesc: `Contact request from member to investor ${investor?._id} for project ${projectId}` , for: project?.name }
+    );
+
+    await ActivityHistoryService.createActivityHistory(
+        investor.owner,
+        'contact_request_received',
+        { targetName: `${project?.name}`, targetDesc: `Contact request received from member ${member?._id} for project ${projectId}` , from: member?.companyName }
+    );
+
+    await NotificationService.createNotification(investor?.owner , 'Contact request received for project' , 'from' , project?._id , project?.name , member?.companyName , member?.owner)
+
+
+    return await ContactRequest.findById(contactRequestId); 
+};
+
+
 const shareProjectWithInvestors = async (projectId, memberId, investorIds) => {
     const project = await ProjectService.getProjectById(projectId);
     if (!project) {
@@ -747,11 +834,10 @@ async function countContactRequestsForInvestor(investorId) {
 
 
 
-module.exports = { CreateInvestorContactReq, getAllContactRequest ,
-    getContactRequestsForInvestor , getContactRequestsForMember  , 
-    shareProjectWithInvestors , CreateInvestorContactReqForProject ,
+module.exports = { CreateInvestorContactReq, getAllContactRequest , getContactRequestsForInvestor , 
+    getContactRequestsForMember  , shareProjectWithInvestors , CreateInvestorContactReqForProject ,
     getContactRequestById, createContactRequest, updateContactRequest, deleteContactRequest ,
      getAllContactRequestsAll, searchContactRequests , getDistinctFieldValues , getDistinctProjectFieldValues ,
      approveContactRequest , rejectContactRequest , getRecentApprovedContactRequests , countApprovedInvestments , 
-     getLastRecentContactRequests , countContactRequestsForInvestor
+     getLastRecentContactRequests , countContactRequestsForInvestor , CreateDraftContactRequest , FinalizeContactRequest
  }
