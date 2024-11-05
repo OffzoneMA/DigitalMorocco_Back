@@ -137,6 +137,13 @@ const updateProject= async (req, res) => {
         const files = req.files['files'];
         const logo = req.files['logo']; 
 
+        // console.log("pitchDeck",pitchDeck)
+        // console.log("businessPlan",businessPlan)
+
+        // console.log("financialProjection",financialProjection)
+
+        // console.log("files",files)
+
         const result = await MemberService.updateProject(req.params.projectId, data, pitchDeck?.[0], businessPlan?.[0] , financialProjection?.[0], files , logo?.[0]);
         const member = await MemberService.getMemberById(result.owner);
         const log = await UserLogService.createUserLog('Project Edition', member.owner);

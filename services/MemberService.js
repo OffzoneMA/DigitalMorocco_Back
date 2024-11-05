@@ -564,7 +564,6 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
         project.listMember = newData.listMember || project.listMember;
         project.status = newData.status || project.status;
 
-        console.log(newData.stage)
         if (newData.milestones) {
             const existingMilestoneNames = project.milestones.map(milestone => milestone.name);
             newData.milestones.forEach(newMilestone => {
@@ -642,7 +641,7 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
 
         if (businessPlan) {
             const businessPlanLink = await uploadService.uploadFile(businessPlan, "Members/" + project.owner + "/Project_documents", businessPlan.originalname);
-            const existingBusinessPlanIndex = project.documents.findIndex(doc => doc.documentType === "pitchDeck");
+            const existingBusinessPlanIndex = project.documents.findIndex(doc => doc.documentType === "businessPlan");
             if (existingBusinessPlanIndex !== -1) {
                 project.documents[existingBusinessPlanIndex].link = businessPlanLink;
                 project.documents[existingBusinessPlanIndex].name = businessPlan.originalname;
@@ -654,8 +653,8 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
 
         if (financialProjection) {
             const financialProjectionLink = await uploadService.uploadFile(financialProjection, "Members/" + project.owner + "/Project_documents", financialProjection.originalname);
-            const existingFinancialProjectionIndex = project.documents.findIndex(doc => doc.documentType === "pitchDeck");
-            if (existingPitchDeckIndex !== -1) {
+            const existingFinancialProjectionIndex = project.documents.findIndex(doc => doc.documentType === "financialProjection");
+            if (existingFinancialProjectionIndex !== -1) {
                 project.documents[existingFinancialProjectionIndex].link = financialProjectionLink;
                 project.documents[existingFinancialProjectionIndex].name = financialProjection.originalname;
                 project.documents[existingFinancialProjectionIndex].type = financialProjection.mimetype;

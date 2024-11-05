@@ -103,6 +103,29 @@ const getDistinctValuesForField = async (req, res) => {
   }
 };
 
-module.exports = {  getprojects , deleteProject , getProjectById , addMilestone , removeMilestone ,
-  updateProjectStatus , getTopSectors , getAllProjects , getDistinctValuesForField
+const updateProject = async (req, res) => {
+  const { projectId } = req.params;
+  const updateData = req.body;
+
+  try {
+      const updatedProject = await ProjectService.updateProject(projectId, updateData);
+      res.status(200).json({ success: true, data: updatedProject });
+  } catch (error) {
+      res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+async function deleteProjectDocument(req, res) {
+  try {
+      const { projectId, documentId } = req.params;
+      const result = await ProjectService.deleteProjectDocument(projectId, documentId);
+      res.status(200).json(result);
+  } catch (error) {
+      res.status(400).json({ error: error.message });
+  }
+}
+
+module.exports = {  getprojects , deleteProject , getProjectById , addMilestone , 
+  removeMilestone , updateProjectStatus , getTopSectors , getAllProjects , 
+  getDistinctValuesForField , updateProject , deleteProjectDocument
 }

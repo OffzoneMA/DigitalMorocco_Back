@@ -207,7 +207,7 @@ const getAllProjects = async (args) => {
 
       // Filter by visibility if provided
       if (args.visibility) {
-          filter.visibility = args.visibility;
+          filter.visbility = args.visibility;
       }
 
       // Filter by status if provided
@@ -261,8 +261,31 @@ const getDistinctValues = async (fieldName) => {
   }
 };
 
+const updateProject = async (projectId, updateData) => {
+  try {
+      const updatedProject = await Project.findByIdAndUpdate(projectId, updateData, { new: true });
+      return updatedProject;
+  } catch (error) {
+      throw new Error('Error updating project: ' + error.message);
+  }
+};
+
+async function deleteProjectDocument(projectId, documentId) {
+  const project = await Project.findById(projectId);
+  if (!project) throw new Error("Project not found");
+
+  // Filter out the document to delete
+  const documentIndex = project.documents.findIndex(doc => doc._id.toString() === documentId);
+  if (documentIndex === -1) throw new Error("Document not found");
+
+  project.documents.splice(documentIndex, 1); // Remove the document
+  await project.save(); // Save the updated project
+
+  return { message: "Document deleted successfully" };
+}
+
 module.exports = { getProjects , CreateProject, getProjectById, ProjectByNameExists, 
     getProjectByMemberId , deleteProject, addMilestone , removeMilestone , 
     countProjectsByMember , countProjectsByMemberId , updateProjectStatus , 
-  getTopSectors  , getAllProjects , getDistinctValues
+  getTopSectors  , getAllProjects , getDistinctValues , updateProject , deleteProjectDocument
 }; 

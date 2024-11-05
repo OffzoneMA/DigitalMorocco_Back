@@ -66,19 +66,40 @@ const getAllInvestorsForMember = async (memberId, args) => {
         .limit(pageSize)
         .lean(); // Convert documents to plain JavaScript objects
 
-    // Check if there's a draft contact request for each investor
-    for (const investor of investors) {
-        const draftContactRequest = await ContactRequest.findOne({
-            investor: investor._id,
-            member: memberId,  
-            status: 'Draft'
-        });
+    let hasDraftRequest = false;
+    let mostRecentDraftInvestorId = null;
+    let mostRecentDraftDate = null;
 
-        investor.hasDraftContactRequest = !!draftContactRequest; 
+    // Check contact requests for each investor
+    for (const investor of investors) {
+        const [draftContactRequest, acceptedContactRequest] = await Promise.all([
+            ContactRequest.findOne({
+                investor: investor._id,
+                member: memberId,
+                status: 'Draft'
+            }).sort({ dateCreated: 'desc' }), // Most recent draft request
+            ContactRequest.findOne({
+                investor: investor._id,
+                member: memberId,
+                status: { $in: ['Accepted', 'Approved'] }
+            })
+        ]);
+
+        investor.hasDraftContactRequest = !!draftContactRequest;
+        investor.hasAcceptedContactRequest = !!acceptedContactRequest;
+
+        if (draftContactRequest) {
+            hasDraftRequest = true;
+            // Check if this draft is the most recent
+            if (!mostRecentDraftDate || draftContactRequest.dateCreated > mostRecentDraftDate) {
+                mostRecentDraftDate = draftContactRequest.dateCreated;
+                mostRecentDraftInvestorId = investor._id;
+            }
+        }
     }
 
-    return { investors, totalPages };
-}
+    return { investors, totalPages, hasDraftRequest, mostRecentDraftInvestorId };
+};
 
 
 const getAllInvestorsWithoutPagination = async (args) => {

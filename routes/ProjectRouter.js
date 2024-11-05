@@ -251,6 +251,128 @@ router.patch('/:projectId/status', ProjectController.updateProjectStatus);
 
 /**
  * @swagger
+ * /projects/{projectId}/update:
+ *   put:
+ *     summary: Update a project
+ *     tags: [Projects]
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         description: ID of the project to update
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               owner:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               funding:
+ *                 type: number
+ *               totalRaised:
+ *                 type: number
+ *               country:
+ *                 type: string
+ *               sector:
+ *                 type: string
+ *               website:
+ *                 type: string
+ *               contactEmail:
+ *                 type: string
+ *               logo:
+ *                 type: string
+ *               currency:
+ *                 type: string
+ *                 enum: [MAD, €, $, USD]
+ *               details:
+ *                 type: string
+ *               milestones:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                     description:
+ *                       type: string
+ *                     dueDate:
+ *                       type: string
+ *                       format: date
+ *                     completed:
+ *                       type: boolean
+ *               visbility:
+ *                 type: string
+ *                 enum: [public, private]
+ *               status:
+ *                 type: string
+ *                 enum: [In Progress, Active, Stand by]
+ *               stage:
+ *                 type: string
+ *               shareWithInvestors:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Project updated successfully
+ *       400:
+ *         description: Error updating project
+ */
+router.put('/:projectId/update', ProjectController.updateProject);
+
+/**
+ * @swagger
+ * /projects/{projectId}/documents/{documentId}:
+ *   delete:
+ *     summary: Delete a document from a project
+ *     tags: [Projects]
+ *     description: Remove a specific document from a project by projectId and documentId.
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         description: ID of the project
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: documentId
+ *         required: true
+ *         description: ID of the document to delete
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Document deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Document deleted successfully"
+ *       400:
+ *         description: Error message
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *       404:
+ *         description: Project or document not found
+ */
+router.delete('/:projectId/documents/:documentId', ProjectController.deleteProjectDocument);
+
+/**
+ * @swagger
  * /projects:
  *   get:
  *     summary: Retrieve all projects
