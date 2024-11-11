@@ -16,6 +16,7 @@ const TokenShortCode = require('../models/TokenShortCode')
 const languages = [
   { id: 'en', label: 'English' },
   { id: 'fr', label: 'French' },
+  { id: 'fr', label: 'Français' },
   { id: 'es', label: 'Spanish' },
   { id: 'de', label: 'German' },
   { id: 'it', label: 'Italian' },

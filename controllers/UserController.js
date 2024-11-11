@@ -13,6 +13,7 @@ const ActivityHistoryService = require('../services/ActivityHistoryService');
 const languages = [
   { id: 'en', label: 'English' },
   { id: 'fr', label: 'French' },
+  { id: 'fr', label: 'Français' },
   { id: 'es', label: 'Spanish' },
   { id: 'de', label: 'German' },
   { id: 'it', label: 'Italian' },
@@ -46,6 +47,27 @@ const getUsers = async (req, res) => {
     res.status(500).json(error);
   }
 }
+
+const getAllUsers = async (req, res) => {
+  let { page = 1, limit = 10, roles = '', statuses = '' } = req.query;
+
+  const rolesArray = roles ? roles.split(',') : [];
+  const statusesArray = statuses ? statuses.split(',') : [];
+
+  try {
+    const response = await AuthService.getAllUsersPage(
+      parseInt(page), 
+      parseInt(limit), 
+      rolesArray, 
+      statusesArray
+    );
+
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 
 
 const updateUser = async (req, res) => {
@@ -411,8 +433,23 @@ const getUsersCountByMonth = async (req, res) => {
   }
 };
 
+const getDistinctFieldValues = async (req, res) => {
+  const { field } = req.query;
+
+  if (!field) {
+    return res.status(400).json({ error: '"field" parameter is required' });
+  }
+
+  try {
+    const values = await UserService.getDistinctValues(field);
+    res.status(200).json({ field, values });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = { updateUserLanguageRegion,changePassword,updateUserProfile, updateUser,addUser, approveUser, rejectUser, deleteUser, getUsers, 
   complete_signup, sendVerification, confirmVerification , sendForgotPassword , deleteOneOfUser ,
   resetPassword , getUserByEmail , deleteOneUser , updateFullName , sendContactEmail , verifyPasswordToken , 
-getUserByID , getUsersCountByMonth
+getUserByID , getUsersCountByMonth , getAllUsers , getDistinctFieldValues
 }

@@ -10,34 +10,6 @@ const bcrypt = require('bcrypt');
 const UserLog = require('../models/UserLog');
 const salt=10
 
-const languages = [
-    { id: 'en', label: 'English' },
-    { id: 'fr', label: 'French' },
-    { id: 'es', label: 'Spanish' },
-    { id: 'de', label: 'German' },
-    { id: 'it', label: 'Italian' },
-    { id: 'pt', label: 'Portuguese' },
-    { id: 'ru', label: 'Russian' },
-    { id: 'zh', label: 'Chinese' },
-    { id: 'ja', label: 'Japanese' },
-    { id: 'ko', label: 'Korean' },
-    { id: 'ar', label: 'Arabic' },
-    { id: 'hi', label: 'Hindi' },
-    { id: 'tr', label: 'Turkish' },
-    { id: 'nl', label: 'Dutch' },
-    { id: 'pl', label: 'Polish' },
-    { id: 'sv', label: 'Swedish' },
-    { id: 'fi', label: 'Finnish' },
-    { id: 'da', label: 'Danish' },
-    { id: 'no', label: 'Norwegian' },
-    { id: 'el', label: 'Greek' },
-  ];
-
-  const getLanguageLabelById = (id) => {
-    const language = languages.find(lang => lang.id === id);
-    return language ? language.label : null;
-  };
-
 const getUsers = async (args) => {
     return await User.find().skip(args.start ? args.start : null).limit(args.qt ? args.qt : null).sort({ dateCreated: 'desc' });
 }
@@ -252,8 +224,17 @@ const countUsersByMonth = async () => {
         throw new Error(`Error counting users by month: ${error.message}`);
     }
 };
+
+const getDistinctValues = async (field) => {
+    try {
+      const distinctValues = await User.distinct(field, { isDeleted: false });
+      return distinctValues;
+    } catch (error) {
+      throw new Error(`Erreur lors de la récupération des valeurs distinctes: ${error.message}`);
+    }
+  };
   
 module.exports = { getUserByID, deleteUser, approveUserService, rejectUser, getUsers, checkUserVerification, 
     updateUser , resetPassword , getUserByEmail , updateFullName,updateUserLanguageRegionService , 
-updateUserProfile , countUsersByMonth
+updateUserProfile , countUsersByMonth , getDistinctValues
 }

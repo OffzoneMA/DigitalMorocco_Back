@@ -131,7 +131,6 @@ const getLegalDocumentsByUser = async (userId, args) => {
 const searchLegalDocuments = async (user, searchTerm) => {
     try {
         const regex = new RegExp(searchTerm, 'i'); 
-
         let filter = {};
 
         if (user?.role?.toLowerCase() === 'admin') {
@@ -144,17 +143,21 @@ const searchLegalDocuments = async (user, searchTerm) => {
             ...filter,
             $or: [
                 { title: regex }, 
-                // { name: regex },         
-                // { description: regex },   
-                // { type: regex }   
             ]
-        }).populate('createdBy'); 
+        }).populate('createdBy');
+
+        documents.forEach(doc => {
+            const extensionMatch = doc.name.match(/\.\w+$/); // Extracts extension (e.g., ".pdf")
+            const extension = extensionMatch ? extensionMatch[0] : ''; // Fallback if no extension found
+            doc.name = `${doc.title}${extension}`;
+        });
 
         return documents;
     } catch (error) {
         throw new Error('Error searching legal documents: ' + error.message);
     }
 };
+
 
 
 module.exports = {

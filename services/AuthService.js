@@ -79,6 +79,37 @@ const getAllUsers = async () => {
     throw new Error(`Error getting list of users: ${error.message}`);
   }
 }
+
+const getAllUsersPage = async (page = 1, limit = 8, roles = [], statuses = []) => {
+  try {
+    const filters = { isDeleted: false };
+    if (roles.length > 0) {
+      filters.role = { $in: roles };
+    }
+    if (statuses.length > 0) {
+      filters.status = { $in: statuses };
+    }
+
+    const users = await User.find(filters)
+      .sort({ dateCreated: 'desc' })
+      .skip((page - 1) * limit) 
+      .limit(limit); 
+
+    const totalUsers = await User.countDocuments(filters);
+
+    return {
+      data: users,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalUsers / limit),
+        totalItems: totalUsers,
+      },
+    };
+  } catch (error) {
+    throw new Error(`Error getting list of users: ${error.message}`);
+  }
+};
+
  
 const generateUserInfos = async (user) => {
     const accessToken = await generateAccessToken(user)
@@ -171,4 +202,5 @@ const generateUserInfosAll = async (user) => {
 }
 
 
-module.exports = {signInUser, createUser, generateAccessToken, generateUserInfos , generateUserInfosAll , getAllUsers}
+module.exports = {signInUser, createUser, generateAccessToken, generateUserInfos , 
+  generateUserInfosAll , getAllUsers , getAllUsersPage}

@@ -60,13 +60,13 @@ const getRequests = async (args) => {
 
 
 const getRequestByUserId = async (userId, role) => {
-    if (role == "investor") {
+    if (role === "investor") {
         return await Investor.findOne({ user: userId })
     }
-    else if (role == "partner") {
+    else if (role === "partner") {
         return await Partner.findOne({ user: userId })
     }
-    else if (role == "member") {
+    else if (role === "member") {
         return await Member.findOne({ user: userId })
     }
 

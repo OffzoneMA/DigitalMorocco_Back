@@ -143,6 +143,65 @@ router.route("/AllUsers").get(AuthController.AllUsers)
 
 /**
  * @swagger
+ * /users/all:
+ *   get:
+ *     summary: Récupère la liste des utilisateurs avec pagination et filtrage
+ *     tags: [Users]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Numéro de la page
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Nombre d'utilisateurs par page
+ *       - in: query
+ *         name: roles
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filtrer par rôle
+ *       - in: query
+ *         name: statuses
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filtrer par statut
+ *     responses:
+ *       200:
+ *         description: Liste des utilisateurs récupérée avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     currentPage:
+ *                       type: integer
+ *                     totalPages:
+ *                       type: integer
+ *                     totalItems:
+ *                       type: integer
+ *       500:
+ *         description: Erreur serveur
+ */
+router.get('/all', UserController.getAllUsers);
+
+/**
+ * @swagger
  * /users/ById/{id}:
  *   get:
  *     summary: Get a user by ID
@@ -567,6 +626,42 @@ router.route("/Login").post(AuthController.login);
  *         description: Internal server error
  */
 router.get('/count-by-month', UserController.getUsersCountByMonth);
+
+/**
+ * @swagger
+ * /users/distinct:
+ *   get:
+ *     summary: Récupère les valeurs distinctes d'un champ donné pour les utilisateurs
+ *     tags: [Users]
+ *     parameters:
+ *       - in: query
+ *         name: field
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Nom du champ pour lequel récupérer les valeurs distinctes
+ *     responses:
+ *       200:
+ *         description: Liste des valeurs distinctes récupérée avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 field:
+ *                   type: string
+ *                   description: Champ pour lequel les valeurs distinctes ont été récupérées
+ *                 values:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       400:
+ *         description: Champ "field" manquant
+ *       500:
+ *         description: Erreur serveur
+ */
+router.get('/distinct', UserController.getDistinctFieldValues);
+
 
 /**
  * @swagger
