@@ -346,117 +346,129 @@ const shareProjectWithInvestors = async (projectId, memberId, investorIds) => {
 };
 
 const getAllContactRequest = async (args, role, id) => {
-    const page = args.page || 1;
-    const pageSize = args.pageSize || 8;
-    const skip = (page - 1) * pageSize;
-    // Construire le filtre de recherche
-    const query = {};
-    if (role === "member") query.member = id;
-    if (role === "investor") query.investor = id;
-
-    // Filtrer par statut (plusieurs valeurs)
-    if (args?.status && args.status.length > 0) {
-        query.status = { $in: args.status.split(',') }; 
-    }
-
-    if (args?.dateCreated && args?.dateCreated !== 'Invalid Date') {
+    try {
+      const requestedPage = parseInt(args?.page, 10) || 1;
+      const pageSize = parseInt(args?.pageSize, 10) || 8;
+      const skip = (requestedPage - 1) * pageSize;
+  
+      // Construire le filtre de recherche
+      const query = {};
+      if (role === "member") query.member = id;
+      if (role === "investor") query.investor = id;
+  
+      // Filtrer par statut (plusieurs valeurs)
+      if (args?.status && args.status.length > 0) {
+        query.status = { $in: args.status.split(',') };
+      }
+  
+      // Filtrage par date de création (si la date est valide)
+      if (args?.dateCreated && args?.dateCreated !== 'Invalid Date') {
         const startOfDay = new Date(args.dateCreated);
-        startOfDay.setHours(0, 0, 0, 0);
+        startOfDay.setHours(0, 0, 0, 0);  // Début de la journée
         const endOfDay = new Date(args.dateCreated);
-        endOfDay.setHours(23, 59, 59, 999);
-
-        query.dateCreated = {
-            $gte: startOfDay,
-            $lte: endOfDay
-        };
-    }
-
-    // Construire le filtre de projet
-    let projectFilter = [];
-    
-    // Filtrage par plusieurs secteurs de projets
-    if (args?.projectSectors && args.projectSectors.length > 0) {
+        endOfDay.setHours(23, 59, 59, 999);  // Fin de la journée
+  
+        query.dateCreated = { $gte: startOfDay, $lte: endOfDay };
+      }
+  
+      // Construire les filtres de projet (en plusieurs étapes)
+      let projectFilter = [];
+  
+      // Filtrage par secteurs de projets
+      if (args?.projectSectors && args.projectSectors.length > 0) {
         const projectQueryBySectors = await Project.find({
-            sector: { $in: args.projectSectors.split(',') }
+          sector: { $in: args.projectSectors.split(',') }
         }).select('_id');
-
+  
         const projectIdsBySectors = projectQueryBySectors.map(project => project._id);
         if (projectIdsBySectors.length > 0) {
-            projectFilter.push({ project: { $in: projectIdsBySectors } });
+          projectFilter.push({ project: { $in: projectIdsBySectors } });
         }
-    }
-
-    // Filtrage par funding
-    if (args?.funding) {
+      }
+  
+      // Filtrage par financement
+      if (args?.funding) {
         const projectQueryByFunding = await Project.find({
-            funding: args.funding
+          funding: args.funding
         }).select('_id');
-
+  
         const projectIdsByFunding = projectQueryByFunding.map(project => project._id);
         if (projectIdsByFunding.length > 0) {
-            projectFilter.push({ project: { $in: projectIdsByFunding } });
+          projectFilter.push({ project: { $in: projectIdsByFunding } });
         }
-    }
-
-    if (args?.country) {
+      }
+  
+      // Filtrage par pays
+      if (args?.country) {
         const projectQueryByCountry = await Project.find({
-            country: args.country
+          country: args.country
         }).select('_id');
-
+  
         const projectIdsByCountry = projectQueryByCountry.map(project => project._id);
         if (projectIdsByCountry.length > 0) {
-            projectFilter.push({ project: { $in: projectIdsByCountry } });
+          projectFilter.push({ project: { $in: projectIdsByCountry } });
         }
-    }
-
-    if (args?.projectStage) {
+      }
+  
+      // Filtrage par stade de projet
+      if (args?.projectStage) {
         const projectQueryByStage = await Project.find({
-            stage: args.projectStage
+          stage: args.projectStage
         }).select('_id');
-
+  
         const projectIdsByStage = projectQueryByStage.map(project => project._id);
         if (projectIdsByStage.length > 0) {
-            projectFilter.push({ project: { $in: projectIdsByStage } });
+          projectFilter.push({ project: { $in: projectIdsByStage } });
         }
-    }
-
-    // Filtrage par statut de projet
-    if (args?.projectStatus && args.projectStatus.length > 0) {
+      }
+  
+      // Filtrage par statut de projet
+      if (args?.projectStatus && args.projectStatus.length > 0) {
         const projectQueryByStatus = await Project.find({
-            status: { $in: args.projectStatus.split(',') }
+          status: { $in: args.projectStatus.split(',') }
         }).select('_id');
-
+  
         const projectIdsByStatus = projectQueryByStatus.map(project => project._id);
         if (projectIdsByStatus.length > 0) {
-            projectFilter.push({ project: { $in: projectIdsByStatus } });
+          projectFilter.push({ project: { $in: projectIdsByStatus } });
         }
-    }
-
-    // Ajouter le filtre de projet dans la requête globale si applicable
-    if (projectFilter.length > 0) {
+      }
+  
+      // Ajouter le filtre de projet dans la requête globale si applicable
+      if (projectFilter.length > 0) {
         query.$or = projectFilter;
-    }
-
-    // Récupérer les résultats
-    const totalCount = await ContactRequest.countDocuments(query);
-    const totalPages = Math.ceil(totalCount / pageSize);
-    const ContactsHistory = await ContactRequest.find(query)
+      }
+  
+      // Compter le nombre total de documents pour la pagination
+      const totalCount = await ContactRequest.countDocuments(query);
+      const totalPages = Math.ceil(totalCount / pageSize);
+  
+      // Vérifier la page actuelle pour s'assurer qu'elle ne dépasse pas le nombre de pages total
+      const currentPage = requestedPage > totalPages ? 1 : requestedPage;
+  
+      // Récupérer les demandes de contact avec peu de détails pour améliorer les performances
+      const ContactsHistory = await ContactRequest.find(query)
         .populate(role === "member" ? {
-            path: 'investor',
-            model: 'Investor',
-            select: '_id name image linkedin_link'
+          path: 'investor',
+          model: 'Investor',
+          select: '_id name image linkedin_link'
         } : {
-            path: 'member',
-            model: 'Member',
-            select: '_id companyName website city contactEmail logo country'
+          path: 'member',
+          model: 'Member',
+          select: '_id companyName website city contactEmail logo country'
         })
         .populate({ path: 'project', model: 'Project' })
         .sort({ dateCreated: 'desc' })
-        .skip(skip)
+        .skip((currentPage - 1) * pageSize)
         .limit(pageSize);
-
-    return { ContactsHistory, totalPages };
-};
+  
+      return { ContactsHistory, totalPages, currentPage };
+  
+    } catch (error) {
+      console.error('Error retrieving contact requests:', error);
+      throw new Error('Failed to fetch contact requests: ' + error.message);
+    }
+};  
 
 const getLastRecentContactRequests = async (role, id, status) => {
     try {

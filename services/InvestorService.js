@@ -37,69 +37,144 @@ const getAllInvestors = async (args) => {
     return { investors, totalPages };
 }
 
-const getAllInvestorsForMember = async (memberId, args) => {
-    const page = args?.page || 1;
-    const pageSize = args?.pageSize || 8;
-    const skip = (page - 1) * pageSize;
+// const getAllInvestorsForMember = async (memberId, args) => {
+//     const page = args?.page || 1;
+//     const pageSize = args?.pageSize || 8;
+//     const skip = (page - 1) * pageSize;
     
+//     const filter = {};
+
+//     if (args.type) {
+//         filter.type = { $in: args.type.split(',') }; 
+//     }
+
+//     if (args.location) {
+//         filter.location = { $regex: new RegExp(args.location, 'i') }; 
+//     }
+
+//     if (args.industries && args.industries.length > 0) {
+//         filter.PreferredInvestmentIndustry = { $in: args.industries.split(',') }; 
+//     }
+
+//     const totalCount = await Investor.countDocuments(filter);
+//     const totalPages = Math.ceil(totalCount / pageSize);
+    
+//     const investors = await Investor.find(filter)
+//         .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } } })
+//         .skip(skip)
+//         .sort({ dateCreated: 'desc' })
+//         .limit(pageSize)
+//         .lean(); // Convert documents to plain JavaScript objects
+
+//     let hasDraftRequest = false;
+//     let mostRecentDraftInvestorId = null;
+//     let mostRecentDraftDate = null;
+
+//     // Check contact requests for each investor
+//     for (const investor of investors) {
+//         const [draftContactRequest, acceptedContactRequest] = await Promise.all([
+//             ContactRequest.findOne({
+//                 investor: investor._id,
+//                 member: memberId,
+//                 status: 'Draft'
+//             }).sort({ dateCreated: 'desc' }), // Most recent draft request
+//             ContactRequest.findOne({
+//                 investor: investor._id,
+//                 member: memberId,
+//                 status: { $in: ['Accepted', 'Approved'] }
+//             })
+//         ]);
+
+//         investor.hasDraftContactRequest = !!draftContactRequest;
+//         investor.hasAcceptedContactRequest = !!acceptedContactRequest;
+
+//         if (draftContactRequest) {
+//             hasDraftRequest = true;
+//             // Check if this draft is the most recent
+//             if (!mostRecentDraftDate || draftContactRequest.dateCreated > mostRecentDraftDate) {
+//                 mostRecentDraftDate = draftContactRequest.dateCreated;
+//                 mostRecentDraftInvestorId = investor._id;
+//             }
+//         }
+//     }
+
+//     return { investors, totalPages, hasDraftRequest, mostRecentDraftInvestorId };
+// };
+
+const getAllInvestorsForMember = async (memberId, args) => {
+    const requestedPage = parseInt(args?.page, 10) || 1;
+    const pageSize = parseInt(args?.pageSize, 10) || 8;
+    const skip = (requestedPage - 1) * pageSize;
+
     const filter = {};
 
-    if (args.type) {
-        filter.type = { $in: args.type.split(',') }; 
-    }
+    if (args.type) filter.type = { $in: args.type.split(',') }; 
+    if (args.location) filter.location = { $regex: new RegExp(args.location, 'i') };
+    if (args.industries) filter.PreferredInvestmentIndustry = { $in: args.industries.split(',') };
 
-    if (args.location) {
-        filter.location = { $regex: new RegExp(args.location, 'i') }; 
-    }
-
-    if (args.industries && args.industries.length > 0) {
-        filter.PreferredInvestmentIndustry = { $in: args.industries.split(',') }; 
-    }
-
+    // Compter le nombre total de documents correspondant au filtre
     const totalCount = await Investor.countDocuments(filter);
     const totalPages = Math.ceil(totalCount / pageSize);
-    
+
+    // Si la page demandée dépasse le nombre total de pages, retourner la première page
+    const currentPage = requestedPage > totalPages ? 1 : requestedPage;
+    const finalSkip = (currentPage - 1) * pageSize;
+
+    // Récupérer les investisseurs correspondant au filtre
     const investors = await Investor.find(filter)
         .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } } })
-        .skip(skip)
+        .skip(finalSkip)
         .sort({ dateCreated: 'desc' })
         .limit(pageSize)
-        .lean(); // Convert documents to plain JavaScript objects
+        .lean();
+
+    // Regrouper les requêtes de contact
+    const contactRequests = await ContactRequest.aggregate([
+        {
+            $match: {
+                investor: { $in: investors.map(inv => inv._id) },
+                member: memberId,
+                status: { $in: ['Draft', 'Accepted', 'Approved'] }
+            }
+        },
+        { $sort: { dateCreated: -1 } },
+        {
+            $group: {
+                _id: "$investor",
+                hasDraftContactRequest: { $max: { $eq: ["$status", "Draft"] } },
+                hasAcceptedContactRequest: { $max: { $in: ["$status", ["Accepted", "Approved"]] } },
+                mostRecentDraftDate: { $max: { $cond: [{ $eq: ["$status", "Draft"] }, "$dateCreated", null] } }
+            }
+        }
+    ]);
 
     let hasDraftRequest = false;
     let mostRecentDraftInvestorId = null;
     let mostRecentDraftDate = null;
 
-    // Check contact requests for each investor
+    // Ajouter les données des requêtes de contact aux investisseurs
     for (const investor of investors) {
-        const [draftContactRequest, acceptedContactRequest] = await Promise.all([
-            ContactRequest.findOne({
-                investor: investor._id,
-                member: memberId,
-                status: 'Draft'
-            }).sort({ dateCreated: 'desc' }), // Most recent draft request
-            ContactRequest.findOne({
-                investor: investor._id,
-                member: memberId,
-                status: { $in: ['Accepted', 'Approved'] }
-            })
-        ]);
-
-        investor.hasDraftContactRequest = !!draftContactRequest;
-        investor.hasAcceptedContactRequest = !!acceptedContactRequest;
-
-        if (draftContactRequest) {
-            hasDraftRequest = true;
-            // Check if this draft is the most recent
-            if (!mostRecentDraftDate || draftContactRequest.dateCreated > mostRecentDraftDate) {
-                mostRecentDraftDate = draftContactRequest.dateCreated;
+        const reqInfo = contactRequests.find(req => req._id.equals(investor._id));
+        if (reqInfo) {
+            investor.hasDraftContactRequest = reqInfo.hasDraftContactRequest;
+            investor.hasAcceptedContactRequest = reqInfo.hasAcceptedContactRequest;
+            if (reqInfo.hasDraftContactRequest && (!mostRecentDraftDate || reqInfo.mostRecentDraftDate > mostRecentDraftDate)) {
+                hasDraftRequest = true;
+                mostRecentDraftDate = reqInfo.mostRecentDraftDate;
                 mostRecentDraftInvestorId = investor._id;
             }
         }
     }
 
-    return { investors, totalPages, hasDraftRequest, mostRecentDraftInvestorId };
+    return { 
+        investors, 
+        totalPages, 
+        currentPage, 
+        hasDraftRequest, 
+        mostRecentDraftInvestorId 
+    };
 };
+
 
 
 const getAllInvestorsWithoutPagination = async (args) => {

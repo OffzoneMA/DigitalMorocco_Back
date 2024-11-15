@@ -448,8 +448,25 @@ const getDistinctFieldValues = async (req, res) => {
   }
 };
 
+const updateUserController = async (req, res) => {
+  try {
+      const { userId } = req.params;
+      const user = req.body;
+      console.log(user)
+      const updatedUser = await UserService.updateUser(userId, user);
+
+      if (!updatedUser) {
+          return res.status(404).json({ message: "User not found" });
+      }
+
+      res.status(200).json({ message: "User updated successfully", data: updatedUser });
+  } catch (error) {
+      res.status(500).json({ message: "Error updating user", error: error.message });
+  }
+};
+
 module.exports = { updateUserLanguageRegion,changePassword,updateUserProfile, updateUser,addUser, approveUser, rejectUser, deleteUser, getUsers, 
   complete_signup, sendVerification, confirmVerification , sendForgotPassword , deleteOneOfUser ,
   resetPassword , getUserByEmail , deleteOneUser , updateFullName , sendContactEmail , verifyPasswordToken , 
-getUserByID , getUsersCountByMonth , getAllUsers , getDistinctFieldValues
+getUserByID , getUsersCountByMonth , getAllUsers , getDistinctFieldValues , updateUserController
 }

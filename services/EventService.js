@@ -281,41 +281,43 @@ const countEventsByUserId = async (userId) => {
 
 async function getEventsForUser(userId, args) {
   try {
-    const page = args?.page || 1; 
-    const pageSize = args?.pageSize || 8; 
-    const skip = (page - 1) * pageSize; 
+    const requestedPage = parseInt(args?.page, 10) || 1;
+    const pageSize = parseInt(args?.pageSize, 10) || 8;
 
     // Construire le filtre de recherche
     const query = { 'attendeesUsers.userId': userId };
-    // Filtrage par location
+
+    // Filtrage par physicalLocation
     if (args?.physicalLocation) {
-      query.physicalLocation = { $regex: new RegExp(args.physicalLocation, 'i') }; 
+      query.physicalLocation = { $regex: new RegExp(args.physicalLocation, 'i') };
     }
 
     // Filtrage par eventNames
     if (args?.eventNames) {
       const eventNamesArray = args.eventNames.split(',').map(name => name.trim()).filter(name => name.length > 0);
-      
       if (eventNamesArray.length > 0) {
-          const orConditions = eventNamesArray.map(name => ({
-              title: { $regex: new RegExp(name, 'i') } 
-          }));
-          query.$or = orConditions; 
-        }
+        query.$or = eventNamesArray.map(name => ({
+          title: { $regex: new RegExp(name, 'i') },
+        }));
       }
+    }
 
-    // Trouve les événements selon le filtre
-    const events = await Event.find(query)
-      .skip(skip) 
-      .limit(pageSize); 
-
-    // Compte le total d'événements pour la pagination
+    // Compte le total des événements correspondants pour la pagination
     const totalCount = await Event.countDocuments(query);
-    const totalPages = Math.ceil(totalCount / pageSize); 
+    const totalPages = Math.ceil(totalCount / pageSize);
 
-    return { events, totalPages }; 
+    // Assurer que `currentPage` est valide
+    const currentPage = requestedPage > totalPages ? 1 : requestedPage;
+    const skip = (currentPage - 1) * pageSize;
+
+    // Récupérer les événements filtrés et paginés
+    const events = await Event.find(query)
+      .skip(skip)
+      .limit(pageSize);
+
+    return { events, totalPages, currentPage };
   } catch (error) {
-    console.log(error)
+    console.error('Error fetching events:', error);
     throw new Error('Failed to fetch events for user: ' + error.message);
   }
 }
@@ -456,9 +458,9 @@ const getPastEventsWithUserParticipation = async (userId, args) => {
 
 async function getAllUpcommingEvents(userId, args) {
   try {
-    const page = args?.page || 1; 
-    const pageSize = args?.pageSize || 8; 
-    const skip = (page - 1) * pageSize; 
+    const requestedPage = parseInt(args?.page, 10) || 1; 
+    const pageSize = parseInt(args?.pageSize, 10) || 8; 
+    const skip = (requestedPage - 1) * pageSize; 
     
     // Construire le filtre de base pour les événements à venir
     const filter = { status: 'upcoming' };
@@ -471,16 +473,24 @@ async function getAllUpcommingEvents(userId, args) {
     // Ajouter le filtre par date de début si présent
     if (args.startDate && args?.startDate !== 'Invalid Date') {
       const startOfDay = new Date(args.startDate);
-      startOfDay.setHours(0, 0, 0, 0);  // Début de la journée
+      startOfDay.setHours(0, 0, 0, 0); // Début de la journée
       const endOfDay = new Date(args.startDate);
-      endOfDay.setHours(23, 59, 59, 999);  // Fin de la journée
+      endOfDay.setHours(23, 59, 59, 999); // Fin de la journée
 
       filter.startDate = { $gte: startOfDay, $lte: endOfDay };
     }
 
+    // Compter le nombre total d'événements correspondant aux critères de filtrage
+    const totalCount = await Event.countDocuments(filter);
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    // Si la page demandée dépasse le nombre total de pages, définir la page à 1
+    const currentPage = requestedPage > totalPages ? 1 : requestedPage;
+    const finalSkip = (currentPage - 1) * pageSize;
+
     // Trouver les événements en appliquant les filtres
     const events = await Event.find(filter)
-      .skip(skip)
+      .skip(finalSkip)
       .limit(pageSize);
 
     // Ajouter la participation de l'utilisateur
@@ -492,11 +502,7 @@ async function getAllUpcommingEvents(userId, args) {
       };
     });
 
-    // Compter le nombre total d'événements correspondant aux critères de filtrage
-    const totalCount = await Event.countDocuments(filter);
-    const totalPages = Math.ceil(totalCount / pageSize);
-
-    return { events: eventsWithParticipation, totalPages };
+    return { events: eventsWithParticipation, totalPages, currentPage };
   } catch (error) {
     throw new Error('Error retrieving events: ' + error.message);
   }
@@ -504,9 +510,9 @@ async function getAllUpcommingEvents(userId, args) {
 
 async function getAllUpcomingEventsWithSponsors(userId, partnerId, args) {
   try {
-    const page = args?.page || 1;
-    const pageSize = args?.pageSize || 8;
-    const skip = (page - 1) * pageSize;
+    const requestedPage = parseInt(args?.page, 10) || 1;
+    const pageSize = parseInt(args?.pageSize, 10) || 8;
+    const skip = (requestedPage - 1) * pageSize;
 
     // Base filter for upcoming events
     const filter = { status: 'upcoming' };
@@ -519,16 +525,24 @@ async function getAllUpcomingEventsWithSponsors(userId, partnerId, args) {
     // Add start date filter if present
     if (args.startDate && args?.startDate !== 'Invalid Date') {
       const startOfDay = new Date(args.startDate);
-      startOfDay.setHours(0, 0, 0, 0);  // Start of the day
+      startOfDay.setHours(0, 0, 0, 0); // Start of the day
       const endOfDay = new Date(args.startDate);
-      endOfDay.setHours(23, 59, 59, 999);  // End of the day
+      endOfDay.setHours(23, 59, 59, 999); // End of the day
 
       filter.startDate = { $gte: startOfDay, $lte: endOfDay };
     }
 
-    // Fetch events based on filters
+    // Count total events for pagination
+    const totalCount = await Event.countDocuments(filter);
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    // Ensure currentPage is valid
+    const currentPage = requestedPage > totalPages ? 1 : requestedPage;
+    const finalSkip = (currentPage - 1) * pageSize;
+
+    // Fetch events based on filters and pagination
     const events = await Event.find(filter)
-      .skip(skip)
+      .skip(finalSkip)
       .limit(pageSize);
 
     // Add participation and sponsor status fields
@@ -537,7 +551,11 @@ async function getAllUpcomingEventsWithSponsors(userId, partnerId, args) {
       const userParticipated = event.attendeesUsers.some(user => user.userId.equals(userId));
 
       // Check if the partner has sent a sponsor request for this event
-      const sponsorRequest = await Sponsor.findOne({ partnerId, eventId: event._id , requestType:'Sent' });
+      const sponsorRequest = await Sponsor.findOne({
+        partnerId,
+        eventId: event._id,
+        requestType: 'Sent'
+      });
       const partnerHasSentRequest = !!sponsorRequest;
 
       // Check if the partner has approved at least one sponsorship request for this event
@@ -557,11 +575,7 @@ async function getAllUpcomingEventsWithSponsors(userId, partnerId, args) {
       };
     }));
 
-    // Count total events for pagination
-    const totalCount = await Event.countDocuments(filter);
-    const totalPages = Math.ceil(totalCount / pageSize);
-
-    return { events: eventsWithDetails, totalPages };
+    return { events: eventsWithDetails, totalPages, currentPage };
   } catch (error) {
     throw new Error('Error retrieving events: ' + error.message);
   }
@@ -569,9 +583,8 @@ async function getAllUpcomingEventsWithSponsors(userId, partnerId, args) {
 
 async function getAllUpcomingEventsWithSponsorsNotSent(userId, partnerId, args) {
   try {
-    const page = args?.page || 1;
-    const pageSize = args?.pageSize || 8;
-    const skip = (page - 1) * pageSize;
+    const requestedPage = parseInt(args?.page, 10) || 1;
+    const pageSize = parseInt(args?.pageSize, 10) || 8;
 
     // Base filter for upcoming events
     const filter = { status: 'upcoming' };
@@ -584,56 +597,57 @@ async function getAllUpcomingEventsWithSponsorsNotSent(userId, partnerId, args) 
     // Add start date filter if present
     if (args?.startDate && args?.startDate !== 'Invalid Date') {
       const startOfDay = new Date(args.startDate);
-      startOfDay.setHours(0, 0, 0, 0);  // Start of the day
+      startOfDay.setHours(0, 0, 0, 0); // Start of the day
       const endOfDay = new Date(args.startDate);
-      endOfDay.setHours(23, 59, 59, 999);  // End of the day
+      endOfDay.setHours(23, 59, 59, 999); // End of the day
 
       filter.startDate = { $gte: startOfDay, $lte: endOfDay };
     }
 
-    // Fetch events based on filters
-    const events = await Event.find(filter)
-      .skip(skip)
-      .limit(pageSize);
+    // Fetch all upcoming events matching the filter
+    const allEvents = await Event.find(filter);
 
     // Filter out events where the partner has already sent a sponsor request
-    const eventsWithoutSentRequest = await Promise.all(events.map(async (event) => {
-      // Check if the partner has NOT sent a sponsor request for this event
-      const sponsorRequest = await Sponsor.findOne({ partnerId, eventId: event._id, requestType: 'Sent' });
-      const partnerHasSentRequest = !!sponsorRequest;
+    const eventsWithoutSentRequest = await Promise.all(
+      allEvents.map(async (event) => {
+        const sponsorRequest = await Sponsor.findOne({ partnerId, eventId: event._id, requestType: 'Sent' });
 
-      // Only return events where the partner has NOT sent a request
-      if (!partnerHasSentRequest) {
-        // Check if the user participated
-        const userParticipated = event.attendeesUsers.some(user => user.userId.equals(userId));
+        // If the partner has NOT sent a sponsor request, process the event
+        if (!sponsorRequest) {
+          const userParticipated = event.attendeesUsers.some(user => user.userId.equals(userId));
 
-        // Check if the partner has approved at least one sponsorship request for this event
-        const approvedSponsorship = await Sponsor.findOne({
-          partnerId,
-          eventId: event._id,
-          status: 'Approved'
-        });
-        const partnerHasApprovedSponsorship = !!approvedSponsorship;
+          // Check if the partner has approved at least one sponsorship request for this event
+          const approvedSponsorship = await Sponsor.findOne({
+            partnerId,
+            eventId: event._id,
+            status: 'Approved',
+          });
+          const partnerHasApprovedSponsorship = !!approvedSponsorship;
 
-        return {
-          ...event.toObject(),
-          userParticipated,
-          partnerHasSentRequest,
-          partnerHasApprovedSponsorship
-        };
-      } else {
+          return {
+            ...event.toObject(),
+            userParticipated,
+            partnerHasSentRequest: false,
+            partnerHasApprovedSponsorship,
+          };
+        }
         return null;
-      }
-    }));
+      })
+    );
 
-    // Filter out any null values (events that were excluded)
+    // Remove null values
     const filteredEvents = eventsWithoutSentRequest.filter(event => event !== null);
 
-    // Count total events for pagination
+    // Calculate pagination
     const totalCount = filteredEvents.length;
     const totalPages = Math.ceil(totalCount / pageSize);
 
-    return { events: filteredEvents, totalPages };
+    // Ensure `currentPage` is valid
+    const currentPage = requestedPage > totalPages ? 1 : requestedPage;
+    const startIndex = (currentPage - 1) * pageSize;
+    const paginatedEvents = filteredEvents.slice(startIndex, startIndex + pageSize);
+
+    return { events: paginatedEvents, totalPages, currentPage };
   } catch (error) {
     throw new Error('Error retrieving events: ' + error.message);
   }

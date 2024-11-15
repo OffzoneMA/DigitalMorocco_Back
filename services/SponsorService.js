@@ -244,102 +244,101 @@ const deleteSponsor = async (sponsorId) => {
 // Récupérer tous les sponsors d'un partenaire spécifique
 const getSponsorsByPartner = async (partnerId, args) => {
     try {
-        const page = args?.page || 1;
-        const pageSize = args?.pageSize || 8;
-        // Extraction des paramètres de filtrage
-        const { status, requestType, exactDate, location, sponsorshipType } = args;
-        const query = { partnerId };
-        // Filtrage par statut si fourni
-        if (status && status?.length > 0) {
-            query.status = { $in: status.split(',') };
-        }
-        // Filtrage par type de requête (envoyée ou reçue)
-        if (requestType && requestType.length > 0) {
-            query.requestType = { $in: requestType.split(',') };
-        }
-           
-        // Filtrage par date si une date précise est fournie
-        if (exactDate && exactDate !== 'Invalid Date') {
-            const startOfDay = new Date(exactDate);
-            startOfDay.setHours(0, 0, 0, 0);  // Début de la journée
-            const endOfDay = new Date(exactDate);
-            endOfDay.setHours(23, 59, 59, 999);  // Fin de la journée
-            query.dateCreated = { $gte: startOfDay, $lt: endOfDay };
-        }
-
-        // Filtrage par emplacement de l'événement si fourni
-        let eventIds = [];
-        if (location) {
-            const eventsWithLocation = await Event.find({ physicalLocation: location }).select('_id');
-            eventIds = eventsWithLocation.map(event => event._id);
-            query.eventId = { $in: eventIds };
-        }
-
-        // Filtrage par type de sponsoring si fourni
-        if (sponsorshipType && sponsorshipType?.length > 0) {
-            query.sponsorshipType = { $in: sponsorshipType.split(',') };
-        }
-
-        // Récupération des sponsors avec la requête construite
-        const sponsors = await Sponsor.find(query)
-            .populate("eventId")
-            .skip((page - 1) * pageSize)
-            .limit(pageSize)
-            .sort({ dateCreated: 'desc' });
-
-        // Comptage du total des documents correspondant à la requête
-        const total = await Sponsor.countDocuments(query);
-
-        // Gestion des cas où aucun sponsor n'est trouvé
-        if (total === 0) {
-            return {
-                data: [],
-                total,
-                page,
-                pageSize,
-                totalPages: 0,
-                message: 'No sponsors found for the given criteria.'
-            };
-        }
-
+      const requestedPage = parseInt(args?.page, 10) || 1;
+      const pageSize = parseInt(args?.pageSize, 10) || 8;
+  
+      const { status, requestType, exactDate, location, sponsorshipType } = args;
+      const query = { partnerId };
+  
+      if (status && status?.length > 0) {
+        query.status = { $in: status.split(',') };
+      }
+  
+      // Filtrage par type de requête (envoyée ou reçue)
+      if (requestType && requestType.length > 0) {
+        query.requestType = { $in: requestType.split(',') };
+      }
+  
+      if (exactDate && exactDate !== 'Invalid Date') {
+        const startOfDay = new Date(exactDate);
+        startOfDay.setHours(0, 0, 0, 0);  // Début de la journée
+        const endOfDay = new Date(exactDate);
+        endOfDay.setHours(23, 59, 59, 999);  // Fin de la journée
+        query.dateCreated = { $gte: startOfDay, $lt: endOfDay };
+      }
+  
+      let eventIds = [];
+      if (location) {
+        const eventsWithLocation = await Event.find({ physicalLocation: location }).select('_id');
+        eventIds = eventsWithLocation.map(event => event._id);
+        query.eventId = { $in: eventIds };
+      }
+  
+      if (sponsorshipType && sponsorshipType?.length > 0) {
+        query.sponsorshipType = { $in: sponsorshipType.split(',') };
+      }
+  
+      const total = await Sponsor.countDocuments(query);
+  
+      const totalPages = Math.ceil(total / pageSize);
+  
+      // Vérifier que la page demandée ne dépasse pas le nombre total de pages
+      const currentPage = requestedPage > totalPages ? 1 : requestedPage;
+  
+      const skip = (currentPage - 1) * pageSize;
+  
+      const sponsors = await Sponsor.find(query)
+        .populate("eventId")
+        .skip(skip)
+        .limit(pageSize)
+        .sort({ dateCreated: 'desc' });
+  
+      // Si aucun sponsor n'est trouvé
+      if (total === 0) {
         return {
-            data: sponsors,
-            total,
-            page,
-            pageSize,
-            totalPages: Math.ceil(total / pageSize)
+          data: [],
+          total,
+          page: currentPage,
+          pageSize,
+          totalPages,
+          currentPage,
+          message: 'No sponsors found for the given criteria.'
         };
+      }
+  
+      return {
+        data: sponsors,
+        total,
+        page: currentPage,
+        pageSize,
+        totalPages,
+        currentPage
+      };
     } catch (error) {
-        console.error(`Error fetching sponsors by partner: ${error.message}`);
-        throw new Error(`Error fetching sponsors by partner: ${error.message}`);
+      throw new Error(`Error fetching sponsors by partner: ${error.message}`);
     }
-};
+};  
 
 const getSponsorsHistoryByPartner = async (partnerId, args) => {
     try {
-        const page = args?.page || 1;
-        const pageSize = args?.pageSize || 8;
+        const requestedPage = parseInt(args?.page, 10) || 1;
+        const pageSize = parseInt(args?.pageSize, 10) || 8;
 
-        // Extraction des paramètres de filtrage
         const { status, requestType, exactDate, location, sponsorshipType } = args;
         const query = { partnerId };
 
-        // Exclusion des sponsors avec requestType 'Received' et status 'pending'
         query.$nor = [
             { requestType: 'Received', status: 'Pending' }
         ];
 
-        // Filtrage par statut si fourni
         if (status && status.length > 0) {
             query.status = { $in: status.split(',') };
         }
-        
-        // Filtrage par type de requête (envoyée ou reçue)
+
         if (requestType && requestType.length > 0) {
             query.requestType = { $in: requestType.split(',') };
         }
-           
-        // Filtrage par date si une date précise est fournie
+
         if (exactDate && exactDate !== 'Invalid Date') {
             const startOfDay = new Date(exactDate);
             startOfDay.setHours(0, 0, 0, 0);  // Début de la journée
@@ -348,7 +347,6 @@ const getSponsorsHistoryByPartner = async (partnerId, args) => {
             query.dateCreated = { $gte: startOfDay, $lt: endOfDay };
         }
 
-        // Filtrage par emplacement de l'événement si fourni
         let eventIds = [];
         if (location) {
             const eventsWithLocation = await Event.find({ physicalLocation: location }).select('_id');
@@ -356,54 +354,63 @@ const getSponsorsHistoryByPartner = async (partnerId, args) => {
             query.eventId = { $in: eventIds };
         }
 
-        // Filtrage par type de sponsoring si fourni
         if (sponsorshipType && sponsorshipType.length > 0) {
             query.sponsorshipType = { $in: sponsorshipType.split(',') };
         }
 
-        // Récupération des sponsors avec la requête construite
+        const totalCount = await Sponsor.countDocuments(query);
+
+        const totalPages = Math.ceil(totalCount / pageSize);
+
+        const currentPage = requestedPage > totalPages ? 1 : requestedPage;
+
+        const skip = (currentPage - 1) * pageSize;
+
         const sponsors = await Sponsor.find(query)
             .populate("eventId")
-            .skip((page - 1) * pageSize)
+            .skip(skip)
             .limit(pageSize)
             .sort({ dateCreated: 'desc' });
 
-        // Comptage du total des documents correspondant à la requête
-        const total = await Sponsor.countDocuments(query);
-
-        // Gestion des cas où aucun sponsor n'est trouvé
-        if (total === 0) {
+        // Si aucun sponsor n'est trouvé
+        if (totalCount === 0) {
             return {
                 data: [],
-                total,
-                page,
+                total: totalCount,
+                page: currentPage,
                 pageSize,
-                totalPages: 0,
+                totalPages,
+                currentPage,
                 message: 'No sponsors found for the given criteria.'
             };
         }
 
         return {
             data: sponsors,
-            total,
-            page,
+            total: totalCount,
+            page: currentPage,
             pageSize,
-            totalPages: Math.ceil(total / pageSize)
+            totalPages,
+            currentPage
         };
     } catch (error) {
-        console.error(`Error fetching sponsors by partner: ${error.message}`);
-        throw new Error(`Error fetching sponsors by partner: ${error.message}`);
+        throw new Error(`Error fetching sponsors history by partner: ${error.message}`);
     }
 };
 
+
 const getApprovedSponsorsForPastEvents = async (args) => {
     try {
+        // Pagination
+        const requestedPage = parseInt(args?.page, 10) || 1;
+        const pageSize = parseInt(args?.pageSize, 10) || 8;
+        const skip = (requestedPage - 1) * pageSize;
+
         // Obtenir la date actuelle
         const currentDate = new Date();
 
         // Récupérer tous les événements passés
         const pastEvents = await Event.find({ endDate: { $lt: currentDate } }).select('_id');
-
         const eventIds = pastEvents.map(event => event._id);
 
         // Construire la requête de base pour récupérer les sponsors
@@ -434,52 +441,66 @@ const getApprovedSponsorsForPastEvents = async (args) => {
             query.dateCreated = { $gte: startOfDay, $lt: endOfDay };
         }
 
-        // Récupérer tous les sponsors approuvés pour ces événements
+        // Comptage du nombre total de sponsors avec la requête appliquée
+        const totalCount = await Sponsor.countDocuments(query);
+
+        // Calcul du total de pages
+        const totalPages = Math.ceil(totalCount / pageSize);
+
+        // Vérifier que la page demandée ne dépasse pas le nombre total de pages
+        const currentPage = requestedPage > totalPages ? 1 : requestedPage;
+
+        // Calcul du skip en fonction de la page actuelle
+        const finalSkip = (currentPage - 1) * pageSize;
+
+        // Récupérer les sponsors approuvés pour ces événements
         const approvedSponsors = await Sponsor.find(query)
             .populate("partnerId eventId")
+            .skip(finalSkip)
+            .limit(pageSize)
             .sort({ createdAt: -1 }); // Optionnel : trier par date de création
 
-        return approvedSponsors;
+        return {
+            data: approvedSponsors,
+            total: totalCount,
+            page: currentPage,
+            pageSize,
+            totalPages,
+            currentPage
+        };
     } catch (error) {
         console.error(`Error fetching approved sponsors for past events: ${error.message}`);
         throw new Error(`Error fetching approved sponsors for past events: ${error.message}`);
     }
 };
 
+
 // services/SponsorService.js
 const getApprovedSponsorsForPartner = async (partnerId, args) => {
     try {
-        // Récupérer la date actuelle
         const currentDate = new Date();
 
-        // Extraction des paramètres de filtrage
         const { sponsorshipType, exactDate, page = 1, pageSize = 8, location } = args;
 
-        // Récupérer les événements passés et appliquer le filtre de localisation si fourni
         let eventQuery = { startDate: { $lt: currentDate } };
 
-        // Si l'emplacement est fourni, ajouter le filtre par emplacement
         if (location) {
             eventQuery.physicalLocation = location;
         }
 
-        // Récupérer les événements passés et filtrer par emplacement si fourni
         const pastEvents = await Event.find(eventQuery).select('_id');
         const pastEventIds = pastEvents.map(event => event._id);
 
-        // Construire la requête de base pour récupérer les sponsors
         const query = {
             status: 'Approved',
             partnerId,
             eventId: { $in: pastEventIds }
         };
 
-        // Filtrage par type de sponsoring si fourni
         if (sponsorshipType && sponsorshipType?.length > 0) {
             query.sponsorshipType = { $in: sponsorshipType.split(',') };
         }
 
-        // Filtrage par date si une date précise est fournie
         if (exactDate && exactDate !== 'Invalid Date') {
             const startOfDay = new Date(exactDate);
             startOfDay.setHours(0, 0, 0, 0);  // Début de la journée
@@ -488,31 +509,28 @@ const getApprovedSponsorsForPartner = async (partnerId, args) => {
             query.dateCreated = { $gte: startOfDay, $lt: endOfDay };
         }
 
-        // Calcul de l'offset et limite pour la pagination
-        const skip = (page - 1) * pageSize;
-
-        // Récupérer les sponsors approuvés avec la pagination
-        const approvedSponsors = await Sponsor.find(query)
-            .populate('partnerId eventId')
-            .sort({ dateCreated: 'desc' })  // Trier par date de création
-            .skip(skip)  // Sauter les résultats pour la pagination
-            .limit(pageSize);  // Limiter le nombre de résultats retournés
-
-        // Compter le nombre total de sponsors correspondants à la requête
         const totalSponsors = await Sponsor.countDocuments(query);
 
-        // Calculer le nombre total de pages
         const totalPages = Math.ceil(totalSponsors / pageSize);
+
+        const currentPage = page > totalPages ? 1 : page;
+
+        const skip = (currentPage - 1) * pageSize;
+
+        const approvedSponsors = await Sponsor.find(query)
+            .populate('partnerId eventId')
+            .sort({ dateCreated: 'desc' })  
+            .skip(skip)  
+            .limit(pageSize);  
 
         return {
             data: approvedSponsors,
             totalSponsors,
             totalPages,
-            currentPage: page,
+            currentPage,  
             pageSize
         };
     } catch (error) {
-        console.error(`Error fetching approved sponsors for partner: ${error.message}`);
         throw new Error(`Error fetching approved sponsors for partner: ${error.message}`);
     }
 };

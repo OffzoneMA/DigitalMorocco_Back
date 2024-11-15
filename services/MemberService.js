@@ -878,12 +878,10 @@ const checkSubscriptionStatus = async () => {
 // };
 
 const getInvestorsForMember = async (memberId, args) => {
-    // Pagination
-    const page = args.page || 1;
-    const pageSize = args.pageSize || 10;
+    const page = parseInt(args.page, 10) || 1;  
+    const pageSize = parseInt(args.pageSize, 10) || 10;
     const skip = (page - 1) * pageSize;
 
-    // Construire le filtre de recherche pour les investisseurs
     let investorQuery = {};
 
     // Filtrage par type d'investissement (plusieurs types)
@@ -904,11 +902,9 @@ const getInvestorsForMember = async (memberId, args) => {
         investorQuery.PreferredInvestmentIndustry = { $in: args.industries.split(',') };
     }
 
-    // Rechercher les investisseurs qui correspondent aux critères de filtrage
     const investors = await Investor.find(investorQuery).select('_id');
     const investorIds = investors.map(investor => investor._id);
 
-    // Construire le filtre de recherche pour les demandes de contact
     const query = {
         member: memberId,
         status: { $in: ['Accepted', 'Approved'] },
@@ -917,22 +913,23 @@ const getInvestorsForMember = async (memberId, args) => {
     if (investorIds.length > 0) {
         query.investor = { $in: investorIds };
     } else {
-        // Si aucun investisseur n'a été trouvé, retourner une réponse vide
-        return { investors: [], totalPages: 0 };
+        return { investors: [], totalPages: 0, currentPage: 1 };
     }
 
     // Compter le nombre total de documents correspondants
     const totalCount = await ContactRequest.countDocuments(query);
     const totalPages = Math.ceil(totalCount / pageSize);
 
-    // Récupérer les demandes de contact avec les investisseurs
+    const currentPage = page > totalPages ? 1 : page;  
+    const finalSkip = (currentPage - 1) * pageSize;
+
     const contactRequests = await ContactRequest.find(query)
         .populate({
             path: 'investor',
             model: 'Investor',
         })
         .sort({ dateCreated: 'desc' })
-        .skip(skip)
+        .skip(finalSkip)
         .limit(pageSize);
 
     // Supprimer les doublons d'investisseurs par leur _id
@@ -947,8 +944,9 @@ const getInvestorsForMember = async (memberId, args) => {
         }
     }
 
-    return { investors: uniqueInvestors, totalPages };
+    return { investors: uniqueInvestors, totalPages, currentPage };  
 };
+
 
 const getInvestorsForMemberWithoutPagination = async (memberId) => {
     try {
@@ -982,55 +980,56 @@ const getInvestorsForMemberWithoutPagination = async (memberId) => {
 
 const getContactRequestsForMember = async (memberId, args) => {
     // Pagination
-    const page = args.page || 1;
-    const pageSize = args.pageSize || 10;
-    const skip = (page - 1) * pageSize;
+    const requestedPage = parseInt(args.page, 10) || 1;
+    const pageSize = parseInt(args.pageSize, 10) || 10;
+    const skip = (requestedPage - 1) * pageSize;
 
     // Construire le filtre de recherche
-    const query = {
-        member: memberId,
-    };
+    const query = { member: memberId };
 
     // Filtrage par nom d'investisseur (plusieurs noms)
     let investorIds = [];
-    if (args?.investorNames && args.investorNames.length > 0) {
-        const investors = await Investor.find({ name: { $in: args.investorNames.split(',') } }).select('_id');
-        investorIds = investors.map(investor => investor._id);
+    if (args?.investorNames) {
+        const investorNamesArray = Array.isArray(args.investorNames) ? args.investorNames : args.investorNames.split(',');
         
-        if (investorIds.length > 0) {
-            query.investor = { $in: investorIds };
-        } else {
-            // Si aucun investisseur n'a été trouvé, retourner une réponse vide
-            return { contactRequests: [], totalPages: 0 };
+        if (investorNamesArray.length > 0) {
+            const investors = await Investor.find({ name: { $in: investorNamesArray } }).select('_id');
+            investorIds = investors.map(investor => investor._id);
+            
+            if (investorIds.length > 0) {
+                query.investor = { $in: investorIds };
+            } else {
+                return { contactRequests: [], totalPages: 0, currentPage: 1 };
+            }
         }
     }
+
     // Filtrage par statut de la demande (plusieurs statuts)
-    if (args?.status && args.status.length > 0) {
-        query.status = { $in: args.status.split(',') };
+    if (args?.status) {
+        const statusArray = Array.isArray(args.status) ? args.status : args.status.split(',');
+        if (statusArray.length > 0) {
+            query.status = { $in: statusArray };
+        }
     }
 
     // Compter le nombre total de documents correspondants
     const totalCount = await ContactRequest.countDocuments(query);
     const totalPages = Math.ceil(totalCount / pageSize);
 
+    // Si la page demandée dépasse le nombre total de pages, retourner la première page
+    const currentPage = requestedPage > totalPages ? 1 : requestedPage;
+    const finalSkip = (currentPage - 1) * pageSize;
+
     // Récupérer les demandes de contact
     const contactRequests = await ContactRequest.find(query)
-        .populate({
-            path: 'investor',
-            model: 'Investor',
-        })
-        .populate({
-            path: 'member',
-        })
-        .populate({
-            path: 'project',
-            model: 'Project',
-        })
-        .skip(skip)
+        .populate({ path: 'investor', model: 'Investor' })
+        .populate({ path: 'member' })
+        .populate({ path: 'project', model: 'Project' })
+        .skip(finalSkip)
         .limit(pageSize)
         .sort({ dateCreated: 'desc' });
 
-    return { contactRequests, totalPages };
+    return { contactRequests, totalPages, currentPage };
 };
 
 const getDistinctInvestorsValuesForMember = async (memberId, field) => {

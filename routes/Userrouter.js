@@ -13,6 +13,7 @@ const { passport } = require("../config/passport-setup")
  *   name: Users
  *   description: User management
  */
+
 /**
  * @swagger
  * /users:
@@ -958,6 +959,64 @@ router.put('/:userId/updateProfile', AuthController.AuthenticateUser, upload.sin
  *         description: An error occurred
  */
 router.put('/:userId/languageRegion',AuthController.AuthenticateUser, UserController.updateUserLanguageRegion)
+
+/**
+ * @swagger
+ * /users/{userId}/updateWithJsn:
+ *   put:
+ *     summary: Update a user's information
+ *     description: Update the details of a specific user by user ID. Passwords are hashed before saving.
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the user to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *        application/json:
+ *         schema:
+ *           type: object
+ *           properties:
+ *             name:
+ *               type: string
+ *               example: John Doe
+ *             region:
+ *               type: string
+ *               example: John Doe
+ *             language:
+ *               type: string
+ *               example: John Doe
+ *             email:
+ *               type: string
+ *               example: john.doe@example.com
+ *             password:
+ *               type: string
+ *               example: newpassword123
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: User updated successfully
+ *                 data:
+ *                   type: object
+ *                   description: The updated user data
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+router.put('/:userId/updateWithJsn', UserController.updateUserController);
 
 /**
  * @swagger
