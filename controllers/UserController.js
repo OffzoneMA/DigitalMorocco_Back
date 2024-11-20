@@ -365,12 +365,13 @@ const deleteOneOfUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // await User.deleteOne({ _id: user._id });
+    await User.deleteOne({ _id: user._id });
     user.isDeleted = true;
     user.deletionDate = new Date();
     await user.save();
+    // const result = await UserService.deleteUser(user?._id);
 
-    res.status(200).json({ message: 'Account marked for deletion. You have 14 days to restore it.' });
+    res.status(200).json({ message: 'Account deleted.' });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ message: 'Server error' });
@@ -452,7 +453,6 @@ const updateUserController = async (req, res) => {
   try {
       const { userId } = req.params;
       const user = req.body;
-      console.log(user)
       const updatedUser = await UserService.updateUser(userId, user);
 
       if (!updatedUser) {

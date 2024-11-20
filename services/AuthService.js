@@ -90,18 +90,22 @@ const getAllUsersPage = async (page = 1, limit = 8, roles = [], statuses = []) =
       filters.status = { $in: statuses };
     }
 
+    const totalUsers = await User.countDocuments(filters);
+
+    const totalPages = Math.ceil(totalUsers / limit);
+
+    const currentPage = page > totalPages ? 1 : page;
+
     const users = await User.find(filters)
       .sort({ dateCreated: 'desc' })
-      .skip((page - 1) * limit) 
-      .limit(limit); 
-
-    const totalUsers = await User.countDocuments(filters);
+      .skip((currentPage - 1) * limit)
+      .limit(limit);
 
     return {
       data: users,
       pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(totalUsers / limit),
+        currentPage, // Page réelle utilisée
+        totalPages,
         totalItems: totalUsers,
       },
     };
