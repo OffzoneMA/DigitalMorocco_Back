@@ -96,7 +96,7 @@ i18n.changeLanguage('fr');
 
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URL ,{ useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.MONGO_URL ,{ useNewUrlParser: true, useUnifiedTopology: true , socketTimeoutMS: 60000, })
     .then(async (result) => {
 
     //   try {
