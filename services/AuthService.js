@@ -11,50 +11,114 @@ const InvestorContactService = require('../services/InvestorContactService');
 const SponsorService = require('../services/SponsorService');
 
 
-const signInUser = async (u) => {
-  let user = await User.findOne({ email: u.email.toLowerCase() })
-    .populate('subscription') 
-    .exec();
+// const signInUser = async (u) => {
+//   let user = await User.findOne({ email: u.email.toLowerCase() })
+//     .populate('subscription') 
+//     .exec();
 
-  // If no user is found with the lowercased email, search with the original email
-  if (!user) {
-    user = await User.findOne({ email: u.email })
-      .populate('subscription') 
-      .exec();
-  }   
-  if (user &&!user?.password){
-        if(user.googleId)  { throw new Error("This email is registered through Google.");}
-        if (user.linkedinId)  { throw new Error("This email is registered through Linkedin.");}
-        if (user.facebookId)  { throw new Error("This email is registered through Facebook.");}
-        else { throw new Error("This email is registered through another provider."); }
-     }
-    if (user) {
+//   // If no user is found with the lowercased email, search with the original email
+//   if (!user) {
+//     user = await User.findOne({ email: u.email })
+//       .populate('subscription') 
+//       .exec();
+//   }   
+//   if (user &&!user?.password){
+//         if(user.googleId)  { throw new Error("This email is registered through Google.");}
+//         if (user.linkedinId)  { throw new Error("This email is registered through Linkedin.");}
+//         if (user.facebookId)  { throw new Error("This email is registered through Facebook.");}
+//         else { throw new Error("This email is registered through another provider."); }
+//      }
+//     if (user) {
 
-        if (user.isDeleted) {
-            const deletionDate = new Date(user.deletionDate);
-            const currentDate = new Date();
-            const daysDifference = Math.ceil((currentDate - deletionDate) / (1000 * 60 * 60 * 24));
+//         if (user.isDeleted) {
+//             const deletionDate = new Date(user.deletionDate);
+//             const currentDate = new Date();
+//             const daysDifference = Math.ceil((currentDate - deletionDate) / (1000 * 60 * 60 * 24));
       
-            if (daysDifference <= 14) {
-              user.isDeleted = false;
-              user.deletionDate = null;
-              await user.save();
-            } else {
-              throw new Error("Account permanently deleted.");
-            }
+//             if (daysDifference <= 14) {
+//               user.isDeleted = false;
+//               user.deletionDate = null;
+//               await user.save();
+//             } else {
+//               throw new Error("Account permanently deleted.");
+//             }
+//           }
+
+//         const cmp = await bcrypt.compare(u.password, user.password);
+//         if (cmp) {
+//           const result= await generateUserInfos(user)
+//             return result
+//         } else {
+//             throw new Error('Wrong password !');
+//         }
+//     } else {
+//         throw new Error("Wrong email .");
+//     }
+// }
+
+const signInUser = async (u) => {
+  try {
+      if (!u.email || !u.password) {
+          throw new Error("Email and password are required.");
+      }
+
+      // Normalisation de l'email
+      const normalizedEmail = u.email.trim().toLowerCase();
+
+      // Recherche de l'utilisateur par email
+      const user = await User.findOne({ email: normalizedEmail })
+          .populate('subscription')
+          .exec();
+
+      // Vérification si l'utilisateur existe
+      if (!user) {
+          throw new Error("Email not found.");
+      }
+
+      // Gestion des comptes liés à des fournisseurs externes
+      if (!user.password) {
+          if (user.googleId) {
+              throw new Error("This email is registered through Google.");
+          }
+          if (user.linkedinId) {
+              throw new Error("This email is registered through LinkedIn.");
+          }
+          if (user.facebookId) {
+              throw new Error("This email is registered through Facebook.");
+          }
+          throw new Error("This email is registered through another provider.");
+      }
+
+      // Gestion des comptes supprimés
+      if (user.isDeleted) {
+          const deletionDate = new Date(user.deletionDate);
+          const currentDate = new Date();
+          const daysDifference = Math.ceil((currentDate - deletionDate) / (1000 * 60 * 60 * 24));
+
+          if (daysDifference > 14) {
+              throw new Error("This account has been permanently deleted.");
           }
 
-        const cmp = await bcrypt.compare(u.password, user.password);
-        if (cmp) {
-          const result= await generateUserInfos(user)
-            return result
-        } else {
-            throw new Error('Wrong password !');
-        }
-    } else {
-        throw new Error("Wrong email .");
-    }
-}
+          // Réactivation automatique si dans la période de grâce
+          user.isDeleted = false;
+          user.deletionDate = null;
+          await user.save();
+      }
+
+      const isPasswordCorrect = await bcrypt.compare(u.password, user.password);
+      if (!isPasswordCorrect) {
+          throw new Error("Incorrect password.");
+      }
+
+      const result = await generateUserInfos(user);
+      return result;
+
+  } catch (error) {
+      console.error("Error in signInUser:", error.message);
+      throw new Error(error.message || "An error occurred during sign-in.");
+  }
+};
+
 
 const createUser = async (u) => {
     if (await User.findOne({ email: u.email.toLowerCase() })) {

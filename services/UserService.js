@@ -65,17 +65,45 @@ const getUserByID = async (id) => {
         throw new Error(`Error retrieving user by ID: ${error.message}`);
     }
 };
+// const getUserByEmail = async (email) => {
+//     try {
+//         if (!email) {
+//             throw new Error("Email is required");
+//         }
+        
+//         let user = await User.findOne({ email: email.toLowerCase() });
+
+//         if (!user) {
+//             user = await User.findOne({ email: email });
+//         }
+
+//         return user;
+        
+//     } catch (error) {
+//         console.error("Error fetching user by email:", error);
+//         throw new Error("Failed to retrieve user.");
+//     }
+// }
+
 const getUserByEmail = async (email) => {
-    // First, try to find the user with a lowercased email
-    let user = await User.findOne({ email: email.toLowerCase() });
+    try {
+        // Vérification de l'entrée
+        if (!email || typeof email !== 'string') {
+            throw new Error("A valid email is required.");
+        }
 
-    // If no user is found with the lowercased email, search with the original email
-    if (!user) {
-        user = await User.findOne({ email });
+        const normalizedEmail = email.toLowerCase();
+
+        const user = await User.findOne({ email: normalizedEmail }); 
+
+        return user || null;
+    } catch (error) {
+        console.error("Error fetching user by email:", error.message);
+        throw new Error("Failed to retrieve user.");
     }
+};
 
-    return user;
-}
+
 const approveUserService = async (userId,role) => {
     
     if (!(await User.findById(userId))) {

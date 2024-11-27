@@ -96,21 +96,9 @@ i18n.changeLanguage('fr');
 
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URL ,{ useNewUrlParser: true, useUnifiedTopology: true , socketTimeoutMS: 60000, })
+mongoose.connect(process.env.MONGO_URL ,{ useNewUrlParser: true, useUnifiedTopology: true , socketTimeoutMS: 60000, serverSelectionTimeoutMS: 60000,})
     .then(async (result) => {
 
-    //   try {
-    //     const collection = mongoose.connection.db.collection('projects'); 
-    //     await collection.dropIndex('owner_1'); 
-
-    //     console.log('Index unique supprimé avec succès');
-    // } catch (err) {
-    //     if (err.code === 27) {
-    //         console.log('Index non trouvé, aucune suppression nécessaire');
-    //     } else {
-    //         console.error('Erreur lors de la suppression de l\'index unique:', err);
-    //     }
-    // }
         // Start the server after successful database connection
         app.listen(process.env.PORT, () => {
             console.log("Server is running!");

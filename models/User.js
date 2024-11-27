@@ -52,5 +52,21 @@ const UserSchema = new mongoose.Schema({
 })
 
 
+UserSchema.index({ email: 1 });
+
+UserSchema.pre('save', function (next) {
+    if (this.email) {
+        this.email = this.email.toLowerCase();
+    }
+    next();
+});
+
+UserSchema.pre('findOneAndUpdate', function (next) {
+    if (this._update.email) {
+        this._update.email = this._update.email.toLowerCase();
+    }
+    next();
+});
+
 const User = mongoose.model("User", UserSchema)
 module.exports = User
