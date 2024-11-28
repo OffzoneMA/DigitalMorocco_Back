@@ -85,41 +85,11 @@ app.use(i18nextMiddleware.handle(i18n));
 
 i18n.changeLanguage('fr');
 
-  app.get('/', (req, res) => {
-    const response = `${req.t('welcome_email.title')} ${req.t('welcome_email.title1')}`;
-    res.status(200);
-    res.send(response);
-  });
-
-
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URL ,{ useNewUrlParser: true, useUnifiedTopology: true , socketTimeoutMS: 60000, serverSelectionTimeoutMS: 60000,})
-    .then(async (result) => {
-
-        // Start the server after successful database connection
-        app.listen(process.env.PORT, () => {
-            console.log("Server is running!");
-            app.use(passport.initialize());
-            app.use(passport.session());
-            //Checking the subscription expire date (For all members) every 24Hr
-            const taskInterval = 24 * 60 * 60 * 1000; 
-            setInterval(checkSubscriptionStatus, taskInterval);
-            setInterval(autoCancelExpiredSubscriptions, taskInterval);
-          
-        });
-    })
-    .catch(err => console.log(err));
-
-app.use(
-    session({
-        secret: process.env.ACCESS_TOKEN_SECRET,
-        resave: true,
-        saveUninitialized: true,
-    })
-);
-
-// Applique le middleware d'authentification à toutes les routes nécessitant une authentification
-//app.use(authenticateJWT);
+app.get('/', (req, res) => {
+  const response = `Test ${req.t('welcome_email.title')} ${req.t('welcome_email.title1')}`;
+  res.status(200);
+  res.send(response);
+});
 
 // Routes
 app.use("/users", Userouter);
@@ -149,6 +119,36 @@ app.use('/search' , SearchRouter);
 app.use('/billing' , BillingRouter);
 app.use('/notifications' , NotificationRouter);
 app.use('/sponsors' , SponsorRouter)
+
+
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URL ,{ useNewUrlParser: true, useUnifiedTopology: true , socketTimeoutMS: 60000, serverSelectionTimeoutMS: 120000,})
+    .then(async (result) => {
+
+        // Start the server after successful database connection
+        app.listen(process.env.PORT, () => {
+            console.log("Server is running!");
+            app.use(passport.initialize());
+            app.use(passport.session());
+            //Checking the subscription expire date (For all members) every 24Hr
+            const taskInterval = 24 * 60 * 60 * 1000; 
+            setInterval(checkSubscriptionStatus, taskInterval);
+            setInterval(autoCancelExpiredSubscriptions, taskInterval);
+          
+        });
+    })
+    .catch(err => console.log(err));
+
+app.use(
+    session({
+        secret: process.env.ACCESS_TOKEN_SECRET,
+        resave: true,
+        saveUninitialized: true,
+    })
+);
+
+// Applique le middleware d'authentification à toutes les routes nécessitant une authentification
+//app.use(authenticateJWT);
 
 const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css";
 
