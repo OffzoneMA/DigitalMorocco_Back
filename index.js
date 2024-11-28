@@ -40,9 +40,6 @@ const { checkSubscriptionStatus } = require("./services/MemberService");
 const {autoCancelExpiredSubscriptions} = require("./services/SubscriptionService");
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-const Event = require('./models/Event');
-const User = require('./models/User');
-const Investor = require('./models/Investor');
 
 // Swagger Imports
 const swaggerJsdoc = require('swagger-jsdoc');

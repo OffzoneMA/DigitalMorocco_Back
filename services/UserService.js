@@ -98,7 +98,7 @@ const getUserByEmail = async (email) => {
 
         return user || null;
     } catch (error) {
-        console.error("Error fetching user by email:", error.message);
+        console.error("Error fetching user by email:", error);
         throw new Error("Failed to retrieve user.");
     }
 };
