@@ -269,6 +269,5 @@ const generateUserInfosAll = async (user) => {
      return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET)
 }
 
-
 module.exports = {signInUser, createUser, generateAccessToken, generateUserInfos , 
   generateUserInfosAll , getAllUsers , getAllUsersPage}

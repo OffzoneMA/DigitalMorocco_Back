@@ -103,7 +103,6 @@ const getUserByEmail = async (email) => {
     }
 };
 
-
 const approveUserService = async (userId,role) => {
     
     if (!(await User.findById(userId))) {
@@ -122,6 +121,7 @@ const approveUserService = async (userId,role) => {
     await requestServive.removeRequestByUserId(userId,role)
     return await User.findByIdAndUpdate(userId, { status: 'accepted' })
 }
+
 
 const rejectUser = async (id, role) => {
     const request = await requestServive.getRequestByUserId(id, role);

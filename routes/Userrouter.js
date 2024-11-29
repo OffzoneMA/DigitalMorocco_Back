@@ -590,6 +590,8 @@ router.route("/UserInfo").get(AuthController.userInfo)
 router.route("/Login").post(AuthController.login);
 
 
+
+
 /**
  * @swagger
  * /users/count-by-month:
@@ -705,7 +707,7 @@ router.get('/distinct', UserController.getDistinctFieldValues);
  *       500:
  *         description: Internal server error
  */
-router.route("/ApproveUser/:userId").put( UserController.approveUser);
+router.route("/ApproveUser/:userId").put(AuthController.AuthenticateAdmin, UserController.approveUser);
 
 /**
  * @swagger
@@ -1208,7 +1210,6 @@ router.post('/send-email', UserController.sendContactEmail);
  *         description: Server error
  */
 router.put('/:userId/changePassword',AuthController.AuthenticateUser, UserController.changePassword);
-
 
 
 module.exports = router

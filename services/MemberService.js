@@ -24,6 +24,7 @@ const getAllMembers = async (args) => {
     try {
         const page = args.page || 1;
         const pageSize = args.pageSize || 15;
+
         const skip = (page - 1) * pageSize;
 
         const query = {
@@ -48,7 +49,6 @@ const getAllMembers = async (args) => {
             query.companyType = { $in: args.sectors.split(',') };
             // query.companyType = { $regex: sectorsArray.join('|'), $options: 'i' };
         }        
-        
 
         if (args.stages && args.stages.length > 0) {
             query.stage = { $in: args.stages.split(',') };
@@ -977,7 +977,6 @@ const getInvestorsForMemberWithoutPagination = async (memberId) => {
     }
 };
 
-
 const getContactRequestsForMember = async (memberId, args) => {
     // Pagination
     const requestedPage = parseInt(args.page, 10) || 1;
@@ -1033,6 +1032,7 @@ const getContactRequestsForMember = async (memberId, args) => {
 };
 
 const getDistinctInvestorsValuesForMember = async (memberId, field) => {
+
     try {
         // Récupérer tous les investisseurs associés au membre dans ContactRequest avec status 'Approved' ou 'Accepted'
         const contactRequests = await ContactRequest.find({
@@ -1095,7 +1095,6 @@ const searchInvestorsForMember = async (user, searchQuery) => {
         throw new Error('Error searching investors for member: ' + error.message);
     }
 }
-
 
 const getContacts = async (memberId) => {
     const investors = await Member.findById(memberId).select("investorsRequestsAccepted").populate({
@@ -1167,3 +1166,4 @@ const checkMemberStatus = async (memberId) => {
      getMemberInfoByUserId , CreateMemberWithLogo , searchProjects , searchMembers , searchInvestorsForMember , 
      getDistinctInvestorsValuesForMember , getAllProjectsForMemberWithoutPagination , 
     getContactRequestsForMember , getInvestorsForMemberWithoutPagination} 
+

@@ -11,7 +11,6 @@ const getAllInvestors = async (args) => {
     const page = args?.page || 1;
     const pageSize = args?.pageSize || 8;
     const skip = (page - 1) * pageSize;
-
     const filter = {};
 
     if (args.type) {
@@ -33,7 +32,6 @@ const getAllInvestors = async (args) => {
         .skip(skip)
         .sort({ dateCreated: 'desc' })
         .limit(pageSize);
-
     return { investors, totalPages };
 }
 
@@ -230,6 +228,7 @@ const searchInvestors = async (searchTerm) => {
     }
 };
 
+
 const CreateInvestor = async (investor) => {
     return await Investor.create(investor);
 }
@@ -311,6 +310,7 @@ const acceptContact = async (investorId, requestId, memberId) => {
     );
     return request
 }
+
 const rejectContact= async (investorId, requestId, memberId) => {
 
      const request = await ContactRequest.findByIdAndUpdate(requestId, { status:"rejected"})
@@ -440,7 +440,6 @@ const deleteInvestorById = async (investorId) => {
         throw new Error(error.message);
     }
 };
-
 
 module.exports = { deleteInvestor,getContacts, getProjects, CreateInvestor, 
     getInvestorById, investorByNameExists, getAllInvestors, getInvestorByUserId, 

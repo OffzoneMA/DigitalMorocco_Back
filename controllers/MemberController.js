@@ -8,7 +8,6 @@ const Member = require("../models/Member");
 //const User = require("../models/User");
 //const ActivityHistoryService = require('../services/ActivityHistoryService');
 
-
 const getMembers = async (req, res) => {
     try {
         const result = await MemberService.getAllMembers(req.query);
@@ -380,3 +379,4 @@ module.exports = {  addCompanyToMember,getContacts,getMembers, createEnterprise,
 getDistinctRequestFieldValues , getAllProjectsForMemberWithoutPagination  , getInvestorsForMemberWithoutPagination , 
 createDraftContactRequest , finalizeContactRequest 
 };
+
