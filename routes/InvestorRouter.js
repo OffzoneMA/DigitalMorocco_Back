@@ -480,6 +480,76 @@ router.get('/investor-requests', InvestorController.getInvestorRequests);
 
 /**
  * @swagger
+ * tags:
+ *   name: InvestorRequests
+ *   description: Managing API of Investor Requests
+ * /api/investor-requests:
+ *   get:
+ *     summary: Récupérer la liste des demandes d'investisseurs
+ *     description: Renvoie la liste des demandes d'investisseurs avec les informations suivantes : user, linkedin_link, dateCreated, status, communicationStatus, Note.
+ *     responses:
+ *       '200':
+ *         description: OK - La liste des demandes d'investisseurs a été récupérée avec succès.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indique si la requête a réussi.
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   description: Liste des demandes d'investisseurs.
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       user:
+ *                         type: string
+ *                         description: ID de l'utilisateur associé à la demande d'investisseur.
+ *                         example: "609b3aa7d91bc50d8433a1c5"
+ *                       linkedin_link:
+ *                         type: string
+ *                         description: Lien LinkedIn de l'investisseur.
+ *                         example: "https://www.linkedin.com/in/johndoe/"
+ *                       dateCreated:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Date de création de la demande.
+ *                         example: "2024-05-02T12:34:56.789Z"
+ *                       status:
+ *                         type: string
+ *                         description: Statut de la demande d'investisseur.
+ *                         example: "In Progress"
+ *                       communicationStatus:
+ *                         type: string
+ *                         description: Statut de la communication associée à la demande.
+ *                         example: "Pending"
+ *                       Note:
+ *                         type: string
+ *                         description: Note associée à la demande d'investisseur.
+ *                         example: "Meeting scheduled for next week."
+ *       '500':
+ *         description: Erreur interne du serveur - Impossible de récupérer la liste des demandes d'investisseurs.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indique si la requête a réussi.
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   description: Message d'erreur décrivant la cause de l'échec de la requête.
+ *                   example: "Internal server error."
+ */
+router.get('/investor-requests', InvestorController.getInvestorRequests);
+
+/**
+ * @swagger
  * /investors/ContactRequest:
  *   get:
  *     summary: Get all contact requests from the member 

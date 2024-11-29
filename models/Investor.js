@@ -71,7 +71,6 @@ const InvestorSchema = new mongoose.Schema({
             ref: "Member"
         }
     ],*/
-
 })
 
 
