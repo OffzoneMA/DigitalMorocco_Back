@@ -1,10 +1,9 @@
 const request = require('supertest');
-const app = require('../app'); // Assuming your Express app is exported from app.js
-
+const index = require('../index'); 
 describe('User Routes', () => {
   describe('POST /users', () => {
     it('should create a new user', async () => {
-      const response = await request(app)
+      const response = await request(index)
         .post('/users')
         .send({
           email: 'test@example.com',
@@ -16,7 +15,7 @@ describe('User Routes', () => {
     });
 
     it('should return 400 if request body is invalid', async () => {
-      const response = await request(app)
+      const response = await request(index)
         .post('/users')
         .send({
           email: 'test@example.com'
@@ -29,7 +28,7 @@ describe('User Routes', () => {
 
   describe('DELETE /users', () => {
     it('should delete a user', async () => {
-      const response = await request(app)
+      const response = await request(index)
         .delete('/users')
         .set('Authorization', 'Bearer <token>'); // Replace <token> with a valid JWT token
       

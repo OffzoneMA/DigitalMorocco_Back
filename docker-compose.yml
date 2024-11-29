@@ -4,10 +4,10 @@ services:
     app:
         container_name: container_digitalMoroccoBack_api
         image: image_digitalmoroccoback_api
-        restart: always
+        # restart: always
         build:
             context: .
             dockerfile: Dockerfile
             target: base
         ports:
-            - "${PORT}:${PORT}"
+            - "4000:4000"

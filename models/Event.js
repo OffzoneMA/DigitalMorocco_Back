@@ -1,5 +1,27 @@
 const mongoose = require("mongoose");
-
+const EventPromoCodeSchema = new mongoose.Schema({
+    code: {
+      type: String,
+    //   required: true,
+    },
+    discountPercentage: {
+      type: Number,
+    //   required: true
+    },
+    minOrderAmount: {
+      type: Number,
+      default: 0
+    },
+    valid: {
+      type: Boolean,
+      default: true
+    },
+    validUntil: {
+        type: Date,
+        // required: true
+    }
+  });  
+  
 const eventSchema = new mongoose.Schema({
     title: {
         type: String,
@@ -14,32 +36,38 @@ const eventSchema = new mongoose.Schema({
         required: true
     },
     promoCode: String,
-    date: {
+    promoCodes: [EventPromoCodeSchema],
+    startDate: {
         type: Date,
-        required: true
+    },
+    endDate: {
+        type: Date
     },
     startTime: {
         type: String,
-        required: true
     },
     endTime: {
         type: String,
-        required: true
     },
     locationType: {
         type: String,
         enum: ['online', 'physical'],
-        required: true,
+        default: 'online'
     },
+    category: {
+        type: String,
+        enum: ['Workshop', 'Seminar', 'Conference', 'Meetup' , 'Networking', 'Other']
+    },
+    industry: String,
     physicalLocation: String,
-    coordinates: {
-        latitude:Number,
-        longitude:Number,
-    },
+    latitude:Number,
+    longitude:Number,
     creator: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        //required: true
+    },
+    headerImage: {
+        type: String
     },
     image: {
         type: String
@@ -61,15 +89,13 @@ const eventSchema = new mongoose.Schema({
     zoomPasscode: {
         type: String
     },
-    ticketInfo: {
-        price: {
-            type: Number,
-            required: true
-        },
-        
-        salesEndDate:Date,
-        availableQuantity:Number,
+    price: {
+        type: Number,
+        default:0
     },
+    
+    salesEndDate:Date,
+    availableQuantity: Number,
     attendees: [
         {
             firstName: {
@@ -90,10 +116,37 @@ const eventSchema = new mongoose.Schema({
             companyName: String,
             country: String
         }
-    ]
-    // companyInfo: {
-        
-    // }
+    ],
+    attendeesUsers : [
+        {
+            userId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User',
+                required: true
+              },
+              role: {
+                type: String,
+                enum: ['investor', 'member', 'partner'],
+                required: true
+              }
+        }
+    ],
+    organizerLogo: String,
+    organizername: String,
+    status:
+    {
+        type: String,
+        enum: ['past', 'upcoming', 'ongoing'],
+        default: 'upcoming'
+    },
+    sponsors: [
+        {
+            logo: String,
+            name: String
+        }
+    ],
+    sponsorsRequests: [String] ,
+    sponsorsPartners : [String],
 })
 
 const Event = mongoose.model('Event', eventSchema);

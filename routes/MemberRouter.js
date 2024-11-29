@@ -3,6 +3,7 @@ const router = express.Router()
 const MemberController = require("../controllers/MemberController")
 const AuthController = require("../controllers/AuthController")
 const upload = require("../middelware/multer")
+
 /**
  * @swagger
  * components:
@@ -29,6 +30,9 @@ const upload = require("../middelware/multer")
  *           type: string
  *           description: the logo of the startup
  *         website: 
+ *           type: string
+ *           description: the website of the startup
+ *         country: 
  *           type: string
  *           description: the website of the startup
  *         
@@ -66,198 +70,7 @@ router.route("/").get( MemberController.getMembers).post(AuthController.Authenti
  * tags:
  *   name: Members
  *   description: Managing API of the Member (or Start-Up) 
- * /members/employees:
- *   get:
- *     summary: Get all employees from the DB
- *     description: list of all employees exited 
- *     tags: [Employees]
- *     security:
- *       - jwtToken: []
- *     responses:
- *       200:
- *         description: Successful response
- *         content:
- *           application/json:
- */
-router.route("/employees").get( MemberController.getEmployees)
 
-/**
- * @swagger
- * tags:
- *   name: Employees
- *   description: Managing API for Employees
- * /members/employees/{employeeId}:
- *   delete:
- *     summary: Delete an employee by ID
- *     description: Delete an employee from the database by their ID.
- *     tags: [Employees]
- *     security:
- *       - jwtToken: []
- *     parameters:
- *       - in: path
- *         name: employeeId
- *         schema:
- *           type: string
- *         required: true
- *         description: ID of the employee to delete
- *     responses:
- *       204:
- *         description: Employee deleted successfully
- *       401:
- *         $ref: '#/components/responses/UnauthorizedError'
- *       404:
- *         description: Employee not found
- *       500:
- *         description: Internal server error
- */
-router.route("/employees/:employeeId").delete( MemberController.deleteEmployeeFromMember)
-
-/**
- * @swagger
- * tags:
- *   name: Members
- *   description: Managing API of the Member (or Start-Up)
- * /members/{userId}/employees/{employeeId}:
- *   put:
- *     summary: Mettre à jour les informations d'un employé d'un membre
- *     description: Endpoint permettant de mettre à jour les informations d'un employé dans un membre existant
- *     tags: [Members]
- *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
- *         description: L'ID du membre contenant l'employé à mettre à jour
- *         schema:
- *           type: string
- *       - in: path
- *         name: employeeId
- *         required: true
- *         description: L'ID de l'employé à mettre à jour
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               firstName:
- *                 type: string
- *               lastName:
- *                 type: string
- *               email:
- *                 type: string
- *               jobTitle:
- *                 type: string
- *               level:
- *                 type: string
- *               status:
- *                 type: string
- *                 enum: ['active', 'offline']
- *               address:
- *                 type: string
- *               country:
- *                 type: string
- *               cityState:
- *                 type: string
- *               phoneNumber:
- *                 type: string
- *               startDate:
- *                 type: string
- *                 format: date
- *               personalTaxIdentifierNumber:
- *                 type: string
- *               photo:
- *                 type: string
- *                 format: binary
- *               department:
- *                 type: string
- *     responses:
- *       '200':
- *         description: Les informations de l'employé ont été mises à jour avec succès
- *       '400':
- *         description: Requête invalide
- *       '401':
- *         description: Non autorisé
- *       '404':
- *         description: Membre ou employé non trouvé
- *       '500':
- *         description: Erreur interne du serveur
- */
-router.route("/:userId/employees/:employeeId").put( MemberController.updateEmployeeFromMember)
-
-/**
- * @swagger
- * tags:
- *   name: Members
- *   description: Managing API of the Member (or Start-Up) 
- * /members/employees:
- *   post:
- *     summary: Ajouter un employé à un membre
- *     description: Endpoint permettant d'ajouter un employé à un membre existant
- *     tags: [Members]
- *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
- *         description: L'ID du membre auquel l'employé doit être ajouté
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             properties:
- *               photo:
- *                 type: string
- *                 format: binary
- *               jobTitle:
- *                 type: string
- *               level:
- *                 type: string
- *               department:
- *                 type: string
- *               country:
- *                 type: string
- *               cityState:
- *                 type: string
- *               startDate:
- *                 type: string
- *                 format: date
- *               firstName:
- *                 type: string
- *               lastName:
- *                 type: string
- *               workEmail:
- *                 type: string
- *               personalEmail:
- *                 type: string
- *               phoneNumber:
- *                 type: string
- *               address:
- *                 type: string
- *               personalTaxIdentifierNumber:
- *                 type: string
- *     responses:
- *       '200':
- *         description: Employé ajouté avec succès
- *       '400':
- *         description: Requête invalide
- *       '401':
- *         description: Non autorisé
- *       '500':
- *         description: Erreur interne du serveur
- */
-router.route("/employees/:userId").post(AuthController.AuthenticateSubMemberOrAdmin,MemberController.addEmployeeToMember)
-
-/**
- * @swagger
- * tags:
- *   name: Members
- *   description: Managing API of the Member (or Start-Up) 
  * /members/company:
  *   post:
  *     summary: Ajouter une company à un membre
@@ -317,101 +130,7 @@ router.route("/employees/:userId").post(AuthController.AuthenticateSubMemberOrAd
  *       '500':
  *         description: Erreur interne du serveur
  */
-router.route("/company/:userId").post(AuthController.AuthenticateSubMemberOrAdmin,MemberController.addCompanyToMember)
-
-/**
- * @swagger
- * tags:
- *   name: Members
- *   description: Managing API of the Member (or Start-Up)
- * /members/{userId}/legal-documents:
- *   post:
- *     summary: Ajouter un document légal à un membre
- *     description: Endpoint permettant d'ajouter un document légal à un membre existant
- *     tags: [Members]
- *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
- *         description: L'ID du membre auquel le document doit être ajouté
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               link:
- *                 type: string
- *               type:
- *                 type: string
- *     responses:
- *       '201':
- *         description: Document légal ajouté avec succès
- *       '400':
- *         description: Requête invalide
- *       '401':
- *         description: Non autorisé
- *       '500':
- *         description: Erreur interne du serveur
- */
-router.post('/:userId/legal-documents', MemberController.addLegalDocumentToMember);
-
-
-router.delete('/legal-documents/:id', MemberController.deleteLegalDocument);
-
-
-router.put('/:userId/legal-documents/:id', MemberController.editLegalDocument);
-
-/**
- * @swagger
- * /legal-documents:
- *   get:
- *     summary: Get all legal documents
- *     description: Retrieve a list of all legal documents stored in the database.
- *     tags: [Legal Documents]
- *     responses:
- *       200:
- *         description: Successful response
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   _id:
- *                     type: string
- *                   name:
- *                     type: string
- *                     description: The name of the legal document.
- *                   lastModified:
- *                     type: string
- *                     description: The last modified date of the legal document.
- *                   owner:
- *                     type: string
- *                     description: The owner of the legal document.
- *                   ...
- *                 required:
- *                   - _id
- *                   - name
- *                   - lastModified
- *                   - owner
- *                 example:
- *                   - _id: "610af7651154c22cf4f20c19"
- *                     name: "Document 1"
- *                     lastModified: "2023-05-01T12:00:00.000Z"
- *                     owner: "John Doe"
- *                   - _id: "610af7651154c22cf4f20c1a"
- *                     name: "Document 2"
- *                     lastModified: "2023-05-02T10:30:00.000Z"
- *                     owner: "Jane Smith"
- */
-router.get('/legal-documents', MemberController.getLegalDocuments);
+router.route("/company/:userId").post(AuthController.AuthenticateMember,MemberController.addCompanyToMember)
 
 /**
  * @swagger
@@ -452,10 +171,7 @@ router.route("/name/:name").get(MemberController.getByName)
  *               - name
  *               - funding
  *               - currency
- *               - listMembers
  *               - details
- *               - milestoneProgress
- *               - documents
  *             properties:
  *               name:
  *                 type: string
@@ -463,10 +179,185 @@ router.route("/name/:name").get(MemberController.getByName)
  *               funding:
  *                 type: number
  *                 description: The funding amount for the project.
+ *               totalRaised:
+ *                 type: number
+ *                 description: The funding amount for the project.
  *               currency:
  *                 type: string
  *                 enum: [MAD, €, $]
  *                 description: The currency of the funding amount.
+ *               stage:
+ *                 type: string
+ *               sector:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *               website:
+ *                 type: string
+ *               contactEmail:
+ *                 type: string
+ *               listMembers:
+ *                 type: array
+ *                 description: List of team members working on the project.
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     employee:
+ *                       type: string
+ *                     image:
+ *                       type: string
+ *                     photo:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *                     jobTitle:
+ *                       type: string
+ *                     fullName:
+ *                       type: string
+ *                     workEmail:
+ *                       type: string
+ *                     personalEmail:
+ *                       type: string
+ *               details:
+ *                 type: string
+ *                 description: Details about the project.
+ *               stages:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               milestones:
+ *                 type: array
+ *                 description: List of project milestones.
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                       description: Name of the milestone.
+ *                     description:
+ *                       type: string
+ *                       description: Description of the milestone.
+ *                     dueDate:
+ *                       type: string
+ *                       format: date
+ *                       description: Due date of the milestone.
+ *               pitchDeck:
+ *                 type: string
+ *                 format: binary
+ *               businessPlan:
+ *                 type: string
+ *                 format: binary
+ *               financialProjection:
+ *                 type: string
+ *                 format: binary
+ *               logo:
+ *                 type: string
+ *                 format: binary
+ *               files:
+ *                 type: array
+ *                 description: List of project documents.
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *               documents:
+ *                 type: array
+ *                 description: List of project documents.
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                       description: Name of the document.
+ *                     link:
+ *                       type: string
+ *                       format: binary
+ *                       description: Document file (PDF, DOCX, etc.).
+ *                     date:
+ *                       type: string
+ *                       description: Date of the document.
+ *                     type:
+ *                       type: string
+ *                       description: Type of the document.
+ *           example:
+ *             name: "ProjectName"
+ *             funding: 10000.0
+ *             currency: "€"
+ *             listMembers:
+ *               - firstName: "John"
+ *                 lastName: "Doe"
+ *                 role: "Developer"
+ *             details: "Project details"
+ *             milestones:
+ *               - name: "Milestone 1"
+ *                 description: "Description of Milestone 1"
+ *                 dueDate: "2024-04-30"
+ *               - name: "Milestone 2"
+ *                 description: "Description of Milestone 2"
+ *                 dueDate: "2024-05-15"
+ *             documents:
+ *               - name: "Document1"
+ *                 link: "http://example.com/document1.pdf"
+ *                 date: "2024-04-16"
+ *                 type: "application/pdf"
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad Request - Invalid input data
+ *       401:
+ *         description: Unauthorized - JWT token is missing or invalid
+ *       500:
+ *         description: Internal Server Error
+ */
+router.route("/project").post(AuthController.AuthenticateMember, upload.fields([{ name: 'businessPlan', maxCount: 1 },{ name: 'financialProjection', maxCount: 1 },{ name: 'pitchDeck', maxCount: 1 }, { name: 'logo', maxCount: 1 },{ name: 'files', maxCount: 8 }]), MemberController.createProject)
+
+
+/**
+ * @swagger
+ * /members/project/{projectId}:
+ *   put:
+ *     summary: Update a project for a member
+ *     description: Update an existing project for a member by providing updated project details and documents.
+ *     tags: [Members]
+ *     security:
+ *       - jwtToken: []  # Define the security scheme here if needed
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID of the project to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The name of the project.
+ *               funding:
+ *                 type: number
+ *                 description: The funding amount for the project.
+ *               totalRaised:
+ *                 type: number
+ *                 description: The funding amount for the project.
+ *               currency:
+ *                 type: string
+ *                 enum: [MAD, €, $]
+ *                 description: The currency of the funding amount.
+ *               stage:
+ *                 type: string
+ *               sector:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *               website:
+ *                 type: string
+ *               contactEmail:
+ *                 type: string
  *               listMembers:
  *                 type: array
  *                 description: List of team members working on the project.
@@ -482,191 +373,173 @@ router.route("/name/:name").get(MemberController.getByName)
  *                     role:
  *                       type: string
  *                       description: Role of the team member.
- *                 required:
- *                   - firstName
- *                   - lastName
- *                   - role
  *               details:
  *                 type: string
  *                 description: Details about the project.
- *               milestoneProgress:
- *                 type: string
- *                 description: Progress status of the project milestones.
- *               files:
+ *               milestones:
  *                 type: array
- *                 description: List of project documents.
+ *                 description: List of project milestones.
  *                 items:
  *                   type: object
  *                   properties:
  *                     name:
  *                       type: string
- *                       description: Name of the document.
- *                     link:
+ *                       description: Name of the milestone.
+ *                     description:
  *                       type: string
- *                       format: binary
- *                       description: Document file (PDF, DOCX, etc.).
- *                     type:
+ *                       description: Description of the milestone.
+ *                     dueDate:
  *                       type: string
- *                       description: type of the document.
- *                     date:
- *                       type: string
- *                       description: date of the document.
- *           example:
- *             name: "ProjectName"
- *             funding: 10000.0
- *             currency: "€"
- *             listMembers:
- *               - firstName: "John"
- *                 lastName: "Doe"
- *                 role: "Developer"
- *             details: "Project details"
- *             milestoneProgress: "50%"
+ *                       format: date
+ *                       description: Due date of the milestone.
+ *               pitchDeck:
+ *                 type: string
+ *                 format: binary
+ *               businessPlan:
+ *                 type: string
+ *                 format: binary
+ *               financialProjection:
+ *                 type: string
+ *                 format: binary
+ *               logo:
+ *                 type: string
+ *                 format: binary
+ *               documents:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *               files:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
  *     responses:
  *       200:
  *         description: Successful response
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 _id:
- *                   type: string
- *                 owner:
- *                   type: string
- *                 name:
- *                   type: string
- *                 funding:
- *                   type: number
- *                 currency:
- *                   type: string
- *                 listMembers:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       firstName:
- *                         type: string
- *                       lastName:
- *                         type: string
- *                       role:
- *                         type: string
- *                 details:
- *                   type: string
- *                 milestoneProgress:
- *                   type: string
- *                 documents:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       name:
- *                         type: string
- *                       link:
- *                         type: string
- *                       type:
- *                         type: string
- *                       date:
- *                         type: string
- *               example:
- *                 _id: "6506416714210c86698c9a0b"
- *                 owner: "64fa0ba0292541eeda787241"
- *                 name: "StartUP"
- *                 funding: 7777777777.0
- *                 currency: "€"
- *                 listMembers:
- *                   - firstName: "jjjjjjjjj"
- *                     lastName: "jjjjjjjjjjj"
- *                     role: "hhhhhhhh"
- *                 details: "jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj"
- *                 milestoneProgress: "jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj"
- *                 documents:
- *                   - name: "pitchDeck"
- *                     link: "https://firebasestorage.googleapis.com/v0/b/digital-morocco-806c5.appspot.com/o/Members%2F64f9fa59bd2bd153bc8ff828%2FProject_documents%2FpitchDeck?alt=media&token=91fe9f36-0c85-4b6b-a296-6f556c200a6f"
- *                     type: "application/pdf"
- *                     date: "1694908775993"
- *                   - name: "businessPlan"
- *                     link: "https://firebasestorage.googleapis.com/v0/b/digital-morocco-806c5.appspot.com/o/Members%2F64f9fa59bd2bd153bc8ff828%2FProject_documents%2FbusinessPlan?alt=media&token=68f9c963-f922-413d-a44d-643e86728e36"
- *                     type: "application/pdf"
- *                     date: "1694908775994"
- *                   - name: "financialProjection"
- *                     link: "https://firebasestorage.googleapis.com/v0/b/digital-morocco-806c5.appspot.com/o/Members%2F64f9fa59bd2bd153bc8ff828%2FProject_documents%2FfinancialProjection?alt=media&token=177086e9-a568-4aa1-bfe8-b7da90acc37e"
- *                     type: "application/pdf"
- *                     date: "1694908775996"
  *       400:
  *         description: Bad Request - Invalid input data
  *       401:
  *         description: Unauthorized - JWT token is missing or invalid
+ *       404:
+ *         description: Not Found - Project not found
  *       500:
  *         description: Internal Server Error
  */
-router.route("/project").post(AuthController.AuthenticateMember, upload.fields([{ name: 'files', maxCount: 8 }]), MemberController.createProject)
+router.put("/project/:projectId", AuthController.AuthenticateMember, upload.fields([{ name: 'businessPlan', maxCount: 1 },{ name: 'financialProjection', maxCount: 1 },{ name: 'pitchDeck', maxCount: 1 } , { name: 'logo', maxCount: 1 },{ name: 'files', maxCount: 8 }]), MemberController.updateProject);
 
 /**
  * @swagger
- * /members/ContactRequest/{investorId}:
+ * /members/sendContact:
  *   post:
- *     summary: create a contact request by the investor ID
- *     description: create a contact request to the investor desired by its investor ID
+ *     summary: Create a contact request
  *     tags: [Members]
- *     security:
- *       - jwtToken: []
- *     parameters:
- *       - name: investorId
- *         in: path
- *         description: The id of investor that needs to be fetched.
- *         required: true
- *         schema:
- *           type: string
- *     example:
- *       investorId: "e45gjse4442"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               investorId:
+ *                 type: string
+ *                 description: ID of the investor to contact
+ *               projectId:
+ *                 type: string
+ *                 description: ID of the project
+ *               document:
+ *                 type: string
+ *                 format: binary
+ *                 description: Document file
+ *               data:
+ *                 type: object
+ *                 description: Additional data for the contact request
+ *     responses:
+ *       201:
+ *         description: Contact request created successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/sendContact', AuthController.AuthenticateMember , upload.single('document'), MemberController.contactRequest);
+
+/**
+ * @swagger
+ * /members/share-project:
+ *   post:
+ *     summary: Share a project with multiple investors
+ *     description: Share a project with a list of investors and send them an email with project details.
+ *     tags:
+ *       - Projects
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               projectId:
+ *                 type: string
+ *                 description: ID of the project to be shared
+ *               investorIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of investor IDs to share the project with
  *     responses:
  *       200:
- *         description: Successful response
+ *         description: Requests were processed successfully
+ *       500:
+ *         description: Server error
  */
-router.route("/ContactRequest/:investorId").post(AuthController.AuthenticateSubMember, MemberController.contactRequest )
+router.post("/share-project", AuthController.AuthenticateMember, MemberController.shareProject);
 
 /**
  * @swagger
  * /members/ContactRequest:
  *   get:
- *     summary: Get all contact requests of the member 
- *     description: list of all the member's contact requets sent to investor 
+ *     summary: Get all contact requests of the member
+ *     description: List of all the member's contact requests sent to investors with optional filtering, sorting, and pagination.
  *     tags: [Members]
  *     security:
- *       - jwtToken: []
+ *       - jwtToken: [] # Only accessible with a valid JWT token
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           default: 8
+ *         description: Number of records per page for pagination
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by status of the contact request
+ *       - in: query
+ *         name: investorNames
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by investor names (multiple selection allowed)
  *     responses:
  *       200:
  *         description: Successful response
- *         content:
- *           application/json:
- *             schema:
- *               type: string
+ *       401:
+ *         description: Unauthorized - Authentication is required
+ *       500:
+ *         description: Server error
  */
 router.route("/ContactRequest").get(AuthController.AuthenticateMember, MemberController.getContactRequests)
-
-/**
- * @swagger
- * /members/SubscribeMember/{subid}:
- *   get:
- *     summary: Add a subscription to an unscribed member 
- *     description: u need to enter the subscription id of the three offers Bronze Silver and Gold u want subscribe to all of them are different from the number of credits the price and duration
- *     tags: [Members]
- *     security:
- *       - jwtToken: []
- *     parameters:
- *       - name: subid
- *         in: path
- *         description: The id of subscription to be fetched.
- *         required: true 
- *     responses:
- *       200:
- *         description: Successful response
- *         content:
- *           application/json:
- *             schema:
- *               type: string
- */
-router.route("/SubscribeMember/:subid").get(AuthController.AuthenticateMember, MemberController.subUser)
 
 /**
  * @swagger
@@ -699,40 +572,835 @@ router.route("/Contacts").get(AuthController.AuthenticateMember, MemberControlle
 
 /**
  * @swagger
- * /members/check-subscription-status:
- *   get:
- *     summary: Check if the logged-in member is active and has subscription logs
- *     description: This endpoint checks if the authenticated member has an active status and if they exist in the subscription logs.
+ * /members/company:
+ *   post:
+ *     summary: Create a company for a member
  *     tags: [Members]
- *     security:
- *       - jwtToken: []
+ *     consumes:
+ *       - multipart/form-data
+ *     parameters:
+ *       - in: path
+ *         name: memberId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the member
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               companyName:
+ *                 type: string
+ *               legalName:
+ *                 type: string
+ *               website:
+ *                 type: string
+ *               contactEmail:
+ *                 type: string
+ *               desc:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               country:
+ *                 type: string
+ *               city:
+ *                 type: string
+ *               stage:
+ *                 type: string
+ *               state:
+ *                 type: string
+ *               companyType:
+ *                 type: string
+ *               taxNbr:
+ *                 type: string
+ *               corporateNbr:
+ *                 type: string
+ *               logo:
+ *                 type: string
+ *                 format: binary
+ *       produces:
+ *          - multipart/form-data
  *     responses:
  *       200:
- *         description: Member is active and has subscription logs
+ *         description: Company created successfully
  *         content:
  *           application/json:
- *             example:
- *               message: Member is active and has subscription logs.
- *       401:
- *         description: Unauthorized - The member is not authenticated.
+ *             schema:
+ *               $ref: '#/components/schemas/Member'
+ *       400:
+ *         description: Bad request, check the request body
+ */
+router.post("/company",AuthController.AuthenticateMember, upload.single('logo'), MemberController.createCompany);
+
+/**
+ * @swagger
+ * /members/companies:
+ *   post:
+ *     summary: Créer ou mettre à jour une entreprise pour un membre, un investisseur ou un partenaire.
+ *     tags: [Members]
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               role:
+ *                 type: string
+ *                 description: Le rôle de l'utilisateur (member, investor, partner)
+ *               companyName:
+ *                 type: string
+ *               legalName:
+ *                 type: string
+ *               website:
+ *                 type: string
+ *               contactEmail:
+ *                 type: string
+ *               desc:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               country:
+ *                 type: string
+ *               city:
+ *                 type: string
+ *               stage:
+ *                 type: string
+ *               state:
+ *                 type: string
+ *               companyType:
+ *                 type: string
+ *               taxNbr:
+ *                 type: string
+ *               corporateNbr:
+ *                 type: string
+ *               logo:
+ *                 type: string
+ *                 format: binary
+ *                 description: Logo de l'entreprise
+ *     responses:
+ *       200:
+ *         description: Entreprise créée ou mise à jour avec succès.
+ *       500:
+ *         description: Erreur lors de la création ou de la mise à jour de l'entreprise.
+ */
+router.post('/companies', AuthController.AuthenticateUser, upload.single('logo'), MemberController.createTestCompany);
+
+
+/**
+ * @swagger
+ * /members/{userId}:
+ *   post:
+ *     summary: Create a company for a member
+ *     tags: [Members]
+ *     consumes:
+ *       - multipart/form-data
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the member
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               companyName:
+ *                 type: string
+ *               legalName:
+ *                 type: string
+ *               website:
+ *                 type: string
+ *               contactEmail:
+ *                 type: string
+ *               desc:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               country:
+ *                 type: string
+ *               city:
+ *                 type: string
+ *               stage:
+ *                 type: string
+ *               state:
+ *                 type: string
+ *               companyType:
+ *                 type: string
+ *               taxNbr:
+ *                 type: string
+ *               corporateNbr:
+ *                 type: string
+ *               logo:
+ *                 type: string
+ *                 format: binary
+ *       produces:
+ *          - multipart/form-data
+ *     responses:
+ *       200:
+ *         description: Company created successfully
  *         content:
  *           application/json:
- *             example:
- *               error: Please authenticate.
+ *             schema:
+ *               $ref: '#/components/schemas/Member'
+ *       400:
+ *         description: Bad request, check the request body
+ */
+router.post("/:userId", upload.single('logo'), MemberController.CreateMemberWithLogo);
+
+/**
+ * @swagger
+ * /members/testAll:
+ *   get:
+ *     summary: Get a list of all members
+ *     tags: [Members]
+ *     responses:
+ *       200:
+ *         description: A list of members
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Member'
+ */
+router.get("/testAll", MemberController.getTestAllMembers);
+
+/**
+ * @swagger
+ * /members/contact-requests:
+ *   get:
+ *     summary: Get all contact requests for a member
+ *     tags: [Members]
+ *     parameters:
+ *       - in: path
+ *         name: memberId
+ *         required: true
+ *         description: ID of the member
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Successful operation
+ */
+router.get('/members/contact-requests', AuthController.AuthenticateMember, MemberController.getContactRequestsForMember);
+
+/**
+ * @swagger
+ * /members/{userId}:
+ *   post:
+ *     summary: Create a new member for a user.
+ *     description: Create a new member for the specified user.
+ *     tags: [Members]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the user for whom to create the member.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               companyName:
+ *                 type: string
+ *                 description: The name of the company.
+ *               legalName:
+ *                 type: string
+ *                 description: The legal name of the company.
+ *     responses:
+ *       201:
+ *         description: Member created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                   description: The ID of the created member.
+ *                 owner:
+ *                   type: string
+ *                   description: The ID of the owner user.
+ *                 companyName:
+ *                   type: string
+ *                   description: The name of the company.
+ *                 legalName:
+ *                   type: string
+ *                   description: The legal name of the company.
+ *       500:
+ *         description: Internal server error.
+ */
+router.post('/members/:userId', MemberController.createMember);
+
+/**
+ * @swagger
+ * /members/projects:
+ *   get:
+ *     summary: Get all projects for a member
+ *     tags: [Members]
+ *     description: Retrieve all projects associated with a specific member.
+ *     parameters:
+ *       - in: query
+ *         name: visibility
+ *         schema:
+ *           type: string
+ *           enum: ['public', 'private']
+ *         description: Filter by project visibility
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: string
+ *         description: page
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: string
+ *         description: pageSize
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: ["In Progress", "Active", "Stand by"]
+ *         description: Filter by project status
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter by projects created on or after the given date
+ *     responses:
+ *       '200':
+ *         description: A list of projects associated with the member.
+ *       '404':
+ *         description: Member not found.
+ *       '500':
+ *         description: Internal server error.
+ */
+router.get('/projects',AuthController.AuthenticateMember, MemberController.getAllProjectsForMember);
+
+/**
+ * @swagger
+ * /members/projectswithoutpage:
+ *   get:
+ *     summary: Get all projects for a member
+ *     tags: [Members]
+ *     description: Retrieve all projects associated with a specific member.
+ *     parameters:
+ *       - in: query
+ *         name: visibility
+ *         schema:
+ *           type: string
+ *           enum: ['public', 'private']
+ *         description: Filter by project visibility
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: ["In Progress", "Active", "Stand by"]
+ *         description: Filter by project status
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter by projects created on or after the given date
+ *     responses:
+ *       '200':
+ *         description: A list of projects associated with the member.
+ *       '404':
+ *         description: Member not found.
+ *       '500':
+ *         description: Internal server error.
+ */
+router.get('/projectswithoutpage',AuthController.AuthenticateMember, MemberController.getAllProjectsForMemberWithoutPagination);
+
+/**
+ * @swagger
+ * /members/{id}:
+ *   put:
+ *     summary: Update a member
+ *     description: Update member details by ID
+ *     tags: [Member]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Member ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               companyName:
+ *                 type: string
+ *               legalName:
+ *                 type: string
+ *               website:
+ *                 type: string
+ *               contactEmail:
+ *                 type: string
+ *               desc:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               country:
+ *                 type: string
+ *               city:
+ *                 type: string
+ *               companyType:
+ *                 type: string
+ *               taxNbr:
+ *                 type: string
+ *               corporateNbr:
+ *                 type: string
+ *               logo:
+ *                 type: string
+ *               visbility:
+ *                 type: string
+ *                 enum: ['public', 'private']
+ *               rc_ice:
+ *                 type: string
+ *               credits:
+ *                 type: number
+ *               subStatus:
+ *                 type: string
+ *                 enum: ['notActive', 'active']
+ *               expireDate:
+ *                 type: string
+ *                 format: date
+ *     responses:
+ *       200:
+ *         description: Member updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Member'
+ *       400:
+ *         description: Bad request
  *       404:
- *         description: Member not active or no subscription logs found
+ *         description: Member not found
+ */
+router.put('/members/:id', MemberController.updateMember);
+
+/**
+ * @swagger
+ * /members/unique-countries:
+ *   get:
+ *     summary: Get unique countries
+ *     description: Retrieve a list of unique countries from members
+ *     responses:
+ *       200:
+ *         description: A list of unique countries
  *         content:
  *           application/json:
- *             example:
- *               message: Member is not active or has no subscription logs.
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ */
+router.get('/unique-countries', MemberController.getUniqueCountries);
+  
+/**
+ * @swagger
+ * /members/unique-stages:
+ *   get:
+ *     summary: Get unique stages
+ *     description: Retrieve a list of unique stages from members
+ *     responses:
+ *       200:
+ *         description: A list of unique stages
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ */
+router.get('/unique-stages', MemberController.getUniqueStages);
+
+/**
+ * @swagger
+ * /members/unique-companyTypes:
+ *   get:
+ *     summary: Get unique company types
+ *     description: Retrieve a list of unique company types from members
+ *     responses:
+ *       200:
+ *         description: A list of unique company types
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ */
+router.get('/unique-companyTypes', MemberController.getUniqueCompanyTypes);
+
+/**
+ * @swagger
+ * /members/{userId}/create-test-company:
+ *   post:
+ *     summary: Create or update a test company
+ *     description: Create or update a test company for a given user ID
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               companyName:
+ *                 type: string
+ *               legalName:
+ *                 type: string
+ *               website:
+ *                 type: string
+ *               contactEmail:
+ *                 type: string
+ *               desc:
+ *                 type: string
+ *               country:
+ *                 type: string
+ *                 enum:
+ *                   - USA
+ *                   - Canada
+ *                   - France
+ *                   - Germany
+ *                   - Japan
+ *                   - Morocco
+ *                   - Other
+ *               city:
+ *                 type: string
+ *                 enum:
+ *                   - New York
+ *                   - Los Angeles
+ *                   - Toronto
+ *                   - Paris
+ *                   - Berlin
+ *                   - Tokyo
+ *                   - Casablanca
+ *                   - Other
+ *               stage:
+ *                 type: string
+ *                 enum:
+ *                   - Idea
+ *                   - Pree-Seed
+ *                   - Seed
+ *                   - Serie A
+ *                   - Serie B
+ *                   - Serie C
+ *                   - Serie D
+ *                   - Serie E
+ *                   - IPO
+ *               companyType:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   enum:
+ *                     - Fintech
+ *                     - Healthtech
+ *                     - ECommerce
+ *                     - Edutech
+ *                     - Travel
+ *                     - CRM
+ *                     - HRM
+ *               taxIdentfier:
+ *                 type: string
+ *               corporateNbr:
+ *                 type: string
+ *               logo:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Company created or updated successfully
+ *       500:
+ *         description: Error creating or updating company
+ */
+router.post('/:userId/create-test-company', upload.single('logo'), MemberController.createTestCompany);
+
+/**
+ * @swagger
+ * /members/{id}:
+ *   put:
+ *     summary: Update an existing member
+ *     tags: [Members]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the member to update
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               companyName:
+ *                 type: string
+ *                 description: The name of the company
+ *               legalName:
+ *                 type: string
+ *                 description: The legal name of the company
+ *               website:
+ *                 type: string
+ *                 description: The website of the company
+ *               contactEmail:
+ *                 type: string
+ *                 description: The contact email of the company
+ *               desc:
+ *                 type: string
+ *                 description: A description of the company
+ *               address:
+ *                 type: string
+ *                 description: The address of the company
+ *               country:
+ *                 type: string
+ *                 description: The country of the company
+ *               city:
+ *                 type: string
+ *                 description: The city of the company
+ *               companyType:
+ *                 type: string
+ *                 description: The type of the company
+ *               taxNbr:
+ *                 type: string
+ *                 description: The tax number of the company
+ *               corporateNbr:
+ *                 type: string
+ *                 description: The corporate number of the company
+ *               logo:
+ *                 type: string
+ *                 description: The logo of the company
+ *               stage:
+ *                 type: string
+ *                 description: The stage of the company
+ *               visibility:
+ *                 type: string
+ *                 enum: [public, private]
+ *               rc_ice:
+ *                 type: string
+ *               dateCreated:
+ *                 type: string
+ *                 format: date
+ *               credits:
+ *                 type: number
+ *               subStatus:
+ *                 type: string
+ *                 enum: [notActive, active]
+ *               expireDate:
+ *                 type: string
+ *                 format: date
+ *     responses:
+ *       200:
+ *         description: The member was successfully updated
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Member not found
+ */
+router.put("/:id", MemberController.updateMember);
+
+/**
+ * @swagger
+ * /members/my-investors:
+ *   get:
+ *     summary: Get investors for a member
+ *     description: Retrieve a list of investors associated with a specific member.
+ *     tags:
+ *       - Members
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: The page number to retrieve
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           example: 10
+ *         description: The number of records per page
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by the investor type
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: Filter by location
+ *       - in: query
+ *         name: industries
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by preferred investment industries
+ *     responses:
+ *       200:
+ *         description: A list of investors
  *       500:
  *         description: Internal server error
+ */
+router.get('/my-investors', AuthController.AuthenticateMember , MemberController.getInvestorsForMember);
+
+/**
+ * @swagger
+ * /members/myinvestorsWithoutPage:
+ *   get:
+ *     summary: Get all investors for a member
+ *     description: Retrieve the list of all unique investors associated with a member.
+ *     responses:
+ *       200:
+ *       500:
+ *         description: Error retrieving investors
+ */
+router.get('/myinvestorsWithoutPage', AuthController.AuthenticateMember , MemberController.getInvestorsForMemberWithoutPagination);
+
+/**
+ * @swagger
+ * /members/investors/distinct/{field}:
+ *   get:
+ *     summary: Get distinct values of a specified field from investors
+ *     tags: [Members]
+ *     parameters:
+ *       - in: path
+ *         name: field
+ *         required: true
+ *         description: The field for which to get distinct values (e.g., type, location, companyType)
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: A list of distinct values
  *         content:
  *           application/json:
- *             example:
- *               error: Internal server error
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ *       400:
+ *         description: Bad Request
+ *       500:
+ *         description: Internal Server Error
  */
-router.get("/check-subscription-status/:userId", MemberController.checkSubscriptionStatus);
+router.get('/investors/distinct/:field', AuthController.AuthenticateMember , MemberController.getDistinctInvestorFieldValues);
 
+/**
+ * @swagger
+ * /members/request/distinct/{field}:
+ *   get:
+ *     summary: Get distinct field values from contact requests
+ *     description: Retrieve distinct values of a specified field for contact requests by member or investor.
+ *     tags: [ContactRequests]
+ *     parameters:
+ *       - name: field
+ *         in: path
+ *         description: The field to retrieve distinct values from (e.g., status, investorNames)
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response with distinct values
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 distinctValues:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       500:
+ *         description: Error retrieving distinct values
+ */
+router.get('/request/distinct/:field', AuthController.AuthenticateMember ,  MemberController.getDistinctRequestFieldValues);
 
-module.exports = router
+/**
+ * @swagger
+ * /members/contact-requests/draft:
+ *   post:
+ *     summary: Create a draft contact request
+ *     description: Deduct credits and create a draft contact request between a member and an investor.
+ *     tags: [ContactRequests]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               investorId:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Draft contact request created successfully
+ *       400:
+ *         description: Error in request processing
+ */
+router.post('/contact-requests/draft', AuthController.AuthenticateMember , MemberController.createDraftContactRequest);
+
+/**
+ * @swagger
+ * /members/contact-requests/finalize:
+ *   put:
+ *     summary: Finalize a contact request
+ *     description: Finalize the contact request by providing a project, document, and other details.
+ *     tags: [ContactRequests]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               projectId:
+ *                 type: string
+ *               contactRequestId:
+ *                 type: string
+ *               document:
+ *                 type: string
+ *                 format: binary
+ *               data:
+ *                 type: string
+ *                 description: Additional information for the contact request
+ *     responses:
+ *       200:
+ *         description: Contact request finalized successfully
+ *       400:
+ *         description: Error in finalizing contact request
+ */
+router.put('/contact-requests/finalize', upload.single('document'), AuthController.AuthenticateMember , MemberController.finalizeContactRequest);
+
+module.exports = router;

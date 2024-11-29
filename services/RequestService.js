@@ -7,15 +7,15 @@ const uploadService = require('./FileService')
 
 
 const createRequest = async (data, id, role,file) => {
-    if (role == "investor") {
+    if (role === "investor") {
         return await Investor.create({ linkedin_link: data?.linkedin_link, user: id })
             .then(async(res) => await User.findByIdAndUpdate(id, {status:'pending',role}))
     }
-    else if (role == "partner") {
+    else if (role === "partner") {
         return await Partner.create({ num_rc: data?.num_rc, user: id })
             .then(async (res) => await User.findByIdAndUpdate(id, { status: 'pending', role }))
     }
-    else if (role == "member") {
+    else if (role === "member") {
        if (!file) {    
            throw new Error( 'File required' );
         }
@@ -28,29 +28,45 @@ const createRequest = async (data, id, role,file) => {
     }
 }
 
+const createRequestTest = async (data, id, role) => {
+    if (role === "investor") {
+        return await Investor.create({user: id })
+            .then(async(res) => await User.findByIdAndUpdate(id, {status:'pending',role}))
+    }
+    else if (role === "partner") {
+        return await Partner.create({ user: id })
+            .then(async (res) => await User.findByIdAndUpdate(id, { status: 'pending', role }))
+    }
+    else if (role === "member") {
+     return  await Member.create({user: id })
+             .then(async (res) => {
+                await User.findByIdAndUpdate(id, { status: 'pending', role })})
+    }
+}
+
 
 
 const getRequests = async (args) => {
-    if (args.type == "investor") {
+    if (args.type === "investor") {
         return await Investor.find().populate({ path: 'user', select: 'email' }).skip(args.start ? args.start : null).limit(args.qt ? args.qt : 8);
     }
-    else if (args.type == "partner") {
+    else if (args.type === "partner") {
         return await Partner.find().populate({ path: 'user', select: 'email' }).skip(args.start ? args.start : null).limit(args.qt ? args.qt : 8);
     }
-    else if (args.type == "member") {
+    else if (args.type === "member") {
         return await Member.find().populate({ path: 'user', select: 'email' }).skip(args.start ? args.start : null).limit(args.qt ? args.qt : 8);
     }
 }
 
 
 const getRequestByUserId = async (userId, role) => {
-    if (role == "investor") {
+    if (role === "investor") {
         return await Investor.findOne({ user: userId })
     }
-    else if (role == "partner") {
+    else if (role === "partner") {
         return await Partner.findOne({ user: userId })
     }
-    else if (role == "member") {
+    else if (role === "member") {
         return await Member.findOne({ user: userId })
     }
 
@@ -83,5 +99,6 @@ const removeRequestByUserId = async (userId, type) => {
 }
 
 
-module.exports = { getRequests, removeRequest, getRequestByUserId, removeRequestByUserId, createRequest }
+module.exports = { getRequests, removeRequest, getRequestByUserId, removeRequestByUserId, createRequest ,
+createRequestTest}
 

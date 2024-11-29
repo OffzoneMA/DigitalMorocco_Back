@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 
 const MemberSchema = new mongoose.Schema({
     owner: {
-        type: mongoose.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         unique: true,
         required: true
@@ -17,46 +17,23 @@ const MemberSchema = new mongoose.Schema({
     address: String,
     country: String,
     city: String,
-    stage: String,
-    state: String,
+    // state: String,
     companyType: String,
     taxNbr: String,
     corporateNbr: String,
     logo: String,
-    listEmployee: [{
-        firstName: { type: String },
-        lastName: { type: String },
-        email: { type: String },
-        jobTitle: { type: String },
-        level: { type: String },
-        status: {
-            type: String,
-            enum: ['active', 'offline'],
-            default: 'offline'
-        },
-        address: { type: String },
-        country: { type: String },
-        cityState: { type: String },
-        phoneNumber: { type: String },
-        startDate: { type: Date },
-        personalTaxIdentifierNumber: { type: String },
-        photo: { type: Buffer },
-        department: { type: String },
-    }],
-    legalDocument: [{
-        name: {type:String},
-        date: { type: Date, default: Date.now },
-        type: {type:String},
-        lastModifiedDate: { type: Date},
-        title: { type: String},
-        data: { type:String},
-    }],
+    stage: { type: String },
     visbility: {
         type: String,
         enum: ['public', 'private'],
     },
     rc_ice: String,
     dateCreated: { type: Date, default: Date.now },
+
+    // associatedUsers: [{
+    //     type: mongoose.Types.ObjectId,
+    //     ref: "User"
+    // }],
 
     //Investors
     investorsRequestsAccepted: [
@@ -78,21 +55,7 @@ const MemberSchema = new mongoose.Schema({
 
 
     //Current subscription infos
-    subscriptionId: {
-        type: mongoose.Types.ObjectId,
-        ref: "Subscription",
-    },
-    credits:{
-        type:Number,
-        default:0
-    },
-    subStatus:
-    {
-        type: String,
-        enum: ['notActive', 'active'],
-        default: 'notActive'
-    },
-    expireDate:Date,
+    
 })
 
 

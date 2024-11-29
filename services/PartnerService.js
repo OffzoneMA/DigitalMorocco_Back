@@ -5,7 +5,7 @@ const PartnerReq = require("../models/Requests/Partner");
 
 const getAllPartners = async (args) => {
     const page = args.page || 1;
-    const pageSize = args.pageSize || 10;
+    const pageSize = args.pageSize || 15;
     const skip = (page - 1) * pageSize;
 
     const countries = args.countries ? args.countries.split(',') : [];
@@ -26,8 +26,12 @@ const getAllPartners = async (args) => {
         .skip(skip)
         .limit(pageSize);
     return { partners, totalPages }
+}
 
-
+const getAllPartnersAll = async () => {
+    const totalCount = await Partner.countDocuments();
+    const partners = await Partner.find();
+    return { partners, totalCount }
 }
 
 const createEnterprise = async (partnerId, infos, documents, logo) => {
@@ -70,7 +74,6 @@ const createEnterprise = async (partnerId, infos, documents, logo) => {
     }
 }
 
-
 const CreatePartner = async (partner) => {
     return await Partner.create(partner);
 }
@@ -97,6 +100,10 @@ const getProjects = async () => {
     return projects;
 }
 
+async function updatePartner(id, data) {
+    return Partner.findByIdAndUpdate(id, data, { new: true });
+  }
+
 const deletePartner = async (userId) => {
     const partner = await getPartnerByUserId(userId)
     if (partner) {
@@ -111,5 +118,28 @@ const deletePartner = async (userId) => {
 
 }
 
+const searchPartners = async (searchTerm) => {
+    try {
+        const regex = new RegExp(searchTerm, 'i'); 
+        
+        const partners = await Partner.find({
+            $or: [
+                // { desc: regex },
+                // { contactEmail: regex },
+                { companyName: regex },
+                // { country: regex } , 
+                // {address : regex } , 
+                // {companyType : regex}
+            ]
+        });
 
-module.exports = { deletePartner,CreatePartner, getPartnerById, partnerByNameExists, createEnterprise, getAllPartners,getProjects, getPartnerByUserId }
+        return partners ;
+    } catch (error) {
+        throw new Error('Error searching partners: ' + error.message);
+    }
+};
+
+
+module.exports = { deletePartner,CreatePartner, getPartnerById, partnerByNameExists, 
+    createEnterprise, getAllPartners,getProjects, getPartnerByUserId , updatePartner , 
+    getAllPartnersAll , searchPartners}
