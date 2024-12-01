@@ -122,7 +122,7 @@ app.use('/sponsors' , SponsorRouter)
 
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URL ,{ useNewUrlParser: true, useUnifiedTopology: true , socketTimeoutMS: 60000, serverSelectionTimeoutMS: 120000,})
+mongoose.connect(process.env.MONGO_URL ,{ useNewUrlParser: true, useUnifiedTopology: true , socketTimeoutMS: 60000, connectTimeoutMS: 120000, serverSelectionTimeoutMS: 120000,})
     .then(async (result) => {
 
         // Start the server after successful database connection

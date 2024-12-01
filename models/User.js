@@ -19,7 +19,8 @@ const UserSchema = new mongoose.Schema({
     youtubeId: String,
     email: {
         type: String,
-        unique: true
+        unique: true,
+        lowercase: true,
     },
     role: {
         type: String,

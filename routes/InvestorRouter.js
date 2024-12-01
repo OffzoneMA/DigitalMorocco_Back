@@ -414,9 +414,6 @@ router.post('/', InvestorController.addInvestor);
  *   get:
  *     summary: Récupérer la liste des demandes d'investisseurs
  *     tags: [Investors]
- *     description: >
- *       Renvoie la liste des demandes d'investisseurs avec les informations suivantes :
- *       user, linkedin_link, dateCreated, status, communicationStatus, Note.
  *     responses:
  *       '200':
  *         description: OK - La liste des demandes d'investisseurs a été récupérée avec succès.
@@ -486,7 +483,6 @@ router.get('/investor-requests', InvestorController.getInvestorRequests);
  * /api/investor-requests:
  *   get:
  *     summary: Récupérer la liste des demandes d'investisseurs
- *     description: Renvoie la liste des demandes d'investisseurs avec les informations suivantes : user, linkedin_link, dateCreated, status, communicationStatus, Note.
  *     responses:
  *       '200':
  *         description: OK - La liste des demandes d'investisseurs a été récupérée avec succès.
