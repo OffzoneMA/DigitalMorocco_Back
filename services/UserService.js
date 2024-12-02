@@ -94,7 +94,7 @@ const getUserByEmail = async (email) => {
 
         const normalizedEmail = email.toLowerCase();
 
-        const user = await User.findOne({ email: normalizedEmail }); 
+        const user = await User.findOne({ email: normalizedEmail }).lean().maxTimeMS(60000); 
 
         return user || null;
     } catch (error) {
