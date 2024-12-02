@@ -94,12 +94,12 @@ const getUserByEmail = async (email) => {
 
         const normalizedEmail = email.toLowerCase();
 
-        const user = await User.findOne({ email: normalizedEmail }); 
+        const user = await User.findOne({ email: normalizedEmail }).lean().maxTimeMS(60000); 
 
         return user || null;
     } catch (error) {
         console.error("Error fetching user by email:", error);
-        throw new Error("Failed to retrieve user.");
+        throw new Error(error);
     }
 };
 

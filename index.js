@@ -121,23 +121,63 @@ app.use('/notifications' , NotificationRouter);
 app.use('/sponsors' , SponsorRouter)
 
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URL ,{ useNewUrlParser: true, useUnifiedTopology: true , socketTimeoutMS: 60000, serverSelectionTimeoutMS: 120000,})
-    .then(async (result) => {
+// // Connect to MongoDB
+// mongoose.connect(process.env.MONGO_URL ,{ useNewUrlParser: true, useUnifiedTopology: true , socketTimeoutMS: 60000, connectTimeoutMS: 120000, serverSelectionTimeoutMS: 120000,})
+//     .then(async (result) => {
 
-        // Start the server after successful database connection
-        app.listen(process.env.PORT, () => {
-            console.log("Server is running!");
-            app.use(passport.initialize());
-            app.use(passport.session());
-            //Checking the subscription expire date (For all members) every 24Hr
-            const taskInterval = 24 * 60 * 60 * 1000; 
-            setInterval(checkSubscriptionStatus, taskInterval);
-            setInterval(autoCancelExpiredSubscriptions, taskInterval);
+//         // Start the server after successful database connection
+//         app.listen(process.env.PORT, () => {
+//             console.log("Server is running!");
+//             app.use(passport.initialize());
+//             app.use(passport.session());
+//             //Checking the subscription expire date (For all members) every 24Hr
+//             const taskInterval = 24 * 60 * 60 * 1000; 
+//             setInterval(checkSubscriptionStatus, taskInterval);
+//             setInterval(autoCancelExpiredSubscriptions, taskInterval);
           
-        });
-    })
-    .catch(err => console.log(err));
+//         });
+//     })
+//     .catch(err => console.log(err));
+
+const connectToDatabase = async (retryCount = 5, delay = 10000) => {
+  try {
+      console.log(`🟢 Attempting to connect to MongoDB... (${retryCount} retries left)`);
+      await mongoose.connect(process.env.MONGO_URL, {
+          useNewUrlParser: true,
+          useUnifiedTopology: true,
+          socketTimeoutMS: 60000,
+          connectTimeoutMS: 120000,
+          serverSelectionTimeoutMS: 120000,
+      });
+      console.log('✅ Successfully connected to MongoDB');
+
+      // Démarrer le serveur après connexion réussie
+      app.listen(process.env.PORT, () => {
+          console.log('🚀 Server is running on port:', process.env.PORT);
+
+          app.use(passport.initialize());
+          app.use(passport.session());
+
+          // Tâches planifiées
+          const taskInterval = 24 * 60 * 60 * 1000;
+          setInterval(checkSubscriptionStatus, taskInterval);
+          setInterval(autoCancelExpiredSubscriptions, taskInterval);
+      });
+  } catch (err) {
+      console.error('❌ MongoDB connection failed:', err.message);
+
+      if (retryCount > 0) {
+          console.log(`🔄 Retrying in ${delay / 1000} seconds...`);
+          setTimeout(() => connectToDatabase(retryCount - 1, delay), delay);
+      } else {
+          console.error('❌ All retries failed. Exiting the application.');
+          process.exit(1); // Sortir de l'application après échec des retries
+      }
+  }
+};
+
+// Appel initial
+connectToDatabase();
 
 app.use(
     session({
