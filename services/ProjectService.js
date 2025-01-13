@@ -1,6 +1,7 @@
 const Project = require("../models/Project");
 const ActivityHistoryService = require('../services/ActivityHistoryService');
 const MemberService = require('../services/MemberService');
+const uploadService = require('./FileService')
 
 const CreateProject = async (p) => {
     return await Project.create(p);
@@ -271,18 +272,55 @@ const updateProject = async (projectId, updateData) => {
 };
 
 async function deleteProjectDocument(projectId, documentId) {
-  const project = await Project.findById(projectId);
-  if (!project) throw new Error("Project not found");
+  try {
+    // Vérification que projectId et documentId sont valides
+    if (!projectId || !documentId) {
+      throw new Error("Project ID and Document ID are required.");
+    }
 
-  // Filter out the document to delete
-  const documentIndex = project.documents.findIndex(doc => doc._id.toString() === documentId);
-  if (documentIndex === -1) throw new Error("Document not found");
+    // Trouver le projet
+    const project = await Project.findById(projectId);
+    if (!project) {
+      throw new Error("Project not found");
+    }
 
-  project.documents.splice(documentIndex, 1); // Remove the document
-  await project.save(); // Save the updated project
+    // Trouver le document à supprimer
+    const documentIndex = project?.documents.findIndex(doc => doc._id.toString() === documentId);
+    if (documentIndex === -1) {
+      throw new Error("Document not found");
+    }
 
-  return { message: "Document deleted successfully" };
+    // Récupérer le document pour la suppression du fichier
+    const document = project.documents[documentIndex];
+
+    // Supprimer le document du tableau
+    project.documents.splice(documentIndex, 1);
+
+    // Vérification de l'existence du fichier avant la suppression
+    if (document && document.name) {
+      try {
+        // Suppression du fichier via le service
+        const filePath = `Members/${project.owner}/Project_documents/${document.name}`;
+        await uploadService.deleteFile(filePath);
+        console.log(`File ${document.name} deleted successfully from storage.`);
+      } catch (fileError) {
+        console.error("Error deleting file:", fileError);
+        // Vous pouvez lancer une nouvelle erreur si la suppression du fichier échoue
+        throw new Error("Failed to delete the document file from storage.");
+      }
+    }
+
+    // Sauvegarder le projet après suppression
+    await project.save();
+    console.log("Project updated successfully after document deletion.");
+
+    return { message: "Document deleted successfully" };
+  } catch (error) {
+    console.error("Error deleting project document:", error.message);
+    throw new Error(error.message);  // Re-throw the error to be handled by the caller
+  }
 }
+
 
 module.exports = { getProjects , CreateProject, getProjectById, ProjectByNameExists, 
     getProjectByMemberId , deleteProject, addMilestone , removeMilestone , 

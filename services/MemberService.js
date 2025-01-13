@@ -603,29 +603,29 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
             project.logo = logoLink
         }
 
-        if (newData?.deletedFiles?.length > 0) {
-            const deletedDocumentTypes = new Set(newData?.deletedFiles);
+        // if (newData?.deletedFiles?.length > 0) {
+        //     const deletedDocumentTypes = new Set(newData?.deletedFiles);
 
-            const documentsToRemove = project.documents.filter(doc => deletedDocumentTypes.has(doc.documentType));
-            project.documents = project.documents.filter(doc => !deletedDocumentTypes.has(doc.documentType));
+        //     const documentsToRemove = project.documents.filter(doc => deletedDocumentTypes.has(doc.documentType));
+        //     project.documents = project.documents.filter(doc => !deletedDocumentTypes.has(doc.documentType));
             
-            // Remove the files from storage
-            await Promise.all(documentsToRemove.map(async (doc) => {
-                await uploadService.deleteFile("Members/" + project.owner + "/Project_documents", doc.name);
-            }));
-        }
+        //     // Remove the files from storage
+        //     await Promise.all(documentsToRemove.map(async (doc) => {
+        //         await uploadService.deleteFile("Members/" + project.owner + "/Project_documents", doc.name);
+        //     }));
+        // }
 
-        if (newData?.otherDeletedFiles?.length > 0) {
-            const deletedDocumentNames = new Set(newData.otherDeletedFiles);
+        // if (newData?.otherDeletedFiles?.length > 0) {
+        //     const deletedDocumentNames = new Set(newData.otherDeletedFiles);
         
-            project.documents = project.documents.filter(
-                doc => !(doc.documentType === "other" && deletedDocumentNames.has(doc.name))
-            );
+        //     project.documents = project.documents.filter(
+        //         doc => !(doc.documentType === "other" && deletedDocumentNames.has(doc.name))
+        //     );
         
-            await Promise.all(newData.otherDeletedFiles.map(async (fileName) => {
-                await uploadService.deleteFile("Members/" + project.owner + "/Project_documents", fileName);
-            }));
-        }        
+        //     await Promise.all(newData.otherDeletedFiles.map(async (fileName) => {
+        //         await uploadService.deleteFile("Members/" + project.owner + "/Project_documents", fileName);
+        //     }));
+        // }        
 
         if (pitchDeck) {
             const pitchDeckLink = await uploadService.uploadFile(pitchDeck, "Members/" + project.owner + "/Project_documents", pitchDeck.originalname);

@@ -4,196 +4,214 @@ const Backend = require('i18next-node-fs-backend');
 const i18nextMiddleware = require('i18next-express-middleware');
 const mongoose = require("mongoose");
 const cors = require("cors");
-const path = require('path')
-require("dotenv").config();
-const Userouter = require("./routes/Userrouter");
-const MemberRouter = require("./routes/MemberRouter");
-const PartnerRouter = require("./routes/PartnerRouter");
-const InvestorRouter = require("./routes/InvestorRouter");
-const Adminrouter = require("./routes/Adminrouter");
-const Requestouter = require("./routes/Requestrouter");
-const SubscriptionRouter = require("./routes/SubscriptionRouter");
-const SubscriptionPlanRouter = require("./routes/SubscriptionPlanRouter")
-const UserLogRouter = require("./routes/UserLogRouter");
-const SubscriptionLogRouter = require("./routes/SubscriptionLogRouter");
-const EventRouter = require("./routes/EventRouter")
-const BlogRouter = require("./routes/BlogRouter")
-const OtpRouter = require("./routes/Otprouter")
-const ProjectRouter = require("./routes/ProjectRouter")
-const FileRouter = require('./routes/FileRouter')
-const VerifyRouter = require('./routes/VerifyRouter')
-const NewsletterRouter = require('./routes/NewsletterRouter')
-const contactRequestRoutes = require('./routes/contactRequestRoutes');
-const DocumentRouter = require('./routes/DocumentRouter');
-const PaymentMethodRouter = require('./routes/PaymentMethodRouter');
-const ActivityHistoryRouter = require('./routes/ActivityHistoryRouter');
-const EmployeeRouter = require('./routes/EmployeeRouter');
-const LegalDocumentRouter = require('./routes/LegalDocumentRouter');
-const SearchRouter = require('./routes/SearchRouter');
-const BillingRouter = require('./routes/BillingRouter');
-const NotificationRouter = require('./routes/NotificationRouter');
-const SponsorRouter =  require('./routes/SponsorRouter');
-
+const path = require('path');
 const session = require('express-session');
-const { passport } = require("./config/passport-setup");
-const { checkSubscriptionStatus } = require("./services/MemberService");
-const {autoCancelExpiredSubscriptions} = require("./services/SubscriptionService");
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-
-// Swagger Imports
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+require("dotenv").config();
+
+// Import des configurations
+const { passport } = require("./config/passport-setup");
 const swaggerOptions = require('./config/swagger_config');
 
-const specs = swaggerJsdoc(swaggerOptions);
+// Import des services
+const { checkSubscriptionStatus } = require("./services/MemberService");
+const { autoCancelExpiredSubscriptions } = require("./services/SubscriptionService");
 
-const app = express();
-
-app.use(cors());
-
-
-app.use(express.json({limit: "100mb"}));
-
-app.use(express.static(path.join(__dirname, "images")))
-
-app.use(cookieParser());
-app.use(bodyParser.json());
-
-i18n
-  .use(Backend)
-//   .use(i18nextMiddleware.LanguageDetector)
-  .init({
-    backend: {
-        loadPath: path.resolve("./locales/{{lng}}/{{ns}}.json")
-    },
-    fallbackLng: 'en',
-    preload: ['en', 'fr'],
-    detection: {
-      order: ['header', 'querystring', 'cookie'],
-      caches: ['cookie'],
-    },
-    localePath: path.resolve("./locales"),
-  });
-
-app.use(i18nextMiddleware.handle(i18n));
-
-// app.use((req, res, next) => {
-//     res.locals.t = req.t;
-//     next();
-//   });
-
-i18n.changeLanguage('fr');
-
-app.get('/', (req, res) => {
-  const response = `Test ${req.t('welcome_email.title')} ${req.t('welcome_email.title1')}`;
-  res.status(200);
-  res.send(response);
-});
-
-// Routes
-app.use("/users", Userouter);
-app.use("/verify", VerifyRouter);
-app.use("/members", MemberRouter);
-app.use("/partners", PartnerRouter);
-app.use("/investors", InvestorRouter);
-app.use("/admin", Adminrouter);
-app.use("/requests", Requestouter);
-app.use("/subscriptions", SubscriptionRouter);
-app.use("/subscription-plans" , SubscriptionPlanRouter)
-app.use("/logs", UserLogRouter);
-app.use("/Sublogs", SubscriptionLogRouter);
-app.use("/events", EventRouter);
-app.use("/blogs", BlogRouter);
-app.use("/users/otp", OtpRouter);
-app.use("/projects", ProjectRouter);
-app.use("/files", FileRouter);
-app.use("/newsletter" , NewsletterRouter)
-app.use("/documents" , DocumentRouter)
-app.use('/contact-requests', contactRequestRoutes);
-app.use('/activity-history', ActivityHistoryRouter);
-app.use('/payment-methods', PaymentMethodRouter);
-app.use('/employee', EmployeeRouter);
-app.use('/legal-documents', LegalDocumentRouter);
-app.use('/search' , SearchRouter);
-app.use('/billing' , BillingRouter);
-app.use('/notifications' , NotificationRouter);
-app.use('/sponsors' , SponsorRouter)
-
-
-// // Connect to MongoDB
-// mongoose.connect(process.env.MONGO_URL ,{ useNewUrlParser: true, useUnifiedTopology: true , socketTimeoutMS: 60000, connectTimeoutMS: 120000, serverSelectionTimeoutMS: 120000,})
-//     .then(async (result) => {
-
-//         // Start the server after successful database connection
-//         app.listen(process.env.PORT, () => {
-//             console.log("Server is running!");
-//             app.use(passport.initialize());
-//             app.use(passport.session());
-//             //Checking the subscription expire date (For all members) every 24Hr
-//             const taskInterval = 24 * 60 * 60 * 1000; 
-//             setInterval(checkSubscriptionStatus, taskInterval);
-//             setInterval(autoCancelExpiredSubscriptions, taskInterval);
-          
-//         });
-//     })
-//     .catch(err => console.log(err));
-
-const connectToDatabase = async (retryCount = 5, delay = 10000) => {
-  try {
-      console.log(`🟢 Attempting to connect to MongoDB... (${retryCount} retries left)`);
-      await mongoose.connect(process.env.MONGO_URL, {
-          useNewUrlParser: true,
-          useUnifiedTopology: true,
-          socketTimeoutMS: 60000,
-          connectTimeoutMS: 120000,
-          serverSelectionTimeoutMS: 120000,
-      });
-      console.log('✅ Successfully connected to MongoDB');
-
-      // Démarrer le serveur après connexion réussie
-      app.listen(process.env.PORT, () => {
-          console.log('🚀 Server is running on port:', process.env.PORT);
-
-          app.use(passport.initialize());
-          app.use(passport.session());
-
-          // Tâches planifiées
-          const taskInterval = 24 * 60 * 60 * 1000;
-          setInterval(checkSubscriptionStatus, taskInterval);
-          setInterval(autoCancelExpiredSubscriptions, taskInterval);
-      });
-  } catch (err) {
-      console.error('❌ MongoDB connection failed:', err.message);
-
-      if (retryCount > 0) {
-          console.log(`🔄 Retrying in ${delay / 1000} seconds...`);
-          setTimeout(() => connectToDatabase(retryCount - 1, delay), delay);
-      } else {
-          console.error('❌ All retries failed. Exiting the application.');
-          process.exit(1); // Sortir de l'application après échec des retries
-      }
-  }
+// Import des routes
+const routes = {
+  users: require("./routes/Userrouter"),
+  verify: require("./routes/VerifyRouter"),
+  members: require("./routes/MemberRouter"),
+  partners: require("./routes/PartnerRouter"),
+  investors: require("./routes/InvestorRouter"),
+  admin: require("./routes/Adminrouter"),
+  requests: require("./routes/Requestrouter"),
+  subscriptions: require("./routes/SubscriptionRouter"),
+  'subscription-plans': require("./routes/SubscriptionPlanRouter"),
+  logs: require("./routes/UserLogRouter"),
+  Sublogs: require("./routes/SubscriptionLogRouter"),
+  events: require("./routes/EventRouter"),
+  blogs: require("./routes/BlogRouter"),
+  'users/otp': require("./routes/Otprouter"),
+  projects: require("./routes/ProjectRouter"),
+  files: require('./routes/FileRouter'),
+  newsletter: require('./routes/NewsletterRouter'),
+  documents: require('./routes/DocumentRouter'),
+  'contact-requests': require('./routes/contactRequestRoutes'),
+  'activity-history': require('./routes/ActivityHistoryRouter'),
+  'payment-methods': require('./routes/PaymentMethodRouter'),
+  employee: require('./routes/EmployeeRouter'),
+  'legal-documents': require('./routes/LegalDocumentRouter'),
+  search: require('./routes/SearchRouter'),
+  billing: require('./routes/BillingRouter'),
+  notifications: require('./routes/NotificationRouter'),
+  sponsors: require('./routes/SponsorRouter')
 };
 
-// Appel initial
+class App {
+    constructor() {
+        this.app = express();
+        this.specs = swaggerJsdoc(swaggerOptions);
+        
+        this.setupMiddlewares();
+        this.setupI18n();
+        this.setupRoutes();
+        this.setupSwagger();
+    }
+
+    setupMiddlewares() {
+        // Configuration des middlewares de base
+        this.app.use(cors());
+        this.app.use(express.json({ limit: "100mb" }));
+        this.app.use(express.static(path.join(__dirname, "images")));
+        this.app.use(cookieParser());
+        this.app.use(bodyParser.json());
+        
+        // Configuration de la session
+        this.app.use(session({
+            secret: process.env.ACCESS_TOKEN_SECRET,
+            resave: true,
+            saveUninitialized: true,
+            cookie: {
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 24 * 60 * 60 * 1000 // 24 heures
+            }
+        }));
+    }
+
+    setupI18n() {
+        i18n
+            .use(Backend)
+            .init({
+                backend: {
+                    loadPath: path.resolve("./locales/{{lng}}/{{ns}}.json")
+                },
+                fallbackLng: 'en',
+                preload: ['en', 'fr'],
+                detection: {
+                    order: ['header', 'querystring', 'cookie'],
+                    caches: ['cookie']
+                },
+                localePath: path.resolve("./locales")
+            });
+
+        this.app.use(i18nextMiddleware.handle(i18n));
+        i18n.changeLanguage('fr');
+    }
+
+    setupRoutes() {
+      // Route de test i18n
+      this.app.get('/', (req, res) => {
+          const response = `Test ${req.t('welcome_email.title')} ${req.t('welcome_email.title1')}`;
+          res.status(200).send(response);
+      });
+
+      // Configuration des routes avec les noms originaux
+      Object.entries(routes).forEach(([path, router]) => {
+          this.app.use(`/${path}`, router);
+      });
+  }
+
+    setupSwagger() {
+        const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css";
+        this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(this.specs, { customCssUrl: CSS_URL }));
+    }
+
+    async startServer() {
+        const port = process.env.PORT || 5000;
+        
+        return new Promise((resolve) => {
+            const server = this.app.listen(port, () => {
+                console.log('🚀 Server is running on port:', port);
+                
+                // Initialisation de Passport
+                this.app.use(passport.initialize());
+                this.app.use(passport.session());
+
+                // Configuration des tâches planifiées
+                this.setupScheduledTasks();
+                
+                resolve(server);
+            });
+
+            // Gestion gracieuse de l'arrêt
+            this.setupGracefulShutdown(server);
+        });
+    }
+
+    setupScheduledTasks() {
+        const taskInterval = process.env.TASK_INTERVAL || 24 * 60 * 60 * 1000;
+        
+        const runTask = async (task, name) => {
+            try {
+                await task();
+            } catch (error) {
+                console.error(`❌ Error running ${name}:`, error);
+            }
+        };
+
+        setInterval(() => runTask(checkSubscriptionStatus, 'subscription status check'), taskInterval);
+        setInterval(() => runTask(autoCancelExpiredSubscriptions, 'auto cancel subscriptions'), taskInterval);
+    }
+
+    setupGracefulShutdown(server) {
+        const shutdown = async (signal) => {
+            console.log(`📥 Received ${signal} signal`);
+            
+            try {
+                await mongoose.connection.close();
+                console.log('📥 Closed MongoDB connection');
+                
+                server.close(() => {
+                    console.log('📥 Closed HTTP server');
+                    process.exit(0);
+                });
+            } catch (error) {
+                console.error('❌ Error during shutdown:', error);
+                process.exit(1);
+            }
+        };
+
+        process.on('SIGTERM', () => shutdown('SIGTERM'));
+        process.on('SIGINT', () => shutdown('SIGINT'));
+    }
+}
+
+// Configuration de MongoDB
+mongoose.set('strictQuery', true);
+
+const connectToDatabase = async (retryCount = 5, delay = 10000) => {
+    try {
+        console.log(`🟢 Attempting to connect to MongoDB... (${retryCount} retries left)`);
+        await mongoose.connect(process.env.MONGO_URL, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            socketTimeoutMS: 60000,
+            connectTimeoutMS: 120000,
+            serverSelectionTimeoutMS: 120000,
+        });
+        console.log('✅ Successfully connected to MongoDB');
+
+        // Créer et démarrer l'application
+        const app = new App();
+        await app.startServer();
+
+    } catch (error) {
+        console.error('🔴 Error connecting to MongoDB:', error.message);
+        if (retryCount > 0) {
+            console.log(`🔄 Retrying in ${delay / 1000} seconds...`);
+            setTimeout(() => connectToDatabase(retryCount - 1, delay), delay);
+        } else {
+            console.error('❌ All retries failed. Exiting the application.');
+            process.exit(1);
+        }
+    }
+};
+
+// Démarrage de l'application
 connectToDatabase();
 
-app.use(
-    session({
-        secret: process.env.ACCESS_TOKEN_SECRET,
-        resave: true,
-        saveUninitialized: true,
-    })
-);
-
-// Applique le middleware d'authentification à toutes les routes nécessitant une authentification
-//app.use(authenticateJWT);
-
-
-const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css";
-
-
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, { customCssUrl: CSS_URL }));
-
-module.exports = app;
+module.exports = new App().app;

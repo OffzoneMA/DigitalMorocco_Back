@@ -334,6 +334,15 @@ const deleteOneUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
+    if (typeof email !== 'string' || typeof password !== 'string') {
+      return res.status(400).json({ message: 'Invalid input format' });
+    }
+    
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -367,11 +376,11 @@ const deleteOneOfUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    await User.deleteOne({ _id: user._id });
-    user.isDeleted = true;
-    user.deletionDate = new Date();
-    await user.save();
-    // const result = await UserService.deleteUser(user?._id);
+    // await User.deleteOne({ _id: user._id });
+    // user.isDeleted = true;
+    // user.deletionDate = new Date();
+    // await user.save();
+    const result = await UserService.deleteUser(user?._id);
 
     res.status(200).json({ message: 'Account deleted.' });
   } catch (err) {
