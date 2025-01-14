@@ -100,6 +100,7 @@ async function shareDocument(documentId, userIds , shareWithType) {
         throw new Error('Error sharing document: ' + error.message);
     }
 }
+
 async function getAllDocuments() {
     try {
         const documents = await Document.find().populate('owner');
@@ -121,25 +122,175 @@ async function getDocumentById(documentId) {
     }
 }
 
-async function getDocumentsForUser(userId, args) {
+// async function getDocumentsForUser(userId, args) {
+//     try {
+//         const page = args?.page || 1; 
+//         const pageSize = args?.pageSize || 8; 
+//         const skip = (page - 1) * pageSize; 
+
+//         const documents = await Document.find({ owner: userId })
+//             .populate('owner')
+//             .skip(skip) 
+//             .sort({ uploadDate: 'desc' })
+//             .limit(pageSize); 
+
+//         // Compter le total de documents pour le calcul des pages
+//         const totalCount = await Document.countDocuments({ owner: userId });
+//         const totalPages = Math.ceil(totalCount / pageSize); 
+
+//         return { documents, totalPages }; 
+//     } catch (error) {
+//         throw new Error('Error getting documents for member: ' + error.message);
+//     }
+// }
+
+async function getDocumentsForUser(userId, args = {}) {
     try {
-        const page = args?.page || 1; 
-        const pageSize = args?.pageSize || 8; 
-        const skip = (page - 1) * pageSize; 
-
-        const documents = await Document.find({ owner: userId })
-            .populate('owner')
-            .skip(skip) 
-            .sort({ uploadDate: 'desc' })
-            .limit(pageSize); 
-
-        // Compter le total de documents pour le calcul des pages
-        const totalCount = await Document.countDocuments({ owner: userId });
-        const totalPages = Math.ceil(totalCount / pageSize); 
-
-        return { documents, totalPages }; 
+      const page = args.page || 1;
+      const pageSize = args.pageSize || 8;
+      const skip = (page - 1) * pageSize;
+  
+      // Récupérer les documents avec pagination
+      const documents = await Document.find({ owner: userId })
+        .populate('owner') // Charger les infos de l'owner
+        .sort({ uploadDate: 'desc' }) // Trier par date décroissante
+        .skip(skip)
+        .limit(pageSize);
+  
+      // Récupérer les IDs des utilisateurs partagés
+      const userIds = documents.flatMap((doc) => doc.shareWithUsers.map((id) => id.toString()));
+  
+      // Trouver les employés et investisseurs correspondant aux IDs
+      const [employees, investors] = await Promise.all([
+        Employee.find({ _id: { $in: userIds } }).select('fullName workEmail status jobTitle'),
+        Investor.find({ _id: { $in: userIds } }).select('name companyName legalName type contactEmail'),
+      ]);
+  
+      // Créer un dictionnaire pour un accès rapide aux utilisateurs
+      const employeesMap = Object.fromEntries(employees.map((emp) => [emp._id.toString(), emp]));
+      const investorsMap = Object.fromEntries(investors.map((inv) => [inv._id.toString(), inv]));
+  
+      // Formater les documents avec les utilisateurs partagés
+      const formattedDocuments = documents.map((doc) => {
+        const shareWithUsersInfos = doc.shareWithUsers.map((userId) => {
+          if (employeesMap[userId]) {
+            const employee = employeesMap[userId];
+            return {
+              id: employee._id,
+              fullName: employee.fullName,
+              email: employee.workEmail,
+              type: employee.status,
+              userType: 'Employee',
+            };
+          } else if (investorsMap[userId]) {
+            const investor = investorsMap[userId];
+            return {
+              id: investor._id,
+              fullName: investor?.name || investor?.companyName || investor?.legalName,
+              type: investor.type,
+              email: investor.contactEmail,
+              userType: 'Investor',
+            };
+          }
+          return null; // Si aucun utilisateur correspondant
+        }).filter(Boolean); // Supprimer les utilisateurs non valides
+  
+        // Créer une chaîne de noms séparés par des virgules
+        const shareWithUsersNames = shareWithUsersInfos.map((user) => user.fullName).join(', ');
+  
+        return {
+          _id: doc._id,
+          title: doc.title,
+          documentName: doc.documentName,
+          docType: doc.docType,
+          uploadDate: doc.uploadDate,
+          link: doc.link,
+          owner: doc.owner,
+          shareWithUsers: doc.shareWithUsers,
+          shareWithUsersInfos,
+          shareWithUsersNames, // Propriété pour les noms
+        };
+      });
+  
+      // Compter le nombre total de documents
+      const totalCount = await Document.countDocuments({ owner: userId });
+      const totalPages = Math.ceil(totalCount / pageSize);
+  
+      return {
+        documents: formattedDocuments,
+        totalDocuments: totalCount,
+        totalPages,
+        currentPage: page,
+        pageSize,
+      };
     } catch (error) {
-        throw new Error('Error getting documents for member: ' + error.message);
+      throw new Error('Error getting documents for user: ' + error.message);
+    }
+}  
+  
+async function getDocumentSharedUsers(documentId) {
+    try {
+        // Find the document and populate the shareWithUsers field
+        const document = await Document.findById(documentId)
+            .populate({
+                path: 'shareWithUsers',
+                // Using $or to look in both Employee and Investor collections
+                populate: {
+                    path: 'shareWithUsers',
+                    $or: [
+                        { $ref: 'Employee' },
+                        { $ref: 'Investor' }
+                    ]
+                }
+            });
+
+        if (!document) {
+            throw new Error('Document not found');
+        }
+
+        // Get the user IDs from the document
+        const userIds = document.shareWithUsers.map(id => id.toString());
+
+        // Find all employees and investors that match these IDs
+        const [employees, investors] = await Promise.all([
+            Employee.find({ 
+                _id: { $in: userIds }
+            }).select('firstName lastName email role'),
+            Investor.find({ 
+                _id: { $in: userIds }
+            }).select('firstName lastName email type')
+        ]);
+
+        // Combine and format the results
+        const sharedUsers = {
+            documentTitle: document.title,
+            documentType: document.docType,
+            shareType: document.shareWith,
+            shareWithUsers : document.shareWithUsers,
+            users: [
+                ...employees.map(emp => ({
+                    id: emp._id,
+                    firstName: emp.firstName,
+                    lastName: emp.lastName,
+                    email: emp.email,
+                    role: emp.role,
+                    userType: 'Employee'
+                })),
+                ...investors.map(inv => ({
+                    id: inv._id,
+                    firstName: inv.firstName,
+                    lastName: inv.lastName,
+                    email: inv.email,
+                    type: inv.type,
+                    userType: 'Investor'
+                }))
+            ]
+        };
+
+        return sharedUsers;
+
+    } catch (error) {
+        throw new Error('Error retrieving shared users: ' + error.message);
     }
 }
 

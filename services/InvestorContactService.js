@@ -247,7 +247,8 @@ const FinalizeContactRequest = async (contactRequestId, projectId, document, dat
             mimeType: document.mimetype
         } : undefined,
         requestLetter: data,
-        status: "In Progress"
+        status: "In Progress" ,
+        dateCreated : new Date()
     };
 
     // Update the contact request with project and document details

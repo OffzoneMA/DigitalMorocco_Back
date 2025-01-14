@@ -24,7 +24,7 @@ const DocumentsSchema = new mongoose.Schema({
     // },
     shareWithUsers: [{
         type: mongoose.Types.ObjectId,
-        ref: "User"
+        // ref: "User"
     }]
    
 })
