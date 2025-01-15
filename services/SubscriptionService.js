@@ -3,6 +3,54 @@ const User = require('../models/User');
 const SubscriptionPlan = require('../models/SubscriptionPlan');
 const SubscriptionLogService = require('../services/SubscriptionLogService');
 const ActivityHistoryService = require('../services/ActivityHistoryService');
+const EmailService = require('../services/EmailingService');
+const i18n = require('i18next');
+
+
+const languages = [
+    { id: 'en', label: 'English' },
+    { id: 'fr', label: 'French' },
+    { id: 'fr', label: 'Français' },
+    { id: 'es', label: 'Spanish' },
+    { id: 'de', label: 'German' },
+    { id: 'it', label: 'Italian' },
+    { id: 'pt', label: 'Portuguese' },
+    { id: 'ru', label: 'Russian' },
+    { id: 'zh', label: 'Chinese' },
+    { id: 'ja', label: 'Japanese' },
+    { id: 'ko', label: 'Korean' },
+    { id: 'ar', label: 'Arabic' },
+    { id: 'hi', label: 'Hindi' },
+    { id: 'tr', label: 'Turkish' },
+    { id: 'nl', label: 'Dutch' },
+    { id: 'pl', label: 'Polish' },
+    { id: 'sv', label: 'Swedish' },
+    { id: 'fi', label: 'Finnish' },
+    { id: 'da', label: 'Danish' },
+    { id: 'no', label: 'Norwegian' },
+    { id: 'el', label: 'Greek' },
+  ];
+  
+  function getLanguageIdByLabel(label) {
+    const language = languages.find(lang => lang.label === label);
+    return language ? language.id : null;
+  }
+
+  const formatDate = (timestamp, userLanguage) => {
+    // Conversion du timestamp en objet Date
+    const date = new Date(timestamp);
+    
+    // Définir la locale en fonction de la langue de l'utilisateur
+    const locale = userLanguage === 'fr' ? 'fr-FR' : 
+                   userLanguage === 'es' ? 'es-ES' : 
+                   userLanguage === 'de' ? 'de-DE' : 'en-US';
+    
+    return date.toLocaleDateString(locale, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
 
 const getSubscriptions = async () => {
     return await Subscription.find()
@@ -43,6 +91,18 @@ async function createSubscriptionForUser(userId, planId, data) {
         user.subscription = newSubscription._id;
         await user.save();
 
+        // Préparation des données pour l'email
+        const emailPlanDetails = {
+            name: plan.name,
+            price: plan.price,
+            duration: data.billing === 'year' ? 12 : 1,
+            features: plan.featureDescriptions,
+        };
+
+        // Envoi de l'email de bienvenue
+        await EmailService.sendNewSubscriptionEmail(user._id , emailPlanDetails);
+
+
         const logData = {
             credits: plan?.credits,  
             totalCredits: plan?.credits,  
@@ -71,6 +131,7 @@ async function upgradeSubscription(subscriptionId, newPlanId , newBilling) {
         if (!subscription) {
             throw new Error('Subscription not found');
         }
+        const oldPlan = await SubscriptionPlan.findById(subscription.plan);
 
         const newPlan = await SubscriptionPlan.findById(newPlanId);
         if (!newPlan) {
@@ -80,6 +141,8 @@ async function upgradeSubscription(subscriptionId, newPlanId , newBilling) {
         if (!isSubscriptionActive(subscription)) {
             throw new Error('Cannot upgrade an inactive subscription.');
         }
+
+        const previousPlanName = oldPlan?.name;
 
         subscription.plan = newPlanId;
         subscription.totalCredits += newPlan.credits;
@@ -101,7 +164,18 @@ async function upgradeSubscription(subscriptionId, newPlanId , newBilling) {
             transactionId: 'TXN234567890', 
             notes: `User upgraded to a higher plan and changed billing to ${newBilling}`,
         };
+         // Préparation des données pour l'email
+         const emailPlanDetails = {
+            name: newPlan.name,
+            price: newPlan.price,
+            duration: newBilling === 'year' ? 12 : 1,
+            features: newPlan.featureDescriptions,
+            previousPlan: previousPlanName,
+            upgradeBenefits: newPlan.upgradeBenefits || []
+        };
+
         await subscription.save();
+        await EmailService.sendUpgradeEmail(subscription.user?._id , emailPlanDetails);
         await SubscriptionLogService.createSubscriptionLog(subscription._id, logData);
         await ActivityHistoryService.createActivityHistory(
             subscription.user,
@@ -138,7 +212,6 @@ async function cancelSubscription(subscriptionId) {
             await user.save();
         }
 
-
         const logData = {
             credits: subscription.totalCredits,
             totalCredits: subscription.totalCredits,
@@ -147,6 +220,17 @@ async function cancelSubscription(subscriptionId) {
             transactionId: null, 
             notes: 'User cancelled the subscription',
         };
+        // Préparation des données pour l'email
+        const emailPlanDetails = {
+            name: subscription.plan.name,
+            price: subscription.plan.price,
+            duration: subscription.plan.billing === 'year' ? 12 : 1,
+            features: subscription.plan.featureDescriptions,
+        };
+
+        // Envoi de l'email de bienvenue
+        await EmailService.sendCancellationEmail(user._id , emailPlanDetails);
+
         await SubscriptionLogService.createSubscriptionLog(subscription._id, logData);
         await ActivityHistoryService.createActivityHistory(
             subscription.user,
@@ -293,6 +377,7 @@ async function renewSubscription(subscriptionId) {
             transactionId: 'TXN987654321', 
             notes: 'User renewed the subscription',
         };
+
         await subscription.save();
 
         const user = await User.findById(subscription.user);
@@ -300,6 +385,19 @@ async function renewSubscription(subscriptionId) {
             user.subscription = subscription._id; 
             await user.save();
         }
+
+        const userLanguage = getLanguageIdByLabel(user?.language);
+
+        // Préparation des données pour l'email
+        const emailPlanDetails = {
+            name: plan.name,
+            price: plan.price,
+            duration: subscription.billing === 'year' ? 12 : 1,
+            features: plan.featureDescriptions,
+            renewalDate: formatDate(newExpirationDate, userLanguage),
+        };
+
+        await EmailService.sendRenewalEmail(subscription.user?._id , emailPlanDetails);
 
         await SubscriptionLogService.createSubscriptionLog(subscription._id, logData);
         await ActivityHistoryService.createActivityHistory(

@@ -490,201 +490,243 @@ const createTestProject = async (memberId, infos, documents) => {
     return project;
 };
 
-async function createProject(ownerId, projectData , pitchDeck, businessPlan , financialProjection, documentsFiles , logo) {
+async function createProject(ownerId, projectData, pitchDeck, businessPlan, financialProjection, documentsFiles, logo) {
     try {
-
-      const member = await Member.findById(ownerId);
-      if (!member) {
-        throw new Error("Member not found");
-    }
-      const project = new Project({ owner: ownerId, ...projectData });
-
-      if (logo) {
-        let logoLink = await uploadService.uploadFile(logo, "Members/" + member.owner + "/Project_logos", logo.originalname)
-        project.logo = logoLink
-    }
-
-    let Docs = [];
-
-    if (documentsFiles) {
-        for (const doc of documentsFiles) {
-            let fileLink = await uploadService.uploadFile(doc, "Members/" + member.owner + "/Project_documents", doc.originalname);
-            Docs.push({ name: doc.originalname, link: fileLink, type: doc.mimetype  , documentType:"other"});
+        const member = await Member.findById(ownerId);
+        if (!member) {
+            throw new Error("Member not found");
         }
-    }
-    if (pitchDeck) {
-        let pitchDeckLink = await uploadService.uploadFile(pitchDeck, "Members/" + member.owner + "/Project_documents", pitchDeck.originalname);
-        Docs.push({ name: pitchDeck.originalname, link: pitchDeckLink, type: pitchDeck.mimetype , documentType:"pitchDeck" });
-    }
 
-    if (businessPlan) {
-        let businessPlanLink = await uploadService.uploadFile(businessPlan, "Members/" + member.owner + "/Project_documents", businessPlan.originalname);
-        Docs.push({ name: businessPlan.originalname, link: businessPlanLink, type: businessPlan.mimetype , documentType:"businessPlan" });
-    }
+        const project = new Project({ 
+            owner: ownerId, 
+            ...projectData,
+            documents: []
+        });
 
-    if (financialProjection) {
-        let financialProjectionLink = await uploadService.uploadFile(financialProjection, "Members/" + member.owner + "/Project_documents", financialProjection.originalname);
-        Docs.push({ name: financialProjection.originalname, link: financialProjectionLink, type: financialProjection.mimetype , documentType:"financialProjection"});
-    }
+        const documents = [];
+        
+        // Gérer le logo séparément
+        if (logo) {
+            try {
+                 // Supprimer l'ancien logo s'il existe
+                 if (project.logo) {
+                    const oldLogoName = getFileNameFromURL(project.logo);
+                    if (oldLogoName) {
+                        await uploadService.deleteFile(oldLogoName, `Members/${member.owner}/Project_logos`);
+                        console.log('file deleted')
+                    }
+                }
 
-    project.documents = Docs;
+                const uniqueLogoName = generateUniqueFileName(logo.originalname);
+                const logoLink = await uploadService.uploadFile(
+                    logo, 
+                    `Members/${member.owner}/Project_logos`, 
+                    uniqueLogoName
+                );
+                project.logo = logoLink;
+            } catch (error) {
+                console.error('Logo upload failed:', error);
+                throw new Error('Logo upload failed');
+            }
+        }
 
-      const savedProject = await project.save();
+        // Fonction d'upload unique pour tous les types de documents
+        async function uploadDocument(file, documentType = "other") {
+            if (!file) return null;
+            
+            try {
+                const uniqueFileName = generateUniqueFileName(file.originalname);
+                const fileLink = await uploadService.uploadFile(
+                    file, 
+                    `Members/${member.owner}/Project_documents`, 
+                    uniqueFileName
+                );
+                
+                return {
+                    name: file.originalname,
+                    link: fileLink,
+                    type: file.mimetype,
+                    documentType
+                };
+            } catch (error) {
+                console.error(`Upload failed for ${file.originalname}:`, error);
+                throw new Error(`Upload failed for ${file.originalname}`);
+            }
+        }
 
-      // Enregistrement de l'action dans l'historique
-      await ActivityHistoryService.createActivityHistory(
-        member.owner,
-        'project_created',
-        { targetName: project.name, targetDesc: `` }
-      );
-      return savedProject;
+        // Upload des documents spéciaux un par un
+        const specialDocs = [
+            { file: pitchDeck, type: "pitchDeck" },
+            { file: businessPlan, type: "businessPlan" },
+            { file: financialProjection, type: "financialProjection" }
+        ];
+
+        for (const { file, type } of specialDocs) {
+            if (file) {
+                const doc = await uploadDocument(file, type);
+                if (doc) documents.push(doc);
+            }
+        }
+
+        // Upload des documents additionnels un par un
+        if (Array.isArray(documentsFiles)) {
+            for (const file of documentsFiles) {
+                const doc = await uploadDocument(file);
+                if (doc) documents.push(doc);
+            }
+        }
+
+        // Assigner tous les documents
+        project.documents = documents;
+
+        // Sauvegarder le projet
+        const savedProject = await project.save();
+
+        // Créer l'historique d'activité
+        await ActivityHistoryService.createActivityHistory(
+            member.owner,
+            'project_created',
+            { 
+                targetName: project.name, 
+                targetDesc: `Project created successfully with ${documents.length} documents` 
+            }
+        );
+
+        return savedProject;
+
     } catch (error) {
-      throw error;
+        console.error('Project creation error:', error);
+        throw new Error(`Failed to create project: ${error.message}`);
     }
 }
 
-async function updateProject(projectId, newData, pitchDeck, businessPlan, financialProjection , documentsFiles , logo) {
+
+async function updateProject(projectId, newData, pitchDeck, businessPlan, financialProjection, documentsFiles, logo) {
     try {
         const project = await Project.findById(projectId);
         if (!project) {
             throw new Error("Project not found");
         }
-        const projectFirstName = project?.name;
-        project.name = newData.name || project.name;
-        project.funding = newData.funding || project.funding;
-        project.totalRaised = newData.totalRaised || project.totalRaised;
-        project.currency = newData.currency || project.currency;
-        project.details = newData.details || project.details;
-        project.stage = newData.stage || project.stage;
-        project.visbility = newData.visbility|| project.visbility;
-        project.country = newData.country|| project.country;
-        project.sector = newData.sector|| project.sector;
-        project.website = newData.website || project.website;
-        project.contactEmail = newData.contactEmail || project.contactEmail;
-        project.listMember = newData.listMember || project.listMember;
-        project.status = newData.status || project.status;
 
+        const projectFirstName = project.name;
+        
+        // Mettre à jour les champs de base
+        const fieldsToUpdate = [
+            'name', 'funding', 'totalRaised', 'currency', 'details', 
+            'stage', 'visbility', 'country', 'sector', 'website', 
+            'contactEmail', 'listMember', 'status'
+        ];
+
+        fieldsToUpdate.forEach(field => {
+            if (newData[field] !== undefined) {
+                project[field] = newData[field];
+            }
+        });
+
+        // Gérer les milestones
         if (newData.milestones) {
-            const existingMilestoneNames = project.milestones.map(milestone => milestone.name);
-            newData.milestones.forEach(newMilestone => {
-              if (!existingMilestoneNames.includes(newMilestone.name)) {
-                project.milestones.push(newMilestone);
-              }
-            });
+            const existingMilestoneNames = new Set(project.milestones.map(m => m.name));
+            const newMilestones = newData.milestones.filter(m => !existingMilestoneNames.has(m.name));
+            project.milestones.push(...newMilestones);
         }
 
-        // if (newData.listMember) {
-        //     // Create a map of new members by personalEmail and workEmail
-        //     const newMembersMap = new Map(newData.listMember.map(member => [member.personalEmail + member.workEmail, member]));
-        //     // Filter out members that are no longer in the new list
-        //     project.listMember = project.listMember.filter(existingMember => {
-        //         const key = existingMember.personalEmail + existingMember.workEmail;
-        //         return newMembersMap.has(key);
-        //     });
+        const newDocuments = [...project.documents];
 
-        //     // Add or update members
-        //     newData.listMember.forEach(newMember => {
-        //     const key = newMember.personalEmail + newMember.workEmail;
-        //     const existingMemberIndex = project.listMember.findIndex(existingMember => (existingMember.personalEmail + existingMember.workEmail) === key);
-
-        //     if (existingMemberIndex !== -1) {
-        //         // Update existing member
-        //         project.listMember[existingMemberIndex] = { ...project.listMember[existingMemberIndex], ...newMember };
-        //     } else {
-        //         // Add new member
-        //         project.listMember.push(newMember);
-        //     }
-        //     });
-           
-        //   }
-        
+        // Gérer le logo séparément
         if (logo) {
-            let logoLink = await uploadService.uploadFile(logo, "Members/" + project.owner + "/Project_logos", logo.originalname)
-            project.logo = logoLink
-        }
-
-        // if (newData?.deletedFiles?.length > 0) {
-        //     const deletedDocumentTypes = new Set(newData?.deletedFiles);
-
-        //     const documentsToRemove = project.documents.filter(doc => deletedDocumentTypes.has(doc.documentType));
-        //     project.documents = project.documents.filter(doc => !deletedDocumentTypes.has(doc.documentType));
-            
-        //     // Remove the files from storage
-        //     await Promise.all(documentsToRemove.map(async (doc) => {
-        //         await uploadService.deleteFile("Members/" + project.owner + "/Project_documents", doc.name);
-        //     }));
-        // }
-
-        // if (newData?.otherDeletedFiles?.length > 0) {
-        //     const deletedDocumentNames = new Set(newData.otherDeletedFiles);
-        
-        //     project.documents = project.documents.filter(
-        //         doc => !(doc.documentType === "other" && deletedDocumentNames.has(doc.name))
-        //     );
-        
-        //     await Promise.all(newData.otherDeletedFiles.map(async (fileName) => {
-        //         await uploadService.deleteFile("Members/" + project.owner + "/Project_documents", fileName);
-        //     }));
-        // }        
-
-        if (pitchDeck) {
-            const pitchDeckLink = await uploadService.uploadFile(pitchDeck, "Members/" + project.owner + "/Project_documents", pitchDeck.originalname);
-            const existingPitchDeckIndex = project.documents.findIndex(doc => doc.documentType === "pitchDeck");
-            if (existingPitchDeckIndex !== -1) {
-                project.documents[existingPitchDeckIndex].link = pitchDeckLink;
-                project.documents[existingPitchDeckIndex].name = pitchDeck.originalname;
-                project.documents[existingPitchDeckIndex].type = pitchDeck.mimetype;
-            } else {
-                project.documents.push({ name: pitchDeck.originalname, link: pitchDeckLink, type: pitchDeck.mimetype, documentType: "pitchDeck" });
+            try {
+                const uniqueLogoName = generateUniqueFileName(logo.originalname);
+                const logoLink = await uploadService.uploadFile(
+                    logo, 
+                    `Members/${project.owner}/Project_logos`, 
+                    uniqueLogoName
+                );
+                project.logo = logoLink;
+            } catch (error) {
+                console.error('Logo upload failed:', error);
+                throw new Error('Logo upload failed');
             }
         }
 
-        if (businessPlan) {
-            const businessPlanLink = await uploadService.uploadFile(businessPlan, "Members/" + project.owner + "/Project_documents", businessPlan.originalname);
-            const existingBusinessPlanIndex = project.documents.findIndex(doc => doc.documentType === "businessPlan");
-            if (existingBusinessPlanIndex !== -1) {
-                project.documents[existingBusinessPlanIndex].link = businessPlanLink;
-                project.documents[existingBusinessPlanIndex].name = businessPlan.originalname;
-                project.documents[existingBusinessPlanIndex].type = businessPlan.mimetype;
-            } else {
-                project.documents.push({ name: businessPlan.originalname, link: businessPlanLink, type: businessPlan.mimetype, documentType: "businessPlan" });
-            }        
-        }
+        // Fonction d'upload unique
+        async function uploadDocument(file, documentType = "other") {
+            if (!file) return null;
 
-        if (financialProjection) {
-            const financialProjectionLink = await uploadService.uploadFile(financialProjection, "Members/" + project.owner + "/Project_documents", financialProjection.originalname);
-            const existingFinancialProjectionIndex = project.documents.findIndex(doc => doc.documentType === "financialProjection");
-            if (existingFinancialProjectionIndex !== -1) {
-                project.documents[existingFinancialProjectionIndex].link = financialProjectionLink;
-                project.documents[existingFinancialProjectionIndex].name = financialProjection.originalname;
-                project.documents[existingFinancialProjectionIndex].type = financialProjection.mimetype;
-            } else {
-                project.documents.push({ name: financialProjection.originalname, link: financialProjectionLink, type: financialProjection.mimetype, documentType: "financialProjection" });
-            }        
-        }
+            try {
+                const uniqueFileName = generateUniqueFileName(file.originalname);
+                const fileLink = await uploadService.uploadFile(
+                    file,
+                    `Members/${project.owner}/Project_documents`,
+                    uniqueFileName
+                );
 
-        if (documentsFiles) {
-            for (const doc of documentsFiles) {
-              const isFileExists = project.documents.some(document => document.name === doc.originalname);
-              
-              if (!isFileExists) {
-                const fileLink = await uploadService.uploadFile(doc, "Members/" + project.owner + "/Project_documents", doc.originalname);
-                project.documents.push({ name: doc.originalname, link: fileLink, type: doc.mimetype, documentType: "other" });
-              } 
+                return {
+                    name: file.originalname,
+                    link: fileLink,
+                    type: file.mimetype,
+                    documentType
+                };
+            } catch (error) {
+                console.error(`Upload failed for ${file.originalname}:`, error);
+                throw new Error(`Upload failed for ${file.originalname}`);
             }
         }
-          
+
+        // Upload et mise à jour des documents spéciaux
+        const specialDocs = [
+            { file: pitchDeck, type: "pitchDeck" },
+            { file: businessPlan, type: "businessPlan" },
+            { file: financialProjection, type: "financialProjection" }
+        ];
+
+        for (const { file, type } of specialDocs) {
+            if (file) {
+                const doc = await uploadDocument(file, type);
+                if (doc) {
+                    const existingIndex = newDocuments.findIndex(d => d.documentType === type);
+                    if (existingIndex !== -1) {
+                        newDocuments[existingIndex] = doc;
+                    } else {
+                        newDocuments.push(doc);
+                    }
+                }
+            }
+        }
+
+        // Upload et mise à jour des documents additionnels
+        if (Array.isArray(documentsFiles)) {
+            for (const file of documentsFiles) {
+                const isFileExists = newDocuments.some(doc => doc.name === file.originalname);
+                if (!isFileExists) {
+                    const doc = await uploadDocument(file);
+                    if (doc) newDocuments.push(doc);
+                }
+            }
+        }
+
+        // Mettre à jour les documents
+        project.documents = newDocuments;
+
+        // Sauvegarder les modifications
         const updatedProject = await project.save();
-        const member = await Member.findById(project?.owner)
+
+        // Créer l'historique d'activité
+        const member = await Member.findById(project.owner);
         await ActivityHistoryService.createActivityHistory(
             member.owner,
             'project_updated',
-            { targetName: projectFirstName, targetDesc: `Project updated for projectId ${projectId}` , to: project?.name }
+            { 
+                targetName: projectFirstName, 
+                targetDesc: `Project updated for projectId ${projectId}`,
+                to: project.name 
+            }
         );
+
         return updatedProject;
+
     } catch (error) {
-        console.log(error)
-        throw new Error('Error updating project');
+        console.error('Project update error:', error);
+        throw new Error(`Failed to update project: ${error.message}`);
     }
 }
 
@@ -1156,6 +1198,38 @@ const checkMemberStatus = async (memberId) => {
     return false;
     }
 
+};
+
+// Utilitaire pour générer un nom de fichier unique
+const generateUniqueFileName = (originalName) => {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 15);
+    const extension = originalName.split('.').pop();
+    return `${timestamp}-${random}.${extension}`;
+};
+
+// Fonction utilitaire pour extraire le nom du fichier depuis l'URL Firebase
+const getFileNameFromURL = (url) => {
+    try {
+        const decodedUrl = decodeURIComponent(url);
+        const matches = decodedUrl.match(/([^\/]+)(?=\?|$)/);
+        return matches ? matches[0] : null;
+    } catch (error) {
+        console.error('Error extracting filename from URL:', error);
+        return null;
+    }
+};
+
+// Fonction utilitaire pour extraire le chemin depuis l'URL Firebase
+const getPathFromUrl = (url) => {
+    try {
+        const decodedUrl = decodeURIComponent(url);
+        const matches = decodedUrl.match(/o\/(.+?)\/[^/?#]+[^/]*$/);
+        return matches ? matches[1] : null;
+    } catch (error) {
+        console.error('Error extracting path from URL:', error);
+        return null;
+    }
 };
 
   module.exports = {checkMemberStatus, 

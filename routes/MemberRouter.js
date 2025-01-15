@@ -309,7 +309,7 @@ router.route("/name/:name").get(MemberController.getByName)
  *       500:
  *         description: Internal Server Error
  */
-router.route("/project").post(AuthController.AuthenticateMember, upload.fields([{ name: 'businessPlan', maxCount: 1 },{ name: 'financialProjection', maxCount: 1 },{ name: 'pitchDeck', maxCount: 1 }, { name: 'logo', maxCount: 1 },{ name: 'files', maxCount: 8 }]), MemberController.createProject)
+router.route("/project").post(AuthController.AuthenticateMember, upload.fields([{ name: 'businessPlan', maxCount: 1 },{ name: 'financialProjection', maxCount: 1 },{ name: 'pitchDeck', maxCount: 1 }, { name: 'logo', maxCount: 1 },{ name: 'files'}]), MemberController.createProject)
 
 
 /**
@@ -426,7 +426,7 @@ router.route("/project").post(AuthController.AuthenticateMember, upload.fields([
  *       500:
  *         description: Internal Server Error
  */
-router.put("/project/:projectId", AuthController.AuthenticateMember, upload.fields([{ name: 'businessPlan', maxCount: 1 },{ name: 'financialProjection', maxCount: 1 },{ name: 'pitchDeck', maxCount: 1 } , { name: 'logo', maxCount: 1 },{ name: 'files', maxCount: 8 }]), MemberController.updateProject);
+router.put("/project/:projectId", AuthController.AuthenticateMember, upload.fields([{ name: 'businessPlan', maxCount: 1 },{ name: 'financialProjection', maxCount: 1 },{ name: 'pitchDeck', maxCount: 1 } , { name: 'logo', maxCount: 1 },{ name: 'files' }]), MemberController.updateProject);
 
 /**
  * @swagger

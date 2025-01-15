@@ -107,6 +107,66 @@
     "messageReceived": "vous a envoyé le message ci-dessous depuis le site Digital Morocco :",
         "reachOut": "Si nécessaire, vous pouvez contacter l'utilisateur à",
         "pleaseAddress": "Veuillez traiter cette question dans les plus brefs délais pour garantir que l'utilisateur reçoive le support nécessaire."
+  },
+  "subscription": {
+    "new": {
+      "title": "Bienvenue chez Digital Morocco Premium !",
+      "greeting": "Bonjour {{name}},",
+      "welcome_message": "Nous sommes ravis de vous accueillir parmi les membres Premium de Digital Morocco ! Vous avez désormais accès à un monde de fonctionnalités et d'avantages exclusifs.",
+      "price": "Prix : {{price}} MAD",
+      "duration": "Durée : {{duration}} mois",
+      "welcome_bonus": "🎁 Bonus de Bienvenue Spécial : {{bonus}}",
+      "features_title": "Vos Avantages Premium Incluent :",
+      "get_started": "Prêt à commencer ?",
+      "support_message": "Notre équipe de support est là pour vous aider à tirer le meilleur parti de votre abonnement.",
+      "contact_support": "Si vous avez des questions, n'hésitez pas à nous contacter.",
+      "thank_you": "Merci d'avoir choisi Digital Morocco !"
+    },
+    "renewal": {
+      "title": "Votre Abonnement Digital Morocco a été Renouvelé",
+      "greeting": "Bonjour {{name}},",
+      "message": "Merci de votre confiance continue envers Digital Morocco. Nous avons le plaisir de confirmer le renouvellement de votre abonnement.",
+      "renewal_date": "Prochaine Date d'expiration : {{date}}",
+      "price": "Prix du Renouvellement : {{price}} MAD",
+      "discount": "Remise Fidélité : Économisez {{discount}}%",
+      "confirmation": "Votre abonnement a été renouvelé avec succès.",
+      "benefits_reminder": "Continuez à profiter de tous vos avantages premium :",
+      "support_message": "Besoin d'aide ? Notre équipe de support est toujours là pour vous.",
+      "thank_you": "Merci d'être un membre précieux de Digital Morocco !"
+    },
+    "upgrade": {
+      "title": "Vous avez Amélioré votre Abonnement Digital Morocco !",
+      "greeting": "Bonjour {{name}},",
+      "message": "Félicitations pour la mise à niveau de votre abonnement Digital Morocco ! Vous avez maintenant accès à encore plus de fonctionnalités puissantes.",
+      "plan_change": "Détails de votre Mise à Niveau",
+      "from_plan": "Plan Précédent : {{plan}}",
+      "to_plan": "Nouveau Plan : {{plan}}",
+      "new_price": "Nouveau Prix : {{price}} MAD",
+      "new_benefits": "Nouveaux Avantages Débloqués",
+      "effective_immediately": "Vos nouveaux avantages sont disponibles immédiatement !",
+      "support_message": "Des questions sur vos nouvelles fonctionnalités ? Nous sommes là pour vous aider !",
+      "thank_you": "Merci de grandir avec Digital Morocco !"
+    },
+    "cancellation": {
+      "title": "Demande d'annulation de votre abonnement",
+      "greeting": "Bonjour {{name}},",
+      "message": "Nous avons bien reçu votre demande d'annulation de votre abonnement.",
+      "confirmation": "Voici ce que vous devez savoir :",
+      "current_subscription": "Abonnement actuel : Plan {{plan}}",
+      "end_date": "Accès valide jusqu'au : {{date}}",
+      "access_info": "Vous continuerez à bénéficier de l'accès complet à toutes les fonctionnalités Premium jusqu'à l'expiration de votre abonnement.",
+      "after_cancellation": "Après le {{date}} :",
+      "after_details": [
+        "Votre compte passera automatiquement au plan Gratuit",
+        "Vous conserverez l'accès aux fonctionnalités de base de votre compte",
+        "Vos données enregistrées et vos paramètres seront préservés"
+      ],
+      "change_mind": "Vous avez changé d'avis ? Vous pouvez réactiver votre abonnement à tout moment avant le {{date}}.",
+      "feedback_request": "Nous attachons une grande importance à votre avis. Qu'est-ce qui vous a poussé à annuler ?",
+      "support_message": "Si vous avez des questions, notre équipe d'assistance est à votre disposition pour vous aider.",
+      "farewell": "Merci pour le temps passé avec Digital Morocco Premium."
+    }
+
   }
 
 }
