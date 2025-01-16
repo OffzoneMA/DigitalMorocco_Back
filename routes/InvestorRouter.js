@@ -137,6 +137,10 @@ router.route("/").get(AuthController.AuthenticateSubMemberOrAdmin, InvestorContr
  *         name: location
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: keywords
+ *         schema:
+ *           type: string
  *         description: Filter by location
  *       - in: query
  *         name: industries
