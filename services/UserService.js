@@ -29,7 +29,11 @@ const updateUser = async (userId,user) => {
         const hashedPassword = await bcrypt.hash(password, salt)
         user.password = hashedPassword
     }
-    return await User.findByIdAndUpdate(userId, user)
+    return await User.findByIdAndUpdate(
+        userId,
+        user,
+        { new: true, runValidators: true } // Met à jour et retourne le document modifié
+    );
 }
 
 const updateUserLanguageRegionService = async(userId, updates) => {

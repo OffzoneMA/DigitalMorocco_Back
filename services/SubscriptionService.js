@@ -73,6 +73,8 @@ async function createSubscriptionForUser(userId, planId, data) {
         if (!user) {
             throw new Error('User not found.');
         }
+
+        const existingSubscription = await Subscription.findById(user.subscription);
         const plan = await SubscriptionPlan.findById(planId);
         if (!plan) {
             throw new Error('Subscription Plan not found.');
@@ -84,7 +86,7 @@ async function createSubscriptionForUser(userId, planId, data) {
             ...data,
             user: userId,
             plan: plan?._id,
-            totalCredits: plan?.credits,
+            totalCredits: plan?.credits + (existingSubscription?.totalCredits || 0),
             dateExpired: dateExpired
         });
 
@@ -198,7 +200,8 @@ async function cancelSubscription(subscriptionId) {
             subscriptionId,
             {
                 subscriptionStatus: 'cancelled',
-                dateStopped: Date.now()
+                dateStopped: Date.now(),
+                isCanceled: true
             },
             { new: true }
         ).populate('plan');
@@ -207,10 +210,10 @@ async function cancelSubscription(subscriptionId) {
             throw new Error('Subscription not found');
         }
         const user = await User.findById(subscription.user);
-        if (user) {
-            user.subscription = null;
-            await user.save();
-        }
+        // if (user) {
+        //     user.subscription = null;
+        //     await user.save();
+        // }
 
         const logData = {
             credits: subscription.totalCredits,
@@ -230,7 +233,6 @@ async function cancelSubscription(subscriptionId) {
 
         // Envoi de l'email de bienvenue
         await EmailService.sendCancellationEmail(user._id , emailPlanDetails);
-
         await SubscriptionLogService.createSubscriptionLog(subscription._id, logData);
         await ActivityHistoryService.createActivityHistory(
             subscription.user,
@@ -250,6 +252,7 @@ async function autoCancelExpiredSubscriptions() {
 
         for (const subscription of expiredSubscriptions) {
             subscription.subscriptionStatus = 'cancelled';
+            subscription.isCanceled = true;
             subscription.dateStopped = Date.now();
 
             // Créer un log d'annulation
