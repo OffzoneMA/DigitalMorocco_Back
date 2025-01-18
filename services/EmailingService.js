@@ -705,7 +705,9 @@ async function sendSubscriptionEmail(userId, subscriptionType, planDetails) {
     templateData.title = title;
 
     // Render email template
-    const templatePath = path.join(__dirname, '..', 'templates', `${templateName}.ejs`);
+    // const templatePath = path.join(__dirname, '..', 'templates', `${templateName}.ejs`);
+    const templatePath = path.resolve(process.cwd(), 'templates', `${templateName}.ejs`);
+
     const emailContent = await ejs.renderFile(templatePath, templateData);
 
     // Send email
