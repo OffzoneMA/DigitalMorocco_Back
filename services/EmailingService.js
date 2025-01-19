@@ -671,6 +671,7 @@ async function handleNewSubscription(user, planDetails) {
   const title = i18n.t('subscription.new.title');
   const templateData = {
     t: i18n.t.bind(i18n),
+    title,
     name: user?.displayName,
     planName: planDetails?.name,
     price: planDetails?.price,
@@ -686,6 +687,7 @@ async function handleRenewalSubscription(user, planDetails) {
   const title = i18n.t('subscription.renewal.title');
   const templateData = {
     t: i18n.t.bind(i18n),
+    title,
     name: user?.displayName,
     planName: planDetails?.name,
     price: planDetails?.price,
@@ -702,6 +704,7 @@ async function handleUpgradeSubscription(user, planDetails) {
   const title = i18n.t('subscription.upgrade.title');
   const templateData = {
     t: i18n.t.bind(i18n),
+    title,
     name: user?.displayName,
     planName: planDetails?.name,
     price: planDetails?.price,
@@ -718,6 +721,7 @@ async function handleCancelledSubscription(user, planDetails) {
   const title = i18n.t('subscription.cancellation.title');
   const templateData = {
     t: i18n.t.bind(i18n),
+    title,
     name: user?.displayName,
     planName: planDetails?.name
   };
