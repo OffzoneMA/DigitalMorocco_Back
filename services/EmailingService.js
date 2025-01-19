@@ -674,6 +674,11 @@ async function sendSubscriptionEmail(userId, subscriptionType, planDetails) {
     };
 
     switch (subscriptionType) {
+      case SUBSCRIPTION_TYPES.CANCELLED:
+        templateName = 'cancelledSubscription';
+        title = i18n.t('subscription.cancellation.title');
+        break;
+        
       case SUBSCRIPTION_TYPES.NEW:
         templateName = 'newSubscription';
         title = i18n.t('subscription.new.title');
@@ -692,10 +697,6 @@ async function sendSubscriptionEmail(userId, subscriptionType, planDetails) {
         title = i18n.t('subscription.upgrade.title');
         templateData.previousPlan = planDetails?.previousPlan;
         // templateData.upgradeBenefits = planDetails?.upgradeBenefits;
-        break;
-      case SUBSCRIPTION_TYPES.CANCELLED:
-        templateName = 'cancelledSubscription';
-        title = i18n.t('subscription.cancellation.title');
         break;
 
       default:
