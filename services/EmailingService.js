@@ -645,10 +645,86 @@ async function sendContactRejectToMember(userId, InvestorName, linkedin_link, ev
 const SUBSCRIPTION_TYPES = {
   NEW: 'new',
   RENEWAL: 'renewal',
-  UPGRADE: 'upgrade' ,
+  UPGRADE: 'upgrade',
   CANCELLED: 'cancelled'
 };
 
+// Utility to get user language
+async function setUserLanguage(user) {
+  const userLanguage = getLanguageIdByLabel(user?.language);
+  if (userLanguage) {
+    await i18n.changeLanguage(userLanguage);
+  }
+}
+
+// Generic function to send emails
+async function sendEmailTemplate(user, templateName, title, templateData) {
+  const templatePath = path.join(__dirname, '..', 'templates', `${templateName}.ejs`);
+  const emailContent = await ejs.renderFile(templatePath, templateData);
+  const messageId = await sendEmail(user.email, title, emailContent, true);
+  return { messageId, recipient: user.email };
+}
+
+// Functions for each subscription type
+async function handleNewSubscription(user, planDetails) {
+  const templateName = 'newSubscription';
+  const title = i18n.t('subscription.new.title');
+  const templateData = {
+    t: i18n.t.bind(i18n),
+    name: user?.displayName,
+    planName: planDetails?.name,
+    price: planDetails?.price,
+    duration: planDetails?.duration,
+    features: planDetails?.features,
+    // welcomeBonus: planDetails?.welcomeBonus
+  };
+  return sendEmailTemplate(user, templateName, title, templateData);
+}
+
+async function handleRenewalSubscription(user, planDetails) {
+  const templateName = 'subscriptionRenewal';
+  const title = i18n.t('subscription.renewal.title');
+  const templateData = {
+    t: i18n.t.bind(i18n),
+    name: user?.displayName,
+    planName: planDetails?.name,
+    price: planDetails?.price,
+    duration: planDetails?.duration,
+    features: planDetails?.features,
+    renewalDate: planDetails?.renewalDate,
+    // discount: planDetails?.renewalDiscount
+  };
+  return sendEmailTemplate(user, templateName, title, templateData);
+}
+
+async function handleUpgradeSubscription(user, planDetails) {
+  const templateName = 'subscriptionUpgrade';
+  const title = i18n.t('subscription.upgrade.title');
+  const templateData = {
+    t: i18n.t.bind(i18n),
+    name: user?.displayName,
+    planName: planDetails?.name,
+    price: planDetails?.price,
+    duration: planDetails?.duration,
+    features: planDetails?.features,
+    previousPlan: planDetails?.previousPlan,
+    // upgradeBenefits: planDetails?.upgradeBenefits
+  };
+  return sendEmailTemplate(user, templateName, title, templateData);
+}
+
+async function handleCancelledSubscription(user, planDetails) {
+  const templateName = 'cancelledSubscription';
+  const title = i18n.t('subscription.cancellation.title');
+  const templateData = {
+    t: i18n.t.bind(i18n),
+    name: user?.displayName,
+    planName: planDetails?.name
+  };
+  return sendEmailTemplate(user, templateName, title, templateData);
+}
+
+// Main function
 async function sendSubscriptionEmail(userId, subscriptionType, planDetails) {
   try {
     const user = await User.findById(userId);
@@ -656,80 +732,33 @@ async function sendSubscriptionEmail(userId, subscriptionType, planDetails) {
       throw new Error('User not found');
     }
 
-    // Set user's preferred language
-    const userLanguage = getLanguageIdByLabel(user?.language);
-    if (userLanguage) {
-      await i18n.changeLanguage(userLanguage);
-    }
+    // Set user language
+    await setUserLanguage(user);
 
-    // Get appropriate email template and title based on subscription type
-    let templateName, title;
-    const templateData = {
-      t: i18n.t.bind(i18n),
-      name: user?.displayName,
-      planName: planDetails?.name,
-      price: planDetails?.price,
-      duration: planDetails?.duration,
-      features: planDetails?.features
-    };
-
+    // Route to the appropriate handler based on subscription type
     switch (subscriptionType) {
-      case SUBSCRIPTION_TYPES.CANCELLED:
-        templateName = 'cancelledSubscription';
-        title = i18n.t('subscription.cancellation.title');
-        break;
-        
       case SUBSCRIPTION_TYPES.NEW:
-        templateName = 'newSubscription';
-        title = i18n.t('subscription.new.title');
-        // templateData.welcomeBonus = planDetails?.welcomeBonus;
-        break;
+        return await handleNewSubscription(user, planDetails);
 
       case SUBSCRIPTION_TYPES.RENEWAL:
-        templateName = 'subscriptionRenewal';
-        title = i18n.t('subscription.renewal.title');
-        templateData.renewalDate = planDetails?.renewalDate;
-        // templateData.discount = planDetails?.renewalDiscount;
-        break;
+        return await handleRenewalSubscription(user, planDetails);
 
       case SUBSCRIPTION_TYPES.UPGRADE:
-        templateName = 'subscriptionUpgrade';
-        title = i18n.t('subscription.upgrade.title');
-        templateData.previousPlan = planDetails?.previousPlan;
-        // templateData.upgradeBenefits = planDetails?.upgradeBenefits;
-        break;
+        return await handleUpgradeSubscription(user, planDetails);
+
+      case SUBSCRIPTION_TYPES.CANCELLED:
+        return await handleCancelledSubscription(user, planDetails);
 
       default:
         throw new Error('Invalid subscription type');
     }
-
-    templateData.title = title;
-
-    // Render email template
-    const templatePath = path.join(__dirname, '..', 'templates', `${templateName}.ejs`);
-    // const templatePath = path.join(process.cwd(), 'templates', `${templateName}.ejs`);
-
-    const emailContent = await ejs.renderFile(templatePath, templateData);
-
-    // Send email
-    const messageId = await sendEmail(user.email, title, emailContent, true);
-    
-    // Log email sending
-    console.log(`Subscription email sent: ${subscriptionType}`);
-    
-    return {
-      messageId,
-      type: subscriptionType,
-      recipient: user.email
-    };
-
   } catch (error) {
     console.error(`Error sending subscription email: ${error.message}`);
     throw error;
   }
 }
 
-// Convenience methods for different subscription scenarios
+// Convenience functions
 async function sendNewSubscriptionEmail(userId, planDetails) {
   return sendSubscriptionEmail(userId, SUBSCRIPTION_TYPES.NEW, planDetails);
 }
@@ -742,9 +771,10 @@ async function sendUpgradeEmail(userId, planDetails) {
   return sendSubscriptionEmail(userId, SUBSCRIPTION_TYPES.UPGRADE, planDetails);
 }
 
-async function sendCancellationEmail(userId , planDetails) {
+async function sendCancellationEmail(userId, planDetails) {
   return sendSubscriptionEmail(userId, SUBSCRIPTION_TYPES.CANCELLED, planDetails);
 }
+
 //Events
 async function sendTicketToUser(billingData, eventId){
   try {
