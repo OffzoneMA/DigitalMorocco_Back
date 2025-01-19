@@ -105,7 +105,7 @@ class App {
     setupRoutes() {
       // Route de test i18n
       this.app.get('/', (req, res) => {
-          const response = `Test ${req.t('welcome_email.title')} ${req.t('welcome_email.title1')}`;
+          const response = `Test i18n works! ${req.t('welcome_email.title')} ${req.t('welcome_email.title1')}`;
           res.status(200).send(response);
       });
 

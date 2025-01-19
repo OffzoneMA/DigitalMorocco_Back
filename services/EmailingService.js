@@ -694,7 +694,7 @@ async function sendSubscriptionEmail(userId, subscriptionType, planDetails) {
         // templateData.upgradeBenefits = planDetails?.upgradeBenefits;
         break;
       case SUBSCRIPTION_TYPES.CANCELLED:
-        templateName = 'subscriptionCancelled';
+        templateName = 'cancelledSubscription';
         title = i18n.t('subscription.cancellation.title');
         break;
 
