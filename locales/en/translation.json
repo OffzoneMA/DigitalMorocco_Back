@@ -113,7 +113,7 @@
     
     "subscription": {
       "new": {
-        "title": "Welcome to Digital Morocco Premium!",
+        "title": "Welcome to Digital Morocco Premium! 🎉",
         "greeting": "Hello {{name}},",
         "welcome_message": "We're thrilled to welcome you to Digital Morocco's Premium membership! You've just unlocked a world of exclusive features and benefits.",
         "price": "Price: {{price}} MAD",

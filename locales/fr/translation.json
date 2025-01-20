@@ -110,7 +110,7 @@
   },
   "subscription": {
     "new": {
-      "title": "Bienvenue chez Digital Morocco Premium !",
+      "title": "Bienvenue parmi nos membres Premium ! 🎉",
       "greeting": "Bonjour {{name}},",
       "welcome_message": "Nous sommes ravis de vous accueillir parmi les membres Premium de Digital Morocco ! Vous avez désormais accès à un monde de fonctionnalités et d'avantages exclusifs.",
       "price": "Prix : {{price}} MAD",

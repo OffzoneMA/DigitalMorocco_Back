@@ -82,6 +82,7 @@ async function createActivityHistory(userId, eventType, eventData) {
 async function getAllActivityHistories() {
     try {
         const activityHistories = await ActivityHistory.find()
+            .sort({ timestamp: -1 })
             .populate({
                 path: 'user'
             })
