@@ -196,13 +196,17 @@
 																	style="color:#ffffff;font-family:Montserrat, Trebuchet MS, Lucida Grande, Lucida Sans Unicode, Lucida Sans, Tahoma, sans-serif;font-size:16px;line-height:150%;text-align:left;mso-line-height-alt:24px;">
 																	<p style="color: #ffffff;"><%= t('subscription.renewal.greeting', {name: name}) %></p>
                                                                     <p style="color: #ffffff;"><%= t('subscription.renewal.message') %></p>
+																	<p style="color: #ffffff;"><%= t('subscription.renewal.message1') %></p>
 
                                                                     <!-- Renewal details -->
-                                                                    <div style="color: #ffffff; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                                                                        <h3 style="color: #00cdae;"><%= planName %></h3>
-                                                                        <p style="color: #ffffff;"><%= t('subscription.renewal.renewal_date', {date: renewalDate}) %></p>
-                                                                        <p style="color: #ffffff;"><%= t('subscription.renewal.price', {price: price}) %></p>
-                                                                    </div>
+																	<p style="color: #ffffff;"><%= t('subscription.new.details') %></p>
+                                                                    <ul style="list-style: disc;">
+                                                                        <p style="color: #ffffff;"><%= t('subscription.new.plan' , {plan: planName} ) %></p>
+                                                                        <p style="color: #ffffff;"><%= t('subscription.new.price', {price: price}) %></p>
+                                                                        <p style="color: #ffffff;"><%= t('subscription.new.duration', {duration: duration}) %></p>
+                                                                    </ul>
+																	<p style="color: #ffffff;"><%= t('subscription.renewal.thank_you') %></p>
+																	<p style="color: #ffffff;"><%= t('subscription.new.best_regards') %> <br/><%= t('subscription.new.team_signature') %></span></p>
 																</div>
 															</td>
 														</tr>

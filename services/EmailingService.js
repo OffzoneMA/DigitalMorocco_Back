@@ -673,7 +673,7 @@ async function handleNewSubscription(user, planDetails) {
     t: i18n.t.bind(i18n),
     title,
     name: user?.displayName,
-    planName: planDetails?.name,
+    planName: planDetails?.name?.toLowerCase() === "standard in" ? "Standard" : planDetails?.name,
     price: planDetails?.price,
     duration: planDetails?.duration,
     features: planDetails?.features,
@@ -689,7 +689,7 @@ async function handleRenewalSubscription(user, planDetails) {
     t: i18n.t.bind(i18n),
     title,
     name: user?.displayName,
-    planName: planDetails?.name,
+    planName: planDetails?.name?.toLowerCase() === "standard in" ? "Standard" : planDetails?.name,
     price: planDetails?.price,
     duration: planDetails?.duration,
     features: planDetails?.features,
@@ -706,7 +706,7 @@ async function handleUpgradeSubscription(user, planDetails) {
     t: i18n.t.bind(i18n),
     title,
     name: user?.displayName,
-    planName: planDetails?.name,
+    planName: planDetails?.name?.toLowerCase() === "standard in" ? "Standard" : planDetails?.name,
     price: planDetails?.price,
     duration: planDetails?.duration,
     features: planDetails?.features,
@@ -723,7 +723,10 @@ async function handleCancelledSubscription(user, planDetails) {
     t: i18n.t.bind(i18n),
     title,
     name: user?.displayName,
-    planName: planDetails?.name
+    planName: planDetails?.name?.toLowerCase() === "standard in" ? "Standard" : planDetails?.name,
+    price: planDetails?.price,
+    duration: planDetails?.duration,
+    endDate: planDetails?.endDate,
   };
   return sendEmailTemplate(user, templateName, title, templateData);
 }

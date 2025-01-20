@@ -115,12 +115,11 @@
 																<div align="center" class="alignment"
 																	style="line-height:10px">
 																	<div style="max-width: 201.25px;"><a
-																			href="https://digitalmorocco.net"
+																			href="https://digitalmorocco.net
 																			style="outline:none" tabindex="-1"
-																			target="_blank"><img
+																			target="_blank"><img 
 																				height="auto" src="https://firebasestorage.googleapis.com/v0/b/digital-morocco-806c5.appspot.com/o/Site_Assets%2FNegativeTrue.png?alt=media&token=063725a8-7309-4954-8b57-8a500c0fb3a7"
 																				style="display: block; height: auto; border: 0; width: 100%;"
-																				title="request_approved"
 																				width="201.25" /></a></div>
 																</div>
 															</td>
@@ -138,7 +137,7 @@
 																<div align="center" class="alignment"
 																	style="line-height:10px">
 																	<div style="max-width: 230px;"><img
-																			height="auto"
+																			 height="auto"
 																			src="https://firebasestorage.googleapis.com/v0/b/digital-morocco-806c5.appspot.com/o/Site_Assets%2F5384699.png?alt=media&token=6ed64b88-f2f4-40a6-b732-e26f0ce206bc"
 																			style="display: block; height: auto; border: 0; width: 100%;"
 																			title="2021 year in review " width="230" />
@@ -179,8 +178,8 @@
 														<tr>
 															<td class="pad">
 																<h1
-																	style="margin: 0; color: #7747FF; direction: ltr; font-family: 'Montserrat', 'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif; font-size: 34px; font-weight: 700; letter-spacing: normal; line-height: 120%; text-align: center; margin-top: 0; margin-bottom: 0; mso-line-height-alt: 40.8px;">
-																	<span style="color: #00cdae;"><strong><%= t('subscription.upgrade.title') %></strong></span></h1>
+																	style="margin: 0; color: #7747FF; direction: ltr; font-family: 'Montserrat', 'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif; font-size: 32px; font-weight: 700; letter-spacing: normal; line-height: 120%; text-align: center; margin-top: 0; margin-bottom: 0; mso-line-height-alt: 38.4px;">
+																	<span style="color: #00cdae;"><strong><%= t('subscription.cancellation.title') %></strong></span></h1>
 															</td>
 														</tr>
 													</table>
@@ -193,19 +192,21 @@
 														<tr>
 															<td class="pad">
 																<div
-																	style="color:#ffffff;font-family:Montserrat, Trebuchet MS, Lucida Grande, Lucida Sans Unicode, Lucida Sans, Tahoma, sans-serif;font-size:16px;line-height:150%;text-align:left;mso-line-height-alt:24px;">
-																	<p style="color: #ffffff;"><%= t('subscription.upgrade.greeting', {name: name}) %></p>
-                                                                    <p style="color: #ffffff;"><%= t('subscription.upgrade.message') %> <br/> <%= t('subscription.upgrade.message1') %></p>
-
-                                                                    <!-- Upgrade details -->
-                                                                    <p style="color: #ffffff;"><%= t('subscription.new.details') %></p>
+																	style="color:#393d47;font-family:Montserrat, Trebuchet MS, Lucida Grande, Lucida Sans Unicode, Lucida Sans, Tahoma, sans-serif;font-size:16px;line-height:150%;text-align:left;mso-line-height-alt:24px;">
+																	<p style="margin: 0; word-break: break-word;">
+                                                                        <span style="color: #ffffff;"><%= t('subscription.cancellation.greeting' , {name: name}) %></span><br /><br />
+                                                                        <span style="color: #ffffff;">Nous vous confirmons que votre abonnement <span>Digital Morocco Premium</span> a été annulé avec succès. </span><br /><br />
+                                                                    </p>
+                                                                    <p style="color: #ffffff;">Détails de votre abonnement : </p>
                                                                     <ul style="list-style: disc;">
                                                                         <p style="color: #ffffff;"><%= t('subscription.new.plan' , {plan: planName} ) %></p>
                                                                         <p style="color: #ffffff;"><%= t('subscription.new.price', {price: price}) %></p>
                                                                         <p style="color: #ffffff;"><%= t('subscription.new.duration', {duration: duration}) %></p>
                                                                     </ul>
-																	<p style="color: #ffffff;"><%= t('subscription.upgrade.thank_you') %></p>
-																	<p style="color: #ffffff;"><%= t('subscription.new.best_regards') %> <br/><%= t('subscription.new.team_signature') %></span></p>
+                                                                    <p style="color: #ffffff;"><%= t('subscription.cancellation.access_info') %></p>
+																	<p style="color: #ffffff;"><%= t('subscription.cancellation.after_cancellation') %></p>
+                                                                    <p style="color: #ffffff;">Merci d’avoir fait partie de la communauté <span>Digital Morocco</span>. Nous restons à votre disposition pour toute question ou assistance. </p>
+                                                                    <p style="color: #ffffff;">À très bientôt !<br/>L’équipe <span>Digital Morocco</span> </p>
 																</div>
 															</td>
 														</tr>
@@ -269,14 +270,11 @@
 																			target="_blank"><img
 																				height="auto" src="https://firebasestorage.googleapis.com/v0/b/digital-morocco-806c5.appspot.com/o/Site_Assets%2FNegativeTrue.png?alt=media&token=063725a8-7309-4954-8b57-8a500c0fb3a7"
 																				style="display: block; height: auto; border: 0; width: 100%;"
-																				title="request_approved"
 																				width="172.5" /></a></div>
 																</div>
 															</td>
 														</tr>
 													</table>
-													<div class="spacer_block block-2"
-														style="height:20px;line-height:20px;font-size:1px;"> </div>
 												</td>
 											</tr>
 										</tbody>
@@ -301,7 +299,20 @@
 													style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; font-weight: 400; text-align: left; padding-bottom: 5px; padding-top: 5px; vertical-align: top; border-top: 0px; border-right: 0px; border-bottom: 0px; border-left: 0px;"
 													width="100%">
 													<table border="0" cellpadding="0" cellspacing="0"
-														class="social_block block-1" role="presentation"
+														class="html_block block-1" role="presentation"
+														style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;"
+														width="100%">
+														<tr>
+															<td class="pad">
+																<div align="center"
+																	style="font-family:Montserrat, Trebuchet MS, Lucida Grande, Lucida Sans Unicode, Lucida Sans, Tahoma, sans-serif;text-align:center;">
+																	<div height="10"> </div>
+																</div>
+															</td>
+														</tr>
+													</table>
+													<table border="0" cellpadding="0" cellspacing="0"
+														class="social_block block-2" role="presentation"
 														style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;"
 														width="100%">
 														<tr>
@@ -344,7 +355,7 @@
 														</tr>
 													</table>
 													<table border="0" cellpadding="10" cellspacing="0"
-														class="text_block block-2" role="presentation"
+														class="text_block block-3" role="presentation"
 														style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; word-break: break-word;"
 														width="100%">
 														<tr>
@@ -354,7 +365,7 @@
 																		style="color: #C0C0C0; font-size: 12px; font-family: Montserrat, Trebuchet MS, Lucida Grande, Lucida Sans Unicode, Lucida Sans, Tahoma, sans-serif; mso-line-height-alt: 14.399999999999999px; line-height: 1.2;">
 																		<p
 																			style="margin: 0; text-align: center; mso-line-height-alt: 14.399999999999999px;">
-																			<span style="font-size:11px;"><%= t('request_approved.footer_message') %></span></p>
+																			<span style="font-size:11px;"><%= t('request_reject.footer_message') %></span></p>
 																	</div>
 																</div>
 															</td>
@@ -438,14 +449,15 @@
 															<td class="pad">
 																<div
 																	style="color:#393d47;font-family:Montserrat, Trebuchet MS, Lucida Grande, Lucida Sans Unicode, Lucida Sans, Tahoma, sans-serif;font-size:10px;line-height:120%;text-align:center;mso-line-height-alt:12px;">
+																	<p style="margin: 0;"> </p>
 																	<p style="margin: 0;"><span
-																			style="color: #ffffff; font-family:Montserrat, Trebuchet MS, Lucida Grande, Lucida Sans Unicode, Lucida Sans, Tahoma, sans-serif; background-color: transparent;"><span
-																				style="color: #c0c0c0;"><%= t('request_approved.footer_copyright') %></span>  </span><span
-																			style="color: #00cdae;"><strong>
-																				<a href="https://offzone.net/" target="_blank" style="color: #00cdae; text-decoration: none;">
-																				OFFZONE
-																				</a>
-																			</strong></span>
+																			style="color: #ffffff;"><span
+																				style="color: #c0c0c0;"><%= t('request_reject.footer_copyright') %></span> <span
+																				style="color: #00cdae;"><strong>
+																					<a href="https://offzone.net/" target="_blank" style="color: #00cdae; text-decoration: none;">																					
+																					OFFZONE
+																					</a>
+																				</strong></span></span>
 																	</p>
 																</div>
 															</td>

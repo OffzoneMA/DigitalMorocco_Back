@@ -194,8 +194,20 @@
 																<div
 																	style="color:#393d47;font-family:Montserrat, Trebuchet MS, Lucida Grande, Lucida Sans Unicode, Lucida Sans, Tahoma, sans-serif;font-size:16px;line-height:150%;text-align:left;mso-line-height-alt:24px;">
 																	<p style="margin: 0; word-break: break-word;"><span
-																			style="color: #ffffff;"><%= t('subscription.cancellation.greeting' , {name: name}) %></span><br /><br /><span
-																			style="color: #ffffff;"><%= t('subscription.cancellation.message') %></span><br /><br /><span
+																			style="color: #ffffff;"><%= t('subscription.cancellation.greeting' , {name: name}) %></span><br /><br />
+																			<span style="color: #ffffff;"><%= t('subscription.cancellation.message') %></span>
+																	</p>
+																	<p style="color: #ffffff;"><%= t('subscription.new.details') %></p>
+                                                                    <ul style="list-style: disc;">
+                                                                        <p style="color: #ffffff;"><%= t('subscription.new.plan' , {plan: planName} ) %></p>
+                                                                        <p style="color: #ffffff;"><%= t('subscription.new.price', {price: price}) %></p>
+                                                                        <p style="color: #ffffff;"><%= t('subscription.new.duration', {duration: duration}) %></p>
+																		<p style="color: #ffffff;"><%= t('subscription.cancellation.end_date', {date: endDate}) %></p>
+                                                                    </ul>
+																	<p style="color: #ffffff;"><%= t('subscription.cancellation.access_info') %></p>
+																	<p style="color: #ffffff;"><%= t('subscription.cancellation.after_cancellation') %></p>
+																	<p style="color: #ffffff;"><%= t('subscription.cancellation.thank_you') %></p>
+																	<p style="color: #ffffff;"><%= t('subscription.new.best_regards') %> <br/><%= t('subscription.new.team_signature') %></span></p>
 																</div>
 															</td>
 														</tr>

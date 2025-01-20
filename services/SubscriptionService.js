@@ -229,6 +229,7 @@ async function cancelSubscription(subscriptionId) {
             price: subscription.plan.price,
             duration: subscription.plan.billing === 'year' ? 12 : 1,
             features: subscription.plan.featureDescriptions,
+            endDate: formatDate(subscription.dateExpired, user.language),
         };
 
         // Envoi de l'email de bienvenue

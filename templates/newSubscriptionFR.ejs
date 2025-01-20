@@ -195,14 +195,19 @@
 																<div
 																	style="color:#ffffff;font-family:Montserrat, Trebuchet MS, Lucida Grande, Lucida Sans Unicode, Lucida Sans, Tahoma, sans-serif;font-size:16px;line-height:150%;text-align:left;mso-line-height-alt:24px;">
 																	<p style="color: #ffffff;"><%= t('subscription.new.greeting', {name: name}) %></p>
-                                                                    <p style="color: #ffffff;"><%= t('subscription.new.welcome_message') %></p>
+                                                                    <p style="color: #ffffff;">Nous sommes enchantés de vous accueillir dans la communauté des membres Premium de <span style="font-weight: bold;">Digital Morocco ! </span>🎊 </p>
+                                                                    <p style="color: #ffffff;">Grâce à votre abonnement, vous profitez désormais d’un accès privilégié à des fonctionnalités avancées et à des avantages exclusifs qui vous permettront d’atteindre vos objectifs avec efficacité.</p>
                                                                     
                                                                     <!-- Section plan details -->
-                                                                    <div style=" color: #ffffff; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                                                                        <h3 style="color: #00cdae;"><%= planName %></h3>
+                                                                    <p style="color: #ffffff;">Détails de votre abonnement : </p>
+                                                                    <ul style="list-style: disc;">
+                                                                        <p style="color: #ffffff;"><%= t('subscription.new.plan' , {plan: planName} ) %></p>
                                                                         <p style="color: #ffffff;"><%= t('subscription.new.price', {price: price}) %></p>
                                                                         <p style="color: #ffffff;"><%= t('subscription.new.duration', {duration: duration}) %></p>
-                                                                    </div>
+                                                                    </ul>
+                                                                    <p style="color: #ffffff;">N’hésitez pas à explorer toutes les options Premium disponibles dès maintenant. Si vous avez des questions ou besoin d’assistance, notre équipe est à votre disposition. </p>
+                                                                    <p style="color: #ffffff;">Merci de votre confiance et bienvenue dans une nouvelle ère digitale avec <span>Digital Morocco Premium.</span> </p>
+                                                                    <p style="color: #ffffff;">À très bientôt !<br/>L’équipe <span>Digital Morocco</span> </p>
 																</div>
 															</td>
 														</tr>

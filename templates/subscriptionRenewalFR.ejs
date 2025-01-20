@@ -180,7 +180,7 @@
 															<td class="pad">
 																<h1
 																	style="margin: 0; color: #7747FF; direction: ltr; font-family: 'Montserrat', 'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif; font-size: 34px; font-weight: 700; letter-spacing: normal; line-height: 120%; text-align: center; margin-top: 0; margin-bottom: 0; mso-line-height-alt: 40.8px;">
-																	<span style="color: #00cdae;"><strong><%= t('subscription.upgrade.title') %></strong></span></h1>
+																	<span style="color: #00cdae;"><strong><%= t('subscription.renewal.title') %></strong></span></h1>
 															</td>
 														</tr>
 													</table>
@@ -194,18 +194,19 @@
 															<td class="pad">
 																<div
 																	style="color:#ffffff;font-family:Montserrat, Trebuchet MS, Lucida Grande, Lucida Sans Unicode, Lucida Sans, Tahoma, sans-serif;font-size:16px;line-height:150%;text-align:left;mso-line-height-alt:24px;">
-																	<p style="color: #ffffff;"><%= t('subscription.upgrade.greeting', {name: name}) %></p>
-                                                                    <p style="color: #ffffff;"><%= t('subscription.upgrade.message') %> <br/> <%= t('subscription.upgrade.message1') %></p>
+																	<p style="color: #ffffff;"><%= t('subscription.renewal.greeting', {name: name}) %></p>
+                                                                    <p style="color: #ffffff;"><%= t('subscription.renewal.message') %></p>
+                                                                    <p style="color: #ffffff;"><%= t('subscription.renewal.message1') %></p>
 
-                                                                    <!-- Upgrade details -->
-                                                                    <p style="color: #ffffff;"><%= t('subscription.new.details') %></p>
+                                                                    <!-- Renewal details -->
+                                                                    <p style="color: #ffffff;">Détails de votre abonnement : </p>
                                                                     <ul style="list-style: disc;">
                                                                         <p style="color: #ffffff;"><%= t('subscription.new.plan' , {plan: planName} ) %></p>
                                                                         <p style="color: #ffffff;"><%= t('subscription.new.price', {price: price}) %></p>
                                                                         <p style="color: #ffffff;"><%= t('subscription.new.duration', {duration: duration}) %></p>
                                                                     </ul>
-																	<p style="color: #ffffff;"><%= t('subscription.upgrade.thank_you') %></p>
-																	<p style="color: #ffffff;"><%= t('subscription.new.best_regards') %> <br/><%= t('subscription.new.team_signature') %></span></p>
+                                                                    <p style="color: #ffffff;"><%= t('subscription.renewal.thank_you') %></p>
+                                                                    <p style="color: #ffffff;">À très bientôt !<br/>L’équipe <span>Digital Morocco</span> </p>
 																</div>
 															</td>
 														</tr>
