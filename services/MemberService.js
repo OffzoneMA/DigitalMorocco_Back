@@ -206,12 +206,25 @@ const createOrUpdateInvestor = async (userId, companyData, logo) => {
             existingInvestor.country = companyData.country;
             existingInvestor.location = companyData.country;
             existingInvestor.city = companyData.city?.name;
-            existingInvestor.stage = companyData.stage;
+            existingInvestor.investmentStage = companyData.investmentStages?.[0];
+            existingInvestor.investmentStages = companyData.investmentStages;
             existingInvestor.companyType = companyData.companyType;
             existingInvestor.type = companyData.companyType;
+            existingInvestor.foundedDate = companyData.foundedDate?.trim() !== '' ? companyData.foundedDate : new Date();
+            existingInvestor.headquarter = companyData.headquarter;
+            existingInvestor.phoneNumber = companyData.phoneNumber;
+            existingInvestor.investmentCapacity = companyData.investmentCapacity;
+            existingInvestor.investorType = companyData.companyType;
+            existingInvestor.fund = companyData.fund;
+            existingInvestor.fundingRound = companyData.fundingRound;
+            existingInvestor.acquisitions = companyData.acquisitions;
+            existingInvestor.PreferredInvestmentIndustry = companyData.PreferredInvestmentIndustry;
+            existingInvestor.numberOfInvestment = companyData.numberOfInvestment;
+            existingInvestor.numberOfExits = companyData.numberOfExits;
             existingInvestor.taxNbr = companyData.taxIdentfier;
             existingInvestor.corporateNbr = companyData.corporateNbr;
             existingInvestor.address = companyData.address;
+            existingInvestor.lastFundingType = companyData.lastFundingType;
 
             if (logo) {
                 const logoLink = await uploadService.uploadFile(logo, `Investors/${existingInvestor.owner}`, 'logo');
@@ -292,46 +305,6 @@ const createTestCompany = async (userId, role, companyData, logo) => {
             throw new Error('Rôle non valide fourni');
     }
 };
-
-// const createTestCompany = async (userId, companyData , logo) => {
-//     try {
-//         const existingMember = await Member.findOne({ owner: userId });
-//         const actionType = existingMember?.companyName ? 'company_updated' : 'company_created';
-//         if (existingMember) {
-//             existingMember.companyName = companyData.companyName;
-//             existingMember.legalName = companyData.legalName;
-//             existingMember.website = companyData.website;
-//             existingMember.contactEmail = companyData.contactEmail;
-//             existingMember.desc = companyData.desc;
-//             existingMember.country = companyData.country;
-//             existingMember.city = companyData.city;
-//             existingMember.stage = companyData.stage;
-//             existingMember.companyType = companyData.companyType;
-//             existingMember.taxNbr = companyData.taxIdentfier;
-//             existingMember.corporateNbr = companyData.corporateNbr;
-
-//             if (logo) {
-//                 let logoLink = await uploadService.uploadFile(logo, "Members/" + existingMember.owner + "", 'logo')
-//                 existingMember.logo = logoLink
-//             }
-
-//             const savedMember = await existingMember.save();
-//             await ActivityHistoryService.createActivityHistory(
-//                 userId,
-//                 actionType,
-//                 { targetName: companyData.companyName, targetDesc: `` }
-//             );
-
-//             return {
-//                 message: 'Nouvelle entreprise ajoutée avec succès',
-//                 company: savedMember,
-//             };
-//         }
-//         throw new Error("Le membre n'existe pas pour cet utilisateur");
-//     } catch (error) {
-//         throw new Error("Impossible de créer l'entreprise : " + error.message);
-//     }
-// };
 
 const CreateMember = async (userId, member) => {
     try {

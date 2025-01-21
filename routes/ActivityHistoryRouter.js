@@ -96,6 +96,138 @@ router.get('/', ActivityHistoryController.getAllActivityHistoriesController);
 
 /**
  * @swagger
+ * /activity-history/members:
+ *   get:
+ *     summary: Récupère les historiques d'activité des membres
+ *     tags: [Activity History]
+ *   parameters:
+ *     dateParam:
+ *       in: query
+ *       name: date
+ *       schema:
+ *         type: string
+ *         format: date
+ *     userIdsParam:
+ *       in: query
+ *       name: userIds
+ *       schema:
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Liste des historiques des membres
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/ActivityHistory'
+ *       500:
+ *         description: Erreur serveur
+ */
+router.get('/members', ActivityHistoryController.getMemberHistories);
+
+/**
+ * @swagger
+ * /activity-history/investors:
+ *   get:
+ *     summary: Récupère les historiques d'activité des investisseurs
+ *     tags: [ActivityHistory]
+ *   parameters:
+ *     dateParam:
+ *       in: query
+ *       name: date
+ *       schema:
+ *         type: string
+ *         format: date
+ *     userIdsParam:
+ *       in: query
+ *       name: userIds
+ *       schema:
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Liste des historiques des investisseurs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/ActivityHistory'
+ *       500:
+ *         description: Erreur serveur
+ */
+router.get('/investors', ActivityHistoryController.getInvestorHistories);
+
+/**
+ * @swagger
+ * /activity-history/partners:
+ *   get:
+ *     summary: Récupère les historiques d'activité des partenaires
+ *     tags: [ActivityHistory]
+ *   parameters:
+ *     dateParam:
+ *       in: query
+ *       name: date
+ *       schema:
+ *         type: string
+ *         format: date
+ *     userIdsParam:
+ *       in: query
+ *       name: userIds
+ *       schema:
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Liste des historiques des partenaires
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/ActivityHistory'
+ *       500:
+ *         description: Erreur serveur
+ */
+router.get('/partners', ActivityHistoryController.getPartnerHistories);
+
+/**
+ * @swagger
+ * /activity-history/users:
+ *   get:
+ *     summary: Récupère la liste des utilisateurs présents dans l'historique
+ *     tags: [ActivityHistory]
+ *     parameters:
+ *       roleParam:
+ *         in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *           enum: [member, investor, partner]
+ *     responses:
+ *       200:
+ *         description: Liste des utilisateurs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                   name:
+ *                     type: string
+ *                   email:
+ *                     type: string
+ *                   role:
+ *                     type: string
+ *       500:
+ *         description: Erreur serveur
+ */
+router.get('/users', ActivityHistoryController.getHistoryUsers);
+
+/**
+ * @swagger
  * /activity-history/{id}:
  *   delete:
  *     summary: Delete Activity History

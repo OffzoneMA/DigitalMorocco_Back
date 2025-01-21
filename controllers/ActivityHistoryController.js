@@ -40,5 +40,66 @@ async function deleteActivity(req, res) {
     }
 }
 
+
+const getAllHistories = async (req, res) => {
+    try {
+        const { date, userIds } = req.query;
+        // Convertir la chaîne userIds en tableau si nécessaire
+        const userIdsArray = userIds ? JSON.parse(userIds) : null;
+        
+        const histories = await ActivityHistoryService.getAllActivityHistories(date, userIdsArray);
+        res.status(200).json(histories);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const getMemberHistories = async (req, res) => {
+    try {
+        const { date, userIds } = req.query;
+        const userIdsArray = userIds ? JSON.parse(userIds) : null;
+        
+        const histories = await ActivityHistoryService.getMemberActivityHistories(date, userIdsArray);
+        res.status(200).json(histories);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const getInvestorHistories = async (req, res) => {
+    try {
+        const { date, userIds } = req.query;
+        const userIdsArray = userIds ? JSON.parse(userIds) : null;
+        
+        const histories = await ActivityHistoryService.getInvestorActivityHistories(date, userIdsArray);
+        res.status(200).json(histories);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const getPartnerHistories = async (req, res) => {
+    try {
+        const { date, userIds } = req.query;
+        const userIdsArray = userIds ? JSON.parse(userIds) : null;
+        
+        const histories = await ActivityHistoryService.getPartnerActivityHistories(date, userIdsArray);
+        res.status(200).json(histories);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const getHistoryUsers = async (req, res) => {
+    try {
+        const { role } = req.query;
+        const users = await ActivityHistoryService.getUsersByRole(role);
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = { createActivityHistoryController, getAllActivityHistoriesController ,
-getAllActivityHistoriesByUser , deleteActivity };
+getAllActivityHistoriesByUser , deleteActivity , getMemberHistories , getInvestorHistories , 
+getPartnerHistories , getHistoryUsers };

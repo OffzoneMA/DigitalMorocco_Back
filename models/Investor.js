@@ -19,9 +19,13 @@ const InvestorSchema = new mongoose.Schema({
     taxNbr: String,
     corporateNbr: String,
     companyType: String,
-    foundedDate: String,
+    foundedDate: {
+        type: Date,
+        default: Date.now
+    },
     headquarter: String,
     investmentStage: String,
+    investmentStages: [String],
     lastFundingType: String,
     phoneNumber : String,
     emailAddress: String,
