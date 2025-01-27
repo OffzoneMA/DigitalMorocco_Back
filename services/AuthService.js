@@ -9,7 +9,7 @@ const ProjectService = require('../services/ProjectService');
 const EventService = require('../services/EventService');
 const InvestorContactService = require('../services/InvestorContactService');
 const SponsorService = require('../services/SponsorService');
-
+const metrics = require('../metrics/prometheus');
 
 // const signInUser = async (u) => {
 //   let user = await User.findOne({ email: u.email.toLowerCase() })
@@ -114,10 +114,21 @@ const signInUser = async (u) => {
           throw new Error("Incorrect password.");
       }
 
+      metrics.userSessionsCounter.inc({
+        user_type: user.role,
+        auth_method: 'password',
+        status: 'success'
+    });
+
       const result = await generateUserInfos(user);
       return result;
 
   } catch (error) {
+    metrics.userSessionsCounter.inc({
+      user_type: 'unknown',
+      auth_method: 'password',
+      status: 'failed'
+    });
       console.error("Error in signInUser:", error.message);
       throw new Error(error.message || "An error occurred during sign-in.");
   }

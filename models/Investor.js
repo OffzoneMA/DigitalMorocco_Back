@@ -30,7 +30,7 @@ const InvestorSchema = new mongoose.Schema({
     phoneNumber : String,
     emailAddress: String,
     investmentCapacity: Number,
-    image: String,
+    logo: String,
     investorType: String,
     fund: Number,
     fundingRound : String,

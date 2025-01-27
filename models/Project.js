@@ -52,8 +52,11 @@ const ProjectSchema = new mongoose.Schema({
     },
     // stages: [String],
     stage: String ,
-    shareWithInvestors :[String]
-
+    shareWithInvestors :[String],
+    isDeleted: {
+        type: Boolean,
+        default: false
+    }
 })
 
 

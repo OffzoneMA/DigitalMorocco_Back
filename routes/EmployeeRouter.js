@@ -331,4 +331,27 @@ router.get("/:employeeId", EmployeeController.getEmployeeById);
 router.get("/", EmployeeController.getAllEmployees);
 
 
+/**
+ * @swagger
+ * /employee/{employeeId}/deleteImage:
+ *   delete:
+ *     summary: Delete an employee image
+ *     description: Delete an employee image from the database by their ID.
+ *     tags: [Employees]
+ *     parameters:
+ *       - in: path
+ *         name: employeeId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The employee id
+ *     responses:
+ *       200:
+ *         description: Employee deleted successfully
+ *       404:
+ *         description: Employee not found
+ */
+router.delete("/:employeeId/deleteImage", EmployeeController.deleteEmployeeImage);
+
+
 module.exports = router;

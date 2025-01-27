@@ -10,6 +10,7 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const prometheus = require('./metrics/prometheus.js');
 require("dotenv").config();
 
 // Import des configurations
@@ -58,11 +59,16 @@ class App {
         
         this.setupMiddlewares();
         this.setupI18n();
+        this.setupMetrics(); 
         this.setupRoutes();
         this.setupSwagger();
     }
 
     setupMiddlewares() {
+
+        // Ajouter le middleware Prometheus avant les autres middlewares
+        this.app.use(prometheus.metricsMiddleware);
+
         // Configuration des middlewares de base
         this.app.use(cors());
         this.app.use(express.json({ limit: "100mb" }));
@@ -80,6 +86,7 @@ class App {
                 maxAge: 24 * 60 * 60 * 1000 // 24 heures
             }
         }));
+
     }
 
     setupI18n() {
@@ -102,7 +109,26 @@ class App {
         i18n.changeLanguage('fr');
     }
 
+    setupMetrics() {
+        // Endpoint pour les métriques Prometheus
+        this.app.get('/metrics', prometheus.metricsEndpoint);
+        
+        // Mise à jour du compteur d'utilisateurs actifs lors des connexions
+        this.app.use((req, res, next) => {
+            if (req.session && req.session.passport && req.session.passport.user) {
+                prometheus.activeUsersGauge.inc();
+                req.on('end', () => {
+                    prometheus.activeUsersGauge.dec();
+                });
+            }
+            next();
+        });
+    }
+
     setupRoutes() {
+      // Ajouter l'endpoint des métriques avant les autres routes
+    //   this.app.get('/metrics', PrometheusService.metricsMiddleware());
+
       // Route de test i18n
       this.app.get('/', (req, res) => {
           const response = `Test i18n works! ${req.t('welcome_email.title')} ${req.t('welcome_email.title1')}`;
@@ -126,6 +152,7 @@ class App {
         return new Promise((resolve) => {
             const server = this.app.listen(port, () => {
                 console.log('🚀 Server is running on port:', port);
+                console.log('Metrics are exposed at : ' , `${process.env.BACKEND_URL}/metrics`);
                 
                 // Initialisation de Passport
                 this.app.use(passport.initialize());

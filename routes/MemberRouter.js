@@ -1403,4 +1403,22 @@ router.post('/contact-requests/draft', AuthController.AuthenticateMember , Membe
  */
 router.put('/contact-requests/finalize', upload.single('document'), AuthController.AuthenticateMember , MemberController.finalizeContactRequest);
 
+
+/**
+ * @swagger
+ * /members/deleteLogo:
+ *   delete:
+ *     summary: Delete a company logo
+ *     tags: [Members]
+ *     responses:
+ *       200:
+ *         description: Company logo deleted successfully
+ *       404:
+ *         description: Company logo not found
+ *       500:
+ *         description: Internal server error
+ */
+router.delete("/deleteLogo", AuthController.AuthenticateUser, MemberController.deleteCompanyLogo);
+    
+
 module.exports = router;

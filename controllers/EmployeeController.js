@@ -85,11 +85,21 @@ const getAllEmployeesByUserWithoutPagination = async (req, res) => {
     }
 };
 
+const deleteEmployeeImage = async (req, res) => {
+    try {
+        const { employeeId } = req.params;
+        const result = await EmployeeService.deleteEmployeeImage(employeeId);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
 module.exports = {
     createEmployee,
     updateEmployee,
     getEmployeeById,
     deleteEmployee,
-    getAllEmployees,
+    getAllEmployees, deleteEmployeeImage ,
     getAllEmployeesByUser, getAllEmployeesByUserWithoutPagination
 };

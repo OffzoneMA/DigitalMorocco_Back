@@ -1,7 +1,9 @@
 const Member = require("../models/Member");
+const User = require("../models/User");
 const SubscriptionLogs = require("../models/SubscriptionLogs");
 const Subscription = require("../models/Subscription");
 const Investor = require("../models/Investor");
+const Partner = require("../models/Partner");
 const Project = require("../models/Project");
 const SubscriptionService = require("../services/SubscriptionService");
 const SubscriptionPlanService = require("../services/SubscriptionPlanService");
@@ -98,8 +100,6 @@ async function searchMembers(searchTerm) {
         throw new Error('Error searching members: ' + error.message);
     }
 }
-
-
 async function updateMember(memberId, updateData) {
     try {
         const updatedMember = await Member.findByIdAndUpdate(memberId, updateData, { new: true });
@@ -111,7 +111,6 @@ async function updateMember(memberId, updateData) {
         throw error;
     }
 }
-
 const createCompany = async (userId, companyData) => {
     try {
         const existingMember = await Member.findOne({ owner: userId });
@@ -228,7 +227,7 @@ const createOrUpdateInvestor = async (userId, companyData, logo) => {
 
             if (logo) {
                 const logoLink = await uploadService.uploadFile(logo, `Investors/${existingInvestor.owner}`, 'logo');
-                existingInvestor.image = logoLink;
+                existingInvestor.logo = logoLink;
             }
 
             const savedInvestor = await existingInvestor.save();
@@ -808,6 +807,64 @@ const deleteMember = async (userId) => {
 
 }
 
+const deleteCompanyLogo = async (userId) => {
+    try {
+      let existingCompany;
+      const user = await User.findById(userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+      // Récupérer les données de l'entreprise selon le rôle
+      switch (user.role?.toLowerCase()) {
+        case 'member':
+          existingCompany = await Member.findOne({ owner: userId });
+          break;
+        case 'investor':
+          existingCompany = await Investor.findOne({ owner: userId });
+          break;
+        case 'partner':
+          existingCompany = await Partner.findOne({ owner: userId });
+          break;
+        default:
+          throw new Error('Rôle non valide fourni');
+      }
+  
+      // Vérifier si l'entreprise existe
+      if (!existingCompany) {
+        throw new Error(`Aucune entreprise trouvée pour le rôle ${user?.role}`);
+      }
+  
+      // Vérifier si l'image ou le logo existe
+      const logoField = 'logo';
+      if (!existingCompany[logoField]) {
+        throw new Error("Aucun logo ou image associé à cette entreprise");
+      }
+  
+      // Extraire le chemin et le nom du fichier depuis l'URL
+      const [path, filename] = uploadService.extractPathAndFilename(existingCompany[logoField]);
+  
+      // Supprimer le fichier du stockage
+      const isDeleted = await uploadService.deleteFile(filename, path);
+      if (!isDeleted) {
+        throw new Error("Échec de la suppression du logo ou de l'image");
+      }
+  
+      // Mettre à jour l'entreprise pour supprimer la référence au logo
+      existingCompany[logoField] = null;
+      await existingCompany.save();  
+      await ActivityHistoryService.createActivityHistory(
+            userId,
+            'company_logo_deleted',
+            { targetName: existingCompany?.companyName, targetDesc: `Company logo deleted.` }
+    );
+      return { success: true, message: "Logo supprimé avec succès" };
+    } catch (error) {
+      console.error("Error deleting company logo:", error.message);
+      return { success: false, message: error.message };
+    }
+};
+  
+
 const getMemberById = async (id) => {
     return await Member.findById(id);
 }
@@ -1212,5 +1269,5 @@ const getPathFromUrl = (url) => {
      getAllProjectsForMember , updateProject , updateMember , createTestCompany , updateMember , 
      getMemberInfoByUserId , CreateMemberWithLogo , searchProjects , searchMembers , searchInvestorsForMember , 
      getDistinctInvestorsValuesForMember , getAllProjectsForMemberWithoutPagination , 
-    getContactRequestsForMember , getInvestorsForMemberWithoutPagination} 
+    getContactRequestsForMember , getInvestorsForMemberWithoutPagination , deleteCompanyLogo ,} 
 

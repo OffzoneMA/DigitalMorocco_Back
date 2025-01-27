@@ -46,5 +46,12 @@ const deleteFolder = async (path) => {
     }
 }
 
+const extractPathAndFilename = (fullPath) => {
+    const parts = fullPath.split('/');
+    const filename = parts.pop(); // Récupérer le dernier élément (nom du fichier)
+    const path = parts.join('/'); // Récupérer le reste du chemin
+    return [path, filename];
+};
+  
 
-module.exports = { deleteFolder,uploadFile, deleteFile }
+module.exports = { deleteFolder,uploadFile, deleteFile  , extractPathAndFilename}

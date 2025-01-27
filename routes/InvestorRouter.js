@@ -319,10 +319,10 @@ router.route("/all").get(InvestorController.getAllInvestors)
  *                 type: number
  *                 description: The investment capacity of the investor
  *                 example: 1000000
- *               image:
+ *               logo:
  *                 type: string
- *                 description: The image URL of the investor
- *                 example: "http://example.com/image.jpg"
+ *                 description: The logo URL of the investor
+ *                 example: "http://example.com/logo.jpg"
  *               investorType:
  *                 type: string
  *                 description: The type of investor
@@ -913,9 +913,9 @@ router.put("/byId/:id", InvestorController.getInvestorById);
  *               investmentCapacity:
  *                 type: number
  *                 description: The investment capacity of the investor
- *               image:
+ *               logo:
  *                 type: string
- *                 description: The image URL of the investor
+ *                 description: The logo URL of the investor
  *               investorType:
  *                 type: string
  *                 description: The type of investor

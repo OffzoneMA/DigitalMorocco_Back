@@ -27,7 +27,6 @@ const getAllInvestors = async (args) => {
     const totalCount = await Investor.countDocuments(filter);
     const totalPages = Math.ceil(totalCount / pageSize);
     const investors = await Investor.find(filter)
-        // .select("name description image linkedin_link type location PreferredInvestmentIndustry dateCreated numberOfInvestment numberOfExits document")
         .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } } })
         .skip(skip)
         .sort({ dateCreated: 'desc' })
@@ -292,7 +291,6 @@ const getAllInvestorsWithoutPagination = async (args) => {
     }
 
     const investors = await Investor.find(filter)
-        // .select("name description image linkedin_link type location PreferredInvestmentIndustry dateCreated numberOfInvestment numberOfExits document")
         .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } } }).sort({ dateCreated: 'desc' });
 
     return  investors;
@@ -302,7 +300,7 @@ const getAllInvestorsWithoutPagination = async (args) => {
 const getInvestors = async () => {
     const totalCount = await Investor.countDocuments();
     const investors = await Investor.find()
-        .select("name description image linkedin_link type location PreferredInvestmentIndustry dateCreated numberOfInvestment numberOfExits document")
+        .select("name description logo linkedin_link type location PreferredInvestmentIndustry dateCreated numberOfInvestment numberOfExits document")
         .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } } }).sort({ dateCreated: 'desc' }); 
 
     return { investors, totalCount }
@@ -514,6 +512,7 @@ async function getInvestorDetailsRequest(memberId, investorId) {
             const fakeData = {
                 ...investor?._doc, // copy all original fields
                 image: "fake_image_url.jpg",
+                logo: "fake_logo_url.jpg",
                 name: "Digital Morocco Partner",
                 companyName: "Digital Morocco Partner",
                 legalName: "Digital Morocco Partner",
