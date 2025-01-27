@@ -227,13 +227,16 @@ async function updateProjectStatus(projectId, newStatus) {
 // };
 
 
-// services/projectService.js
-
 const getTopSectors = async () => {
   try {
     const sectors = await Project.aggregate([
       {
-        $match: { isDeleted: false } // Exclure les projets supprimés
+        $match: { 
+          $or: [
+            { isDeleted: false }, // Projets explicitement non supprimés
+            { isDeleted: { $exists: false } } // Projets sans champ `isDeleted`
+          ]
+        }
       },
       {
         $group: {
@@ -248,17 +251,31 @@ const getTopSectors = async () => {
         $limit: 5
       },
       {
+        // Étape pour ajouter le total global des projets
+        $group: {
+          _id: null, // Pas de regroupement ici
+          total: { $sum: "$count" },
+          sectors: { $push: { sector: "$_id", count: "$count" } }
+        }
+      },
+      {
+        // Étape pour calculer les pourcentages
+        $unwind: "$sectors"
+      },
+      {
         $project: {
-          sector: "$_id",
-          _id: 0,
-          count: 1,
-          percentage: { 
+          sector: "$sectors.sector",
+          count: "$sectors.count",
+          percentage: {
             $multiply: [
-              { $divide: ["$count", { $sum: "$count" }] }, // Utilise la somme totale des projets
+              { $divide: ["$sectors.count", "$total"] },
               100
-            ] 
+            ]
           }
         }
+      },
+      {
+        $sort: { count: -1 } // Réapplique le tri après le calcul des pourcentages
       }
     ]);
 
