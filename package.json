@@ -9,6 +9,7 @@
   "scripts": {
     "serve": "nodemon index.js",
     "start": "node index.js",
+    "dev": "nodemon index.js",
     "test": "jest --reporters=default --reporters=jest-html-reporters"
   },
   "keywords": [],

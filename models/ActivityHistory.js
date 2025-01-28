@@ -9,7 +9,7 @@ const ActivityHistorySchema  = new mongoose.Schema({
             'company_updated' , 'document_created', 'project_logo_deleted', 'project_logo_updated',
             'document_updated', 'document_deleted', 'document_shared', 'employee_image_deleted',
             'profile_updated', 'employee_added', 'employee_removed', 'company_logo_deleted',
-            'employee_updated', 'legal_document_created', 'legal_document_updated', 
+            'employee_updated', 'legal_document_created', 'legal_document_updated', 'employee_deleted',
             'legal_document_deleted' , 'legal_document_download' ,  'contact_sent',
             'event_ticket_download' , 'event_ticket_view' , 'event_registered' ,
             'event_attended' , 'password_changed', 'account_deleted', 'password_reset',
