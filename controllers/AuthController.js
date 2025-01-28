@@ -113,7 +113,6 @@ const AuthenticateUserOrAdmin = async (req, res, next) => {
 
   })
 }
-
 const AuthenticateMember = async (req, res, next) => {
   const authHeader = req.headers['authorization']
   const token = authHeader && authHeader.split(' ')[1]
@@ -135,7 +134,6 @@ const AuthenticateMember = async (req, res, next) => {
   })
 }
 
-
 const AuthenticateInvestor = async (req, res, next) => {
   const authHeader = req.headers['authorization']
   const token = authHeader && authHeader.split(' ')[1]
@@ -155,7 +153,6 @@ const AuthenticateInvestor = async (req, res, next) => {
 
   })
 }
-
 const AuthenticateSubMember = async (req, res, next) => {
   const authHeader = req.headers['authorization']
   const token = authHeader && authHeader.split(' ')[1]

@@ -33,6 +33,10 @@ const SubscriptionSchema = new mongoose.Schema({
     discountCode: { 
         type: String 
     },
+    isCanceled: {
+        type: Boolean,
+        default: false
+    },
     metadata: { 
         type: mongoose.Schema.Types.Mixed 
     }

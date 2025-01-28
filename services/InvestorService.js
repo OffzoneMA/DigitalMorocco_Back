@@ -27,7 +27,6 @@ const getAllInvestors = async (args) => {
     const totalCount = await Investor.countDocuments(filter);
     const totalPages = Math.ceil(totalCount / pageSize);
     const investors = await Investor.find(filter)
-        // .select("name description image linkedin_link type location PreferredInvestmentIndustry dateCreated numberOfInvestment numberOfExits document")
         .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } } })
         .skip(skip)
         .sort({ dateCreated: 'desc' })
@@ -99,6 +98,80 @@ const getAllInvestors = async (args) => {
 //     return { investors, totalPages, hasDraftRequest, mostRecentDraftInvestorId };
 // };
 
+// const getAllInvestorsForMember = async (memberId, args) => {
+//     const requestedPage = parseInt(args?.page, 10) || 1;
+//     const pageSize = parseInt(args?.pageSize, 10) || 8;
+//     const skip = (requestedPage - 1) * pageSize;
+
+//     const filter = {};
+
+//     if (args.type) filter.type = { $in: args.type.split(',') }; 
+//     if (args.location) filter.location = { $regex: new RegExp(args.location, 'i') };
+//     if (args.industries) filter.PreferredInvestmentIndustry = { $in: args.industries.split(',') };
+
+//     // Compter le nombre total de documents correspondant au filtre
+//     const totalCount = await Investor.countDocuments(filter);
+//     const totalPages = Math.ceil(totalCount / pageSize);
+
+//     // Si la page demandée dépasse le nombre total de pages, retourner la première page
+//     const currentPage = requestedPage > totalPages ? 1 : requestedPage;
+//     const finalSkip = (currentPage - 1) * pageSize;
+
+//     // Récupérer les investisseurs correspondant au filtre
+//     const investors = await Investor.find(filter)
+//         .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } } })
+//         .skip(finalSkip)
+//         .sort({ dateCreated: 'desc' })
+//         .limit(pageSize)
+//         .lean();
+
+//     // Regrouper les requêtes de contact
+//     const contactRequests = await ContactRequest.aggregate([
+//         {
+//             $match: {
+//                 investor: { $in: investors.map(inv => inv._id) },
+//                 member: memberId,
+//                 status: { $in: ['Draft', 'Accepted', 'Approved'] }
+//             }
+//         },
+//         { $sort: { dateCreated: -1 } },
+//         {
+//             $group: {
+//                 _id: "$investor",
+//                 hasDraftContactRequest: { $max: { $eq: ["$status", "Draft"] } },
+//                 hasAcceptedContactRequest: { $max: { $in: ["$status", ["Accepted", "Approved"]] } },
+//                 mostRecentDraftDate: { $max: { $cond: [{ $eq: ["$status", "Draft"] }, "$dateCreated", null] } }
+//             }
+//         }
+//     ]);
+
+//     let hasDraftRequest = false;
+//     let mostRecentDraftInvestorId = null;
+//     let mostRecentDraftDate = null;
+
+//     // Ajouter les données des requêtes de contact aux investisseurs
+//     for (const investor of investors) {
+//         const reqInfo = contactRequests.find(req => req._id.equals(investor._id));
+//         if (reqInfo) {
+//             investor.hasDraftContactRequest = reqInfo.hasDraftContactRequest;
+//             investor.hasAcceptedContactRequest = reqInfo.hasAcceptedContactRequest;
+//             if (reqInfo.hasDraftContactRequest && (!mostRecentDraftDate || reqInfo.mostRecentDraftDate > mostRecentDraftDate)) {
+//                 hasDraftRequest = true;
+//                 mostRecentDraftDate = reqInfo.mostRecentDraftDate;
+//                 mostRecentDraftInvestorId = investor._id;
+//             }
+//         }
+//     }
+
+//     return { 
+//         investors, 
+//         totalPages, 
+//         currentPage, 
+//         hasDraftRequest, 
+//         mostRecentDraftInvestorId 
+//     };
+// };
+
 const getAllInvestorsForMember = async (memberId, args) => {
     const requestedPage = parseInt(args?.page, 10) || 1;
     const pageSize = parseInt(args?.pageSize, 10) || 8;
@@ -109,6 +182,29 @@ const getAllInvestorsForMember = async (memberId, args) => {
     if (args.type) filter.type = { $in: args.type.split(',') }; 
     if (args.location) filter.location = { $regex: new RegExp(args.location, 'i') };
     if (args.industries) filter.PreferredInvestmentIndustry = { $in: args.industries.split(',') };
+
+    // Ajouter la recherche par mot-clé
+    if (args.keywords?.trim()) {
+        const normalizedKeyword = args.keywords
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/\p{Diacritic}/gu, "");
+
+        filter.$or = [
+            { name: { $regex: new RegExp(normalizedKeyword, 'i') } },
+            { type: { $regex: new RegExp(normalizedKeyword, 'i') } },
+            { location: { $regex: new RegExp(normalizedKeyword, 'i') } },
+            { PreferredInvestmentIndustry: { $regex: new RegExp(normalizedKeyword, 'i') } }
+        ];
+
+        // Ajouter la recherche sur les champs numériques si le mot-clé est un nombre
+        if (!isNaN(Number(normalizedKeyword))) {
+            filter.$or.push(
+                { numberOfInvestment: Number(normalizedKeyword) },
+                { numberOfExits: Number(normalizedKeyword) }
+            );
+        }
+    }
 
     // Compter le nombre total de documents correspondant au filtre
     const totalCount = await Investor.countDocuments(filter);
@@ -173,7 +269,10 @@ const getAllInvestorsForMember = async (memberId, args) => {
     };
 };
 
-
+// Fonction utilitaire pour échapper les caractères spéciaux dans les regex
+const escapeRegExp = (string) => {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 const getAllInvestorsWithoutPagination = async (args) => {
 
@@ -192,7 +291,6 @@ const getAllInvestorsWithoutPagination = async (args) => {
     }
 
     const investors = await Investor.find(filter)
-        // .select("name description image linkedin_link type location PreferredInvestmentIndustry dateCreated numberOfInvestment numberOfExits document")
         .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } } }).sort({ dateCreated: 'desc' });
 
     return  investors;
@@ -202,7 +300,7 @@ const getAllInvestorsWithoutPagination = async (args) => {
 const getInvestors = async () => {
     const totalCount = await Investor.countDocuments();
     const investors = await Investor.find()
-        .select("name description image linkedin_link type location PreferredInvestmentIndustry dateCreated numberOfInvestment numberOfExits document")
+        .select("name description logo linkedin_link type location PreferredInvestmentIndustry dateCreated numberOfInvestment numberOfExits document")
         .populate({ path: 'owner', select: 'displayName', match: { displayName: { $exists: true } } }).sort({ dateCreated: 'desc' }); 
 
     return { investors, totalCount }
@@ -386,8 +484,16 @@ async function getInvestorDetailsRequest(memberId, investorId) {
             status: 'Draft'
         });
 
+        const InProgressRequest = await ContactRequest.findOne({
+            member: memberId,
+            investor: investorId,
+            status: 'In Progress'
+        });
+
         const hasDraftContactRequest = !!draftRequest; // true if a draft request exists
         const draftRequestId = draftRequest?._id || null; // Get the draft request ID if it exists
+
+        const hasInProgressRequest = !!InProgressRequest; // true if a draft request exists
 
         if (acceptedInvestor || hasApprovedRequests) {
             // If the investor has accepted or approved at least one request, retrieve full details
@@ -406,6 +512,7 @@ async function getInvestorDetailsRequest(memberId, investorId) {
             const fakeData = {
                 ...investor?._doc, // copy all original fields
                 image: "fake_image_url.jpg",
+                logo: "fake_logo_url.jpg",
                 name: "Digital Morocco Partner",
                 companyName: "Digital Morocco Partner",
                 legalName: "Digital Morocco Partner",
@@ -420,7 +527,8 @@ async function getInvestorDetailsRequest(memberId, investorId) {
                 status: "pending",
                 details: fakeData,
                 hasDraftContactRequest,
-                draftRequestId
+                draftRequestId ,
+                hasInProgressRequest
             };
         }
     } catch (error) {

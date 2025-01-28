@@ -1,6 +1,8 @@
 const Project = require("../models/Project");
 const ActivityHistoryService = require('../services/ActivityHistoryService');
 const MemberService = require('../services/MemberService');
+const uploadService = require('./FileService')
+const Member = require('../models/Member');
 
 const CreateProject = async (p) => {
     return await Project.create(p);
@@ -20,7 +22,7 @@ const ProjectByNameExists = async (name) => {
 
 const getProjects = async(args)=> {
     try {
-        const projects = await Project.find().skip(args.start ? args.start : null).limit(args.qt ? args.qt : null);;
+        const projects = await Project.find({isDeleted: false }).skip(args.start ? args.start : null).limit(args.qt ? args.qt : null);;
         return projects;
     } catch (error) {
         throw error;
@@ -83,7 +85,7 @@ async function addMilestone(projectId, milestoneData) {
         }
         const member = await MemberService.getMemberById(project?.owner)
 
-        await Project.findByIdAndDelete(projectId);
+        await Project.findByIdAndUpdate(projectId, { isDeleted: true });
 
         await ActivityHistoryService.createActivityHistory(
           member?.owner,
@@ -97,28 +99,55 @@ async function addMilestone(projectId, milestoneData) {
     }
 }
 
+// const countProjectsByMember = async () => {
+//   try {
+//       const results = await Project.aggregate([
+//           {
+//               $group: {
+//                   _id: "$owner",
+//                   projectCount: { $sum: 1 }
+//               }
+//           }
+//       ]);
+
+//       const formattedResults = results.map(result => ({
+//           memberId: result._id,
+//           projectCount: result.projectCount
+//       }));
+
+//       return formattedResults;
+//   } catch (error) {
+//       console.error("Error counting projects by member:", error);
+//       throw error;
+//   }
+// };
+
 const countProjectsByMember = async () => {
   try {
-      const results = await Project.aggregate([
-          {
-              $group: {
-                  _id: "$owner",
-                  projectCount: { $sum: 1 }
-              }
-          }
-      ]);
+    const results = await Project.aggregate([
+      {
+        $match: { isDeleted: false } // Exclure les projets supprimés
+      },
+      {
+        $group: {
+          _id: "$owner",
+          projectCount: { $sum: 1 }
+        }
+      }
+    ]);
 
-      const formattedResults = results.map(result => ({
-          memberId: result._id,
-          projectCount: result.projectCount
-      }));
+    const formattedResults = results.map(result => ({
+      memberId: result._id,
+      projectCount: result.projectCount
+    }));
 
-      return formattedResults;
+    return formattedResults;
   } catch (error) {
-      console.error("Error counting projects by member:", error);
-      throw error;
+    console.error("Error counting projects by member:", error);
+    throw error;
   }
 };
+
 
 /**
  * Compte le nombre de projets pour un membre donné.
@@ -128,13 +157,17 @@ const countProjectsByMember = async () => {
  */
 const countProjectsByMemberId = async (memberId) => {
   try {
-      const projectCount = await Project.countDocuments({ owner: memberId });
-      return projectCount;
+    const projectCount = await Project.countDocuments({
+      owner: memberId,
+      isDeleted: false // Exclure les projets supprimés
+    });
+    return projectCount;
   } catch (error) {
-      console.error(`Error counting projects for member ${memberId}:`, error);
-      throw error;
+    console.error(`Error counting projects for member ${memberId}:`, error);
+    throw error;
   }
 };
+
 
 async function updateProjectStatus(projectId, newStatus) {
   const validStatuses = ["In Progress", "Active", "Stand by"];
@@ -163,38 +196,96 @@ async function updateProjectStatus(projectId, newStatus) {
   return project;
 }
 
+// const getTopSectors = async () => {
+//   // Get total number of projects
+//   const totalProjects = await Project.countDocuments();
+
+//   const sectors = await Project.aggregate([
+//     {
+//       $group: {
+//         _id: "$sector",
+//         count: { $sum: 1 }
+//       }
+//     },
+//     {
+//       $sort: { count: -1 }
+//     },
+//     {
+//       $limit: 5
+//     },
+//     {
+//       $project: {
+//         sector: "$_id",
+//         _id: 0,
+//         count: 1,
+//         percentage: { $multiply: [{ $divide: ["$count", totalProjects] }, 100] }
+//       }
+//     }
+//   ]);
+
+//   return sectors;
+// };
+
+
 const getTopSectors = async () => {
-  // Get total number of projects
-  const totalProjects = await Project.countDocuments();
-
-  const sectors = await Project.aggregate([
-    {
-      $group: {
-        _id: "$sector",
-        count: { $sum: 1 }
+  try {
+    const sectors = await Project.aggregate([
+      {
+        $match: { 
+          $or: [
+            { isDeleted: false }, // Projets explicitement non supprimés
+            { isDeleted: { $exists: false } } // Projets sans champ `isDeleted`
+          ]
+        }
+      },
+      {
+        $group: {
+          _id: "$sector",
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { count: -1 }
+      },
+      {
+        $limit: 5
+      },
+      {
+        // Étape pour ajouter le total global des projets
+        $group: {
+          _id: null, // Pas de regroupement ici
+          total: { $sum: "$count" },
+          sectors: { $push: { sector: "$_id", count: "$count" } }
+        }
+      },
+      {
+        // Étape pour calculer les pourcentages
+        $unwind: "$sectors"
+      },
+      {
+        $project: {
+          sector: "$sectors.sector",
+          count: "$sectors.count",
+          percentage: {
+            $multiply: [
+              { $divide: ["$sectors.count", "$total"] },
+              100
+            ]
+          }
+        }
+      },
+      {
+        $sort: { count: -1 } // Réapplique le tri après le calcul des pourcentages
       }
-    },
-    {
-      $sort: { count: -1 }
-    },
-    {
-      $limit: 5
-    },
-    {
-      $project: {
-        sector: "$_id",
-        _id: 0,
-        count: 1,
-        percentage: { $multiply: [{ $divide: ["$count", totalProjects] }, 100] }
-      }
-    }
-  ]);
+    ]);
 
-  return sectors;
+    return sectors;
+  } catch (error) {
+    console.error("Error fetching top sectors:", error);
+    throw error;
+  }
 };
 
-
-// services/projectService.js
 
 const getAllProjects = async (args) => {
   try {
@@ -203,7 +294,7 @@ const getAllProjects = async (args) => {
       const skip = (page - 1) * pageSize;
 
       // Base filter to find projects owned by the member
-      const filter = { };
+      const filter = {isDeleted: false};
 
       // Filter by visibility if provided
       if (args.visibility) {
@@ -271,21 +362,105 @@ const updateProject = async (projectId, updateData) => {
 };
 
 async function deleteProjectDocument(projectId, documentId) {
-  const project = await Project.findById(projectId);
-  if (!project) throw new Error("Project not found");
+  try {
+    // Vérification que projectId et documentId sont valides
+    if (!projectId || !documentId) {
+      throw new Error("Project ID and Document ID are required.");
+    }
 
-  // Filter out the document to delete
-  const documentIndex = project.documents.findIndex(doc => doc._id.toString() === documentId);
-  if (documentIndex === -1) throw new Error("Document not found");
+    // Trouver le projet
+    const project = await Project.findById(projectId);
+    if (!project) {
+      throw new Error("Project not found");
+    }
 
-  project.documents.splice(documentIndex, 1); // Remove the document
-  await project.save(); // Save the updated project
+    // Trouver le document à supprimer
+    const documentIndex = project?.documents.findIndex(doc => doc._id.toString() === documentId);
+    if (documentIndex === -1) {
+      throw new Error("Document not found");
+    }
 
-  return { message: "Document deleted successfully" };
+    // Récupérer le document pour la suppression du fichier
+    const document = project.documents[documentIndex];
+
+    // Supprimer le document du tableau
+    project.documents.splice(documentIndex, 1);
+
+    // Vérification de l'existence du fichier avant la suppression
+    if (document && document.name) {
+      try {
+        // Suppression du fichier via le service
+        const filePath = `Members/${project.owner}/Project_documents/${document.name}`;
+        await uploadService.deleteFile(filePath);
+        console.log(`File ${document.name} deleted successfully from storage.`);
+      } catch (fileError) {
+        console.error("Error deleting file:", fileError);
+        // Vous pouvez lancer une nouvelle erreur si la suppression du fichier échoue
+        throw new Error("Failed to delete the document file from storage.");
+      }
+    }
+
+    // Sauvegarder le projet après suppression
+    await project.save();
+    console.log("Project updated successfully after document deletion.");
+
+    return { message: "Document deleted successfully" };
+  } catch (error) {
+    console.error("Error deleting project document:", error.message);
+    throw new Error(error.message);  // Re-throw the error to be handled by the caller
+  }
 }
+
+const getFileNameFromURL = (url) => {
+  try {
+      const decodedUrl = decodeURIComponent(url);
+      const matches = decodedUrl.match(/([^\/]+)(?=\?|$)/);
+      return matches ? matches[0] : null;
+  } catch (error) {
+      console.error('Error extracting filename from URL:', error);
+      return null;
+  }
+};
+
+async function deleteProjectLogo(projectId) {
+  // Vérification que projectId est valide
+  if (!projectId) {
+    throw new Error("Project ID is required.");
+  }
+  // Trouver le projet
+  const project = await Project.findById(projectId);
+  if (!project) {
+    throw new Error("Project not found");
+  }
+  // Trouver le propriétaire du projet
+  const member = await MemberService.getMemberById(project?.owner);
+  if (!member) {
+    throw new Error("Member not found");
+  }
+  // Supprimer le logo du projet
+  if (project?.logo) {
+    try {
+      // Suppression du fichier via le service
+      const oldLogoName = getFileNameFromURL(project.logo);
+      if (oldLogoName) {
+          await uploadService.deleteFile(oldLogoName, `Members/${member.owner}/Project_logos`);
+          console.log('file deleted')
+      }
+
+      const updatedProject = await Project.findByIdAndUpdate(projectId, { logo: null }, { new: true });
+      await ActivityHistoryService.createActivityHistory(member.owner, 'project_logo_deleted', { targetName: project?.name, targetDesc: `Logo deleted from project ${project._id}` , for: updatedProject?.name });
+      return updatedProject;
+    } catch (fileError) {
+      // Vous pouvez lancer une nouvelle erreur si la suppression du fichier échoue
+      throw new Error("Failed to delete the logo file from storage.");
+    }
+  }
+}
+
 
 module.exports = { getProjects , CreateProject, getProjectById, ProjectByNameExists, 
     getProjectByMemberId , deleteProject, addMilestone , removeMilestone , 
     countProjectsByMember , countProjectsByMemberId , updateProjectStatus , 
-  getTopSectors  , getAllProjects , getDistinctValues , updateProject , deleteProjectDocument
+  getTopSectors  , getAllProjects , getDistinctValues , updateProject , deleteProjectDocument ,
+  deleteProjectLogo
 }; 

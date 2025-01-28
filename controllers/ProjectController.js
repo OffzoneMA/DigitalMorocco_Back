@@ -125,7 +125,18 @@ async function deleteProjectDocument(req, res) {
   }
 }
 
+async function deleteProjectLogo (req, res) {
+  try {
+      const { projectId } = req.params;
+      const result = await ProjectService.deleteProjectLogo(projectId);
+      res.status(200).json(result);
+  } catch (error) {
+      res.status(400).json({ error: error.message });
+  }
+}
+
 module.exports = {  getprojects , deleteProject , getProjectById , addMilestone , 
   removeMilestone , updateProjectStatus , getTopSectors , getAllProjects , 
-  getDistinctValuesForField , updateProject , deleteProjectDocument
+  getDistinctValuesForField , updateProject , deleteProjectDocument , 
+  deleteProjectLogo
 }

@@ -109,10 +109,77 @@
       "messageReceived": "sent you the message below from the Digital Morocco website:",
         "reachOut": "If necessary, you can reach out to the user at",
         "pleaseAddress": "Please address this issue at your earliest convenience to ensure the user receives the necessary support."
-    }
+    },
     
-    
-    
-    
-  }
+    "subscription": {
+      "new": {
+        "title": "Welcome to Digital Morocco Premium! 🎉",
+        "greeting": "Hello {{name}},",
+        "welcome_message": "We are thrilled to welcome you to the Digital Morocco Premium community! 🎊",
+        "welcome_message1": "With your subscription, you now have access to exclusive features and premium benefits designed to help you achieve your goals with ease.",
+        "details": "Your Subscription Details: ",
+        "plan": "Plan: {{plan}}",
+        "price": "Price: {{price}} MAD",
+        "duration": "Duration: {{duration}} months",
+        "feel_free": "Feel free to explore all the Premium features available to you right away. If you have any questions or need assistance, our team is here to help. ",
+        "welcome_bonus": "🎁 Special Welcome Bonus: {{bonus}}",
+        "features_title": "Your Premium Benefits Include:",
+        "get_started": "Ready to get started?",
+        "support_message": "Our support team is here to help you make the most of your subscription.",
+        "contact_support": "If you have any questions, don't hesitate to contact us.",
+        "thank_you": "Thank you for trusting us, and welcome to a new digital era with Digital Morocco Premium. ",
+        "best_regards": "Best regards,",
+        "team_signature": "The Digital Morocco Team"
+      },
+      "renewal": {
+        "title": "Your subscription has been successfully renewed! 🎉",
+        "greeting": "Hello {{name}},",
+        "message": "We are pleased to inform you that your subscription has been successfully renewed for a new period. 🎊",
+        "message1": "You will continue to enjoy all the features and benefits of your current plan.",
+        "renewal_date": "Next Expire Date: {{date}}",
+        "plan": "Plan: {{plan}}",
+        "price": "Price: {{price}} MAD",
+        "duration": "Duration: {{duration}} months",
+        "discount": "Loyalty Discount: Save {{discount}}%",
+        "confirmation": "Your subscription has been successfully renewed.",
+        "benefits_reminder": "Continue enjoying all your premium benefits:",
+        "support_message": "Need assistance? Our support team is always here to help.",
+        "thank_you": "Thank you for your continued trust. If you have any questions or need assistance, our team is here to help. "
+      },
+      "upgrade": {
+        "title": "Your subscription has been successfully updated! 🎉",
+        "greeting": "Hello {{name}},",
+        "message": "We are pleased to inform you that your subscription has been successfully updated. 🎊",
+        "message1": "With this update, you now have access to new features and benefits that will help you continue exploring our platform and achieving your goals.",
+        "plan_change": "Your Plan Upgrade Details",
+        "from_plan": "Previous Plan: {{plan}}",
+        "to_plan": "New Plan: {{plan}}",
+        "new_price": "New Price: {{price}} MAD",
+        "new_benefits": "New Benefits Unlocked",
+        "effective_immediately": "Your new benefits are available immediately!",
+        "support_message": "Questions about your new features? We're here to help!",
+        "thank_you": "Thank you for your trust and for being part of our community. If you have any questions or need assistance, our team is here to support you. "
+      },
+      "cancellation": {
+        "title": "Confirmation of Subscription Cancellation",
+        "greeting": "Hello {{name}},",
+        "message": "We’re writing to confirm that your Digital Morocco Premium subscription has been successfully canceled. ",
+        "confirmation": "Here's what you need to know:",
+        "current_subscription": "Current Plan: {{plan}} Plan",
+        "end_date": "End Date: {{date}}",
+        "access_info": "You will continue to have access to all Premium features until the end of your current billing period. After this date, your account will automatically revert to the free version, and you will no longer be charged. ",
+        "after_cancellation": "We’re sorry to see you go and hope you’ve enjoyed the benefits of our Premium services. If you have any suggestions to improve your experience or if you wish to reactivate your subscription in the future, you can do so directly from your account or by contacting us. ",
+        "after_details": [
+          "Your account will automatically switch to the Free plan",
+          "You'll maintain access to your basic account features",
+          "Your saved data and settings will be preserved"
+        ],
+        "change_mind": "Changed your mind? You can easily reactivate your subscription anytime before {{date}}.",
+        "feedback_request": "We value your feedback. What made you decide to cancel?",
+        "support_message": "If you have any questions, our support team is available to assist you.",
+        "farewell": "Thank you for your time with Digital Morocco Premium.",
+        "thank_you": "Thank you for being part of the Digital Morocco community. We remain available for any questions or assistance you may need. "
+      }
+    }   
+}
   

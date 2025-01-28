@@ -137,6 +137,10 @@ router.route("/").get(AuthController.AuthenticateSubMemberOrAdmin, InvestorContr
  *         name: location
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: keywords
+ *         schema:
+ *           type: string
  *         description: Filter by location
  *       - in: query
  *         name: industries
@@ -315,10 +319,10 @@ router.route("/all").get(InvestorController.getAllInvestors)
  *                 type: number
  *                 description: The investment capacity of the investor
  *                 example: 1000000
- *               image:
+ *               logo:
  *                 type: string
- *                 description: The image URL of the investor
- *                 example: "http://example.com/image.jpg"
+ *                 description: The logo URL of the investor
+ *                 example: "http://example.com/logo.jpg"
  *               investorType:
  *                 type: string
  *                 description: The type of investor
@@ -414,9 +418,6 @@ router.post('/', InvestorController.addInvestor);
  *   get:
  *     summary: Récupérer la liste des demandes d'investisseurs
  *     tags: [Investors]
- *     description: >
- *       Renvoie la liste des demandes d'investisseurs avec les informations suivantes :
- *       user, linkedin_link, dateCreated, status, communicationStatus, Note.
  *     responses:
  *       '200':
  *         description: OK - La liste des demandes d'investisseurs a été récupérée avec succès.
@@ -486,7 +487,6 @@ router.get('/investor-requests', InvestorController.getInvestorRequests);
  * /api/investor-requests:
  *   get:
  *     summary: Récupérer la liste des demandes d'investisseurs
- *     description: Renvoie la liste des demandes d'investisseurs avec les informations suivantes : user, linkedin_link, dateCreated, status, communicationStatus, Note.
  *     responses:
  *       '200':
  *         description: OK - La liste des demandes d'investisseurs a été récupérée avec succès.
@@ -913,9 +913,9 @@ router.put("/byId/:id", InvestorController.getInvestorById);
  *               investmentCapacity:
  *                 type: number
  *                 description: The investment capacity of the investor
- *               image:
+ *               logo:
  *                 type: string
- *                 description: The image URL of the investor
+ *                 description: The logo URL of the investor
  *               investorType:
  *                 type: string
  *                 description: The type of investor

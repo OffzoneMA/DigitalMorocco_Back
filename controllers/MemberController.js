@@ -371,12 +371,22 @@ const finalizeContactRequest = async (req, res) => {
     }
 };
 
+const deleteCompanyLogo = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const result = await MemberService.deleteCompanyLogo(userId);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
 module.exports = {  addCompanyToMember,getContacts,getMembers, createEnterprise, getByName, createProject, 
     contactRequest, getContactRequests , createCompany  ,createMember ,getTestAllMembers , 
     getInvestorsForMember , getContactRequestsForMember , getAllProjectsForMember , updateProject , 
      getUniqueCountries , getUniqueStages , getUniqueCompanyTypes , createTestCompany ,
     updateMember , shareProject , CreateMemberWithLogo , getDistinctInvestorFieldValues ,
 getDistinctRequestFieldValues , getAllProjectsForMemberWithoutPagination  , getInvestorsForMemberWithoutPagination , 
-createDraftContactRequest , finalizeContactRequest 
+createDraftContactRequest , finalizeContactRequest , deleteCompanyLogo  ,
 };
 

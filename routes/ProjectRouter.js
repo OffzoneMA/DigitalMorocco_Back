@@ -95,6 +95,55 @@ router.get('/top-sectors', ProjectController.getTopSectors);
  */
 router.get('/all', ProjectController.getAllProjects);
 
+/**
+ * @swagger
+ * /projects:
+ *   get:
+ *     summary: Retrieve all projects
+ *     tags: [Projects]
+ *     responses:
+ *       200:
+ *         description: A list of the top 5 sectors with project counts and percentages
+ *         content:
+ *       500:
+ *         description: Failed to retrieve top sectors
+ */
+router.get('/', ProjectController.getprojects);
+
+/**
+ * @swagger
+ * /projects/distinct/{field}:
+ *   get:
+ *     summary: Get distinct values for a specified field in projects
+ *     tags: [Projects]
+ *     description: Retrieve a list of unique values for a specific field (e.g., sector, country) in projects.
+ *     parameters:
+ *       - in: path
+ *         name: field
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The field to retrieve distinct values for (e.g., "sector", "stage", "country").
+ *     responses:
+ *       200:
+ *         description: A list of distinct values for the specified field
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 field:
+ *                   type: string
+ *                   description: The field name for which distinct values were requested.
+ *                 values:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       500:
+ *         description: Server error
+ */
+router.get('/distinct/:field', ProjectController.getDistinctValuesForField);
+
 
 /**
  * @swagger
@@ -371,53 +420,29 @@ router.put('/:projectId/update', ProjectController.updateProject);
  */
 router.delete('/:projectId/documents/:documentId', ProjectController.deleteProjectDocument);
 
-/**
- * @swagger
- * /projects:
- *   get:
- *     summary: Retrieve all projects
- *     tags: [Projects]
- *     responses:
- *       200:
- *         description: A list of the top 5 sectors with project counts and percentages
- *         content:
- *       500:
- *         description: Failed to retrieve top sectors
- */
-router.get('/', ProjectController.getprojects);
 
 /**
  * @swagger
- * /projects/distinct/{field}:
- *   get:
- *     summary: Get distinct values for a specified field in projects
+ * /projects/{projectId}/deleteLogo:
+ *   delete:
+ *     summary: Delete project logo
  *     tags: [Projects]
- *     description: Retrieve a list of unique values for a specific field (e.g., sector, country) in projects.
+ *     description: Remove a project logo by projectId.
  *     parameters:
  *       - in: path
- *         name: field
+ *         name: projectId
  *         required: true
+ *         description: ID of the project
  *         schema:
  *           type: string
- *         description: The field to retrieve distinct values for (e.g., "sector", "stage", "country").
  *     responses:
  *       200:
- *         description: A list of distinct values for the specified field
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 field:
- *                   type: string
- *                   description: The field name for which distinct values were requested.
- *                 values:
- *                   type: array
- *                   items:
- *                     type: string
- *       500:
- *         description: Server error
+ *         description: Logo deleted successfully
+ *       400:
+ *         description: Error message
+ *       404:
+ *         description: Project or document not found
  */
-router.get('/distinct/:field', ProjectController.getDistinctValuesForField);
+router.delete('/:projectId/deleteLogo', ProjectController.deleteProjectLogo);
 
 module.exports = router
