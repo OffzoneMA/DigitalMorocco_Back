@@ -107,6 +107,77 @@
     "messageReceived": "vous a envoyé le message ci-dessous depuis le site Digital Morocco :",
         "reachOut": "Si nécessaire, vous pouvez contacter l'utilisateur à",
         "pleaseAddress": "Veuillez traiter cette question dans les plus brefs délais pour garantir que l'utilisateur reçoive le support nécessaire."
+  },
+  "subscription": {
+    "new": {
+      "title": "Bienvenue parmi nos membres Premium ! 🎉",
+      "greeting": "Bonjour {{name}},",
+      "welcome_message": "Nous sommes enchantés de vous accueillir dans la communauté des membres Premium de Digital Morocco ! 🎊",
+      "welcome_message1": "Grâce à votre abonnement, vous profitez désormais d’un accès privilégié à des fonctionnalités avancées et à des avantages exclusifs qui vous permettront d’atteindre vos objectifs avec efficacité.",
+      "details": "Détails de votre abonnement : ",
+      "plan": "Plan : {{plan}}",
+      "price": "Prix : {{price}} MAD",
+      "duration": "Durée : {{duration}} mois",
+      "feel_free": "N’hésitez pas à explorer toutes les options Premium disponibles dès maintenant. Si vous avez des questions ou besoin d’assistance, notre équipe est à votre disposition. ",
+      "welcome_bonus": "🎁 Bonus de Bienvenue Spécial : {{bonus}}",
+      "features_title": "Vos Avantages Premium Incluent :",
+      "get_started": "Prêt à commencer ?",
+      "support_message": "Notre équipe de support est là pour vous aider à tirer le meilleur parti de votre abonnement.",
+      "contact_support": "Si vous avez des questions, n'hésitez pas à nous contacter.",
+      "thank_you": "Merci de votre confiance et bienvenue dans une nouvelle ère digitale avec Digital Morocco Premium. ",
+      "best_regards": "À très bientôt,",
+      "team_signature": "L’équipe Digital Morocco"
+    },
+    "renewal": {
+      "title": "Votre abonnement a été renouvelé avec succès ! 🎉",
+      "greeting": "Bonjour {{name}},",
+      "message": "Nous avons le plaisir de vous informer que votre abonnement a été renouvelé avec succès pour une nouvelle période. 🎊 ",
+      "message1": "Vous continuez ainsi à bénéficier de toutes les fonctionnalités et avantages de votre plan actuel.",
+      "renewal_date": "Prochaine Date d'expiration : {{date}}",
+      "plan": "Plan : {{plan}}",
+      "price": "Prix : {{price}} MAD",
+      "duration": "Durée : {{duration}} mois",
+      "discount": "Remise Fidélité : Économisez {{discount}}%",
+      "confirmation": "Votre abonnement a été renouvelé avec succès.",
+      "benefits_reminder": "Continuez à profiter de tous vos avantages premium :",
+      "support_message": "Besoin d'aide ? Notre équipe de support est toujours là pour vous.",
+      "thank_you": "Nous vous remercions pour votre fidélité. Si vous avez des questions ou besoin d’assistance, notre équipe reste à votre disposition pour vous accompagner. "
+    },
+    "upgrade": {
+      "title": "Votre abonnement a été modifié avec succès ! 🎉",
+      "greeting": "Bonjour {{name}},",
+      "message": "Nous avons le plaisir de vous informer que votre abonnement a été mis à jour avec succès. 🎊",
+      "message1": "Grâce à cette mise à jour, vous bénéficiez désormais de nouvelles fonctionnalités et d'avantages qui vous permettront de continuer à explorer notre plateforme et à atteindre vos objectifs.",
+      "plan_change": "Détails de votre Mise à Niveau",
+      "from_plan": "Plan Précédent : {{plan}}",
+      "to_plan": "Nouveau Plan : {{plan}}",
+      "new_price": "Nouveau Prix : {{price}} MAD",
+      "new_benefits": "Nouveaux Avantages Débloqués",
+      "effective_immediately": "Vos nouveaux avantages sont disponibles immédiatement !",
+      "support_message": "Des questions sur vos nouvelles fonctionnalités ? Nous sommes là pour vous aider !",
+      "thank_you": "Nous vous remercions pour votre confiance et pour faire partie de notre communauté. Si vous avez des questions ou besoin d’assistance, notre équipe est à votre disposition pour vous accompagner. "
+    },
+    "cancellation": {
+      "title": "Confirmation de l'annulation de votre abonnement",
+      "greeting": "Bonjour {{name}},",
+      "message": "Nous vous confirmons que votre abonnement Digital Morocco Premium a été annulé avec succès. ",
+      "confirmation": "Voici ce que vous devez savoir :",
+      "current_subscription": "Abonnement actuel : Plan {{plan}}",
+      "end_date": "Date de fin : {{date}}",
+      "access_info": "Vous continuerez à bénéficier de toutes les fonctionnalités Premium jusqu’à la fin de votre période de facturation en cours. Après cette date, votre compte passera automatiquement à la version gratuite et vous ne serez plus facturé. ",
+      "after_cancellation": "Nous sommes désolés de vous voir partir et espérons que vous avez apprécié les avantages de nos services Premium. Si vous avez des suggestions pour améliorer votre expérience ou si vous souhaitez réactiver votre abonnement à l’avenir, vous pouvez le faire directement depuis votre compte ou en nous contactant. ",
+      "after_details": [
+        "Votre compte passera automatiquement au plan Gratuit",
+        "Vous conserverez l'accès aux fonctionnalités de base de votre compte",
+        "Vos données enregistrées et vos paramètres seront préservés"
+      ],
+      "change_mind": "Vous avez changé d'avis ? Vous pouvez réactiver votre abonnement à tout moment avant le {{date}}.",
+      "feedback_request": "Nous attachons une grande importance à votre avis. Qu'est-ce qui vous a poussé à annuler ?",
+      "support_message": "Si vous avez des questions, notre équipe d'assistance est à votre disposition pour vous aider.",
+      "farewell": "Merci pour le temps passé avec Digital Morocco Premium.",
+      "thank_you": "Merci d’avoir fait partie de la communauté Digital Morocco. Nous restons à votre disposition pour toute question ou assistance. "
+    }
+
   }
 
 }

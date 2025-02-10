@@ -188,9 +188,12 @@ const CreateDraftContactRequest = async (memberId, investorId) => {
     const member = await MemberService.getMemberById(memberId);
     const investor = await InvestorService.getInvestorById(investorId);
     const subscription = await SubscriptionService.getSubscriptionsByUser(member.owner);
+    if (!member) {
+        throw new Error("Member doesn't exist");
+    }
 
-    if (!member || !investor ) {
-        throw new Error("Member or Investor  doesn't exist");
+    if (!investor ) {
+        throw new Error("Investor  doesn't exist");
     }
 
     if (subscription?.subscriptionStatus !== "active") {
@@ -244,7 +247,8 @@ const FinalizeContactRequest = async (contactRequestId, projectId, document, dat
             mimeType: document.mimetype
         } : undefined,
         requestLetter: data,
-        status: "In Progress"
+        status: "In Progress" ,
+        dateCreated : new Date()
     };
 
     // Update the contact request with project and document details
@@ -269,81 +273,160 @@ const FinalizeContactRequest = async (contactRequestId, projectId, document, dat
 };
 
 
-const shareProjectWithInvestors = async (projectId, memberId, investorIds) => {
-    const project = await ProjectService.getProjectById(projectId);
-    if (!project) {
-        throw new Error("Project doesn't exist");
-    }
+// const shareProjectWithInvestors = async (projectId, memberId, investorIds) => {
+//     const project = await ProjectService.getProjectById(projectId);
+//     if (!project) {
+//         throw new Error("Project doesn't exist");
+//     }
 
-    const member = await MemberService.getMemberById(memberId);
-    if (!member) {
-        throw new Error("Member doesn't exist");
-    }
+//     const member = await MemberService.getMemberById(memberId);
+//     if (!member) {
+//         throw new Error("Member doesn't exist");
+//     }
+
+//     const subscription = await SubscriptionService.getSubscriptionsByUser(member.owner);
+
+//     const cost = process.env.Share_Project_Cost || 100;
+//     const delay = process.env.Contact_Delay_After_Reject_by_days || 180;
+
+//     if (subscription?.subscriptionStatus !== "active") {
+//         throw new Error('Must Subscribe!');
+//     }
+
+//     if (subscription?.totalCredits < cost * investorIds.length) {
+//         throw new Error('Not Enough Credits!');
+//     }
+
+//     const results = [];
+
+//     for (const investorId of investorIds) {
+//         const investor = await InvestorService.getInvestorById(investorId);
+//         if (!investor) {
+//             results.push({ investorId, status: "Investor doesn't exist" });
+//             continue;
+//         }
+
+//         const existingRequest = await ContactRequest.findOne({ member: memberId, investor: investorId, status: { $in: ["pending", "accepted"]} , project: projectId });
+//         if (existingRequest) {
+//             results.push({ investorId, status: 'Request already exists' });
+//             continue;
+//         }
+
+//         const latestRejectedRequest = await ContactRequest.findOne({ member: memberId, investor: investorId, status: 'rejected' , project: projectId }).sort({ dateCreated: -1 });
+//         if (latestRejectedRequest) {
+//             const daysDiff = (new Date() - latestRejectedRequest.dateCreated) / (1000 * 60 * 60 * 24);
+//             if (daysDiff < delay) {
+//                 results.push({ investorId, status: `Can't make a contact request, ${Math.ceil(delay - daysDiff)} day(s) remaining` });
+//                 continue;
+//             }
+//         }
+
+//         const contact = await ContactRequest.create({ member: memberId, investor: investorId, cost , project: projectId});
+//         await Member.findByIdAndUpdate(memberId, { $push: { investorsRequestsPending: investorId }});
+//         await Investor.findByIdAndUpdate(investorId, { $push: { membersRequestsPending: memberId } });
+//         await Project.findByIdAndUpdate(projectId , {$push : {shareWithInvestors: investorId}} );
+        
+//         await Subscription.findByIdAndUpdate(subscription._id, {
+//             $inc: { totalCredits: -cost }
+//         });
+
+//         // await ActivityHistoryService.createActivityHistory(
+//         //     member.owner,
+//         //     'project_shared',
+//         //     { targetName: `${project?.name}`, targetDesc: `Project shared from member ${memberId} for project ${projectId}` , from: member?.companyName }
+//         // );
+//         // await EmailingService.sendNewProjectShareRequestEmail(investor.owner, member.companyName, member.country, project);
+
+//         results.push({ investorId, status: 'Request sent successfully' });
+//     }
+
+//     await ActivityHistoryService.createActivityHistory(
+//         member?.owner,
+//         'project_shared',
+//         { targetName: `${project?.name}`, targetDesc: `Project ${projectId} shared with investors` }
+//     );
+
+//     return results;
+// };
+
+const shareProjectWithInvestors = async (projectId, memberId, investorIds) => {
+    // Vérification préliminaire
+    const [project, member] = await Promise.all([
+        ProjectService.getProjectById(projectId),
+        MemberService.getMemberById(memberId),
+    ]);
+
+    if (!project) throw new Error("Project doesn't exist");
+    if (!member) throw new Error("Member doesn't exist");
 
     const subscription = await SubscriptionService.getSubscriptionsByUser(member.owner);
+    const cost = parseInt(process.env.Share_Project_Cost, 10) || 100;
+    const delay = parseInt(process.env.Contact_Delay_After_Reject_by_days, 10) || 180;
 
-    const cost = process.env.Share_Project_Cost || 100;
-    const delay = process.env.Contact_Delay_After_Reject_by_days || 180;
-
-    if (subscription?.subscriptionStatus !== "active") {
+    if (!subscription || subscription.subscriptionStatus !== "active") {
         throw new Error('Must Subscribe!');
     }
 
-    if (subscription?.totalCredits < cost * investorIds.length) {
+    if (subscription.totalCredits < cost * investorIds.length) {
         throw new Error('Not Enough Credits!');
     }
 
-    const results = [];
+    const investors = await Investor.find({ _id: { $in: investorIds } });
+    const validInvestorIds = investors.map(inv => inv._id.toString());
 
-    for (const investorId of investorIds) {
-        const investor = await InvestorService.getInvestorById(investorId);
-        if (!investor) {
-            results.push({ investorId, status: "Investor doesn't exist" });
-            continue;
-        }
-
-        const existingRequest = await ContactRequest.findOne({ member: memberId, investor: investorId, status: { $in: ["pending", "accepted"]} , project: projectId });
-        if (existingRequest) {
-            results.push({ investorId, status: 'Request already exists' });
-            continue;
-        }
-
-        const latestRejectedRequest = await ContactRequest.findOne({ member: memberId, investor: investorId, status: 'rejected' , project: projectId }).sort({ dateCreated: -1 });
-        if (latestRejectedRequest) {
-            const daysDiff = (new Date() - latestRejectedRequest.dateCreated) / (1000 * 60 * 60 * 24);
-            if (daysDiff < delay) {
-                results.push({ investorId, status: `Can't make a contact request, ${Math.ceil(delay - daysDiff)} day(s) remaining` });
-                continue;
+    const results = await Promise.all(
+        investorIds.map(async (investorId) => {
+            if (!validInvestorIds.includes(investorId)) {
+                return { investorId, status: "Investor doesn't exist" };
             }
-        }
 
-        const contact = await ContactRequest.create({ member: memberId, investor: investorId, cost , project: projectId});
-        await Member.findByIdAndUpdate(memberId, { $push: { investorsRequestsPending: investorId }});
-        await Investor.findByIdAndUpdate(investorId, { $push: { membersRequestsPending: memberId } });
-        await Project.findByIdAndUpdate(projectId , {$push : {shareWithInvestors: investorId}} );
-        
-        await Subscription.findByIdAndUpdate(subscription._id, {
-            $inc: { totalCredits: -cost }
-        });
+            const [existingRequest, latestRejectedRequest] = await Promise.all([
+                ContactRequest.findOne({
+                    member: memberId,
+                    investor: investorId,
+                    project: projectId,
+                    status: { $in: ["pending", "accepted"] },
+                }),
+                ContactRequest.findOne({
+                    member: memberId,
+                    investor: investorId,
+                    project: projectId,
+                    status: 'rejected',
+                }).sort({ dateCreated: -1 }),
+            ]);
 
-        // await ActivityHistoryService.createActivityHistory(
-        //     member.owner,
-        //     'project_shared',
-        //     { targetName: `${project?.name}`, targetDesc: `Project shared from member ${memberId} for project ${projectId}` , from: member?.companyName }
-        // );
-        // await EmailingService.sendNewProjectShareRequestEmail(investor.owner, member.companyName, member.country, project);
+            if (existingRequest) {
+                return { investorId, status: 'Request already exists' };
+            }
 
-        results.push({ investorId, status: 'Request sent successfully' });
-    }
+            if (latestRejectedRequest) {
+                const daysDiff = (new Date() - new Date(latestRejectedRequest.dateCreated)) / (1000 * 60 * 60 * 24);
+                if (daysDiff < delay) {
+                    return { investorId, status: `Can't make a contact request, ${Math.ceil(delay - daysDiff)} day(s) remaining` };
+                }
+            }
+
+            await Promise.all([
+                ContactRequest.create({ member: memberId, investor: investorId, cost, project: projectId }),
+                Member.findByIdAndUpdate(memberId, { $addToSet: { investorsRequestsPending: investorId } }),
+                Investor.findByIdAndUpdate(investorId, { $addToSet: { membersRequestsPending: memberId } }),
+                Project.findByIdAndUpdate(projectId, { $addToSet: { shareWithInvestors: investorId } }),
+                Subscription.findByIdAndUpdate(subscription._id, { $inc: { totalCredits: -cost } }),
+            ]);
+
+            return { investorId, status: 'Request sent successfully' };
+        })
+    );
 
     await ActivityHistoryService.createActivityHistory(
-        member?.owner,
+        member.owner,
         'project_shared',
-        { targetName: `${project?.name}`, targetDesc: `Project ${projectId} shared with investors` }
+        { targetName: project.name, targetDesc: `Project ${projectId} shared with investors` }
     );
 
     return results;
 };
+
 
 const getAllContactRequest = async (args, role, id) => {
     try {

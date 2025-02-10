@@ -29,7 +29,11 @@ const updateUser = async (userId,user) => {
         const hashedPassword = await bcrypt.hash(password, salt)
         user.password = hashedPassword
     }
-    return await User.findByIdAndUpdate(userId, user)
+    return await User.findByIdAndUpdate(
+        userId,
+        user,
+        { new: true, runValidators: true } // Met à jour et retourne le document modifié
+    );
 }
 
 const updateUserLanguageRegionService = async(userId, updates) => {
@@ -94,12 +98,12 @@ const getUserByEmail = async (email) => {
 
         const normalizedEmail = email.toLowerCase();
 
-        const user = await User.findOne({ email: normalizedEmail }); 
+        const user = await User.findOne({ email: normalizedEmail }).lean().maxTimeMS(60000); 
 
         return user || null;
     } catch (error) {
         console.error("Error fetching user by email:", error);
-        throw new Error("Failed to retrieve user.");
+        throw new Error(error);
     }
 };
 

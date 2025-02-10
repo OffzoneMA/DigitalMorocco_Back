@@ -6,6 +6,7 @@ const Member = require('../models/Member');
 const Investor = require('../models/Investor');
 const Partner = require('../models/Partner');
 const Document = require('../models/Document');
+const mongoose = require('mongoose');
 
 // async function createActivityHistory(data) {
 //     try {
@@ -63,6 +64,37 @@ const Document = require('../models/Document');
 //         throw new Error('Error creating activity history: ' + error.message);
 //     }
 // }
+// Fonction utilitaire pour créer les dates de début et fin d'une journée
+
+const getDateRange = (date) => {
+    const startDate = new Date(date);
+    startDate.setHours(0, 0, 0, 0);
+    
+    const endDate = new Date(date);
+    endDate.setHours(23, 59, 59, 999);
+    
+    return { startDate, endDate };
+};
+
+// Fonction utilitaire pour construire la requête de base avec les filtres
+const buildBaseQuery = (date, userIds) => {
+    let query = {};
+    
+    // Ajouter le filtre de date si spécifié
+    if (date) {
+        const { startDate, endDate } = getDateRange(date);
+        query.timestamp = { $gte: startDate, $lte: endDate };
+    }
+    
+    // Ajouter le filtre d'utilisateurs si spécifié
+    if (userIds && userIds.length > 0) {
+        query.user = { 
+            $in: userIds.map(id => mongoose.Types.ObjectId(id)) 
+        };
+    }
+    
+    return query;
+};
 
 async function createActivityHistory(userId, eventType, eventData) {
     const event = new ActivityHistory({
@@ -79,17 +111,72 @@ async function createActivityHistory(userId, eventType, eventData) {
     }
 }
 
-async function getAllActivityHistories() {
+async function getAllActivityHistories(date, userIds) {
     try {
-        const activityHistories = await ActivityHistory.find()
-            .populate({
-                path: 'user'
-            })
+        const query = buildBaseQuery(date, userIds);
+        
+        const activityHistories = await ActivityHistory.find(query)
+            .sort({ timestamp: -1 })
+            .populate('user')
             .exec();
 
         return activityHistories;
     } catch (error) {
         throw new Error('Error getting all activity histories: ' + error.message);
+    }
+}
+
+async function getMemberActivityHistories(date, userIds) {
+    try {
+        const query = buildBaseQuery(date, userIds);
+        
+        const memberHistories = await ActivityHistory.find(query)
+            .populate({
+                path: 'user',
+                match: { role: 'member' }
+            })
+            .sort({ timestamp: -1 })
+            .exec();
+
+        return memberHistories.filter(history => history.user !== null);
+    } catch (error) {
+        throw new Error('Error getting member activity histories: ' + error.message);
+    }
+}
+
+async function getInvestorActivityHistories(date, userIds) {
+    try {
+        const query = buildBaseQuery(date, userIds);
+        
+        const investorHistories = await ActivityHistory.find(query)
+            .populate({
+                path: 'user',
+                match: { role: 'investor' }
+            })
+            .sort({ timestamp: -1 })
+            .exec();
+
+        return investorHistories.filter(history => history.user !== null);
+    } catch (error) {
+        throw new Error('Error getting investor activity histories: ' + error.message);
+    }
+}
+
+async function getPartnerActivityHistories(date, userIds) {
+    try {
+        const query = buildBaseQuery(date, userIds);
+        
+        const partnerHistories = await ActivityHistory.find(query)
+            .populate({
+                path: 'user',
+                match: { role: 'partner' }
+            })
+            .sort({ timestamp: -1 })
+            .exec();
+
+        return partnerHistories.filter(history => history.user !== null);
+    } catch (error) {
+        throw new Error('Error getting partner activity histories: ' + error.message);
     }
 }
 
@@ -145,6 +232,48 @@ async function deleteActivityHistory(id) {
     }
 }
 
+async function getUsersByRole(role = null) {
+    try {
+        // Agrégation pour récupérer les utilisateurs uniques des historiques
+        const pipeline = [
+            // Faire le populate du champ user
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'user',
+                    foreignField: '_id',
+                    as: 'userDetails'
+                }
+            },
+            // Dérouler le tableau userDetails pour accéder aux propriétés
+            { $unwind: '$userDetails' },
+            // Filtrer par rôle si spécifié
+            ...(role ? [{
+                $match: {
+                    'userDetails.role': role
+                }
+            }] : []),
+            // Grouper par utilisateur pour avoir des utilisateurs uniques
+            {
+                $group: {
+                    _id: '$userDetails._id',
+                    name: { $first: '$userDetails.displayName' },
+                    email: { $first: '$userDetails.email' },
+                    role: { $first: '$userDetails.role' }
+                }
+            },
+            // Trier par nom
+            { $sort: { name: 1 } }
+        ];
+
+        const users = await ActivityHistory.aggregate(pipeline);
+        return users;
+    } catch (error) {
+        throw new Error('Error getting users from activity history: ' + error.message);
+    }
+}
+
 module.exports = {createActivityHistory ,getAllActivityHistories ,  getAllActivityHistoriesByUser , 
-    deleteActivityHistory  , searchActivityHistoriesByUser
+    deleteActivityHistory  , searchActivityHistoriesByUser , getMemberActivityHistories ,
+     getInvestorActivityHistories , getPartnerActivityHistories , getUsersByRole
  }

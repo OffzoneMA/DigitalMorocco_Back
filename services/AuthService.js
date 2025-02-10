@@ -9,7 +9,7 @@ const ProjectService = require('../services/ProjectService');
 const EventService = require('../services/EventService');
 const InvestorContactService = require('../services/InvestorContactService');
 const SponsorService = require('../services/SponsorService');
-
+const metrics = require('../metrics/prometheus');
 
 // const signInUser = async (u) => {
 //   let user = await User.findOne({ email: u.email.toLowerCase() })
@@ -61,6 +61,10 @@ const signInUser = async (u) => {
       if (!u.email || !u.password) {
           throw new Error("Email and password are required.");
       }
+  
+      if (typeof u.email !== 'string' || typeof u.password !== 'string') {
+        return res.status(400).json({ message: 'Invalid input format' });
+      }
 
       // Normalisation de l'email
       const normalizedEmail = u.email.trim().toLowerCase();
@@ -110,30 +114,77 @@ const signInUser = async (u) => {
           throw new Error("Incorrect password.");
       }
 
+      metrics.userSessionsCounter.inc({
+        user_type: user.role,
+        auth_method: 'password',
+        status: 'success'
+    });
+
       const result = await generateUserInfos(user);
       return result;
 
   } catch (error) {
+    metrics.userSessionsCounter.inc({
+      user_type: 'unknown',
+      auth_method: 'password',
+      status: 'failed'
+    });
       console.error("Error in signInUser:", error.message);
       throw new Error(error.message || "An error occurred during sign-in.");
   }
 };
 
+/**
+ * Create a new user with validation and security measures
+ * @param {Object} userData - User data to create account
+ * @returns {Promise<{accessToken: string, user: Object}>}
+ */
+const createUser = async (userData) => {
+  try {
+    // Validate required fields
+    const { email, password } = userData;
 
-const createUser = async (u) => {
-    if (await User.findOne({ email: u.email.toLowerCase() })) {
-        throw new Error('Email already exists!')
+    if (!email || !password) {
+      throw new Error('Email and password are required');
     }
-    const email = u.email.toLowerCase();
 
-    const password = u.password;
-    const hashedPassword = await bcrypt.hash(password, salt)
-    u.password = hashedPassword
-    u.email = email;
-     const user=await User.create(u)
-     const accessToken = await generateAccessToken(user)
-     return { accessToken: accessToken, user: user }
-}
+    if (typeof email !== 'string' || typeof password !== 'string') {
+      throw new Error('Invalid input format');
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    if (!/^[\w.%+-]+@[\w.-]+\.[a-zA-Z]{2,}$/.test(normalizedEmail)) {
+      throw new Error('Invalid email format');
+    }
+
+    // Check if the email already exists
+    const existingUser = await User.findOne({ email: normalizedEmail });
+    if (existingUser) {
+      throw new Error('Email already exists!');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const newUser = {
+      ...userData,
+      email: normalizedEmail,
+      password: hashedPassword,
+    };
+
+    const createdUser = await User.create(newUser);
+
+    const accessToken = await generateAccessToken(createdUser);
+
+    return {
+      accessToken,
+      user: createdUser,
+    };
+  } catch (error) {
+    throw new Error('User creation failed. Please try again.');
+  }
+};
+
 
 const getAllUsers = async () => {
   try {

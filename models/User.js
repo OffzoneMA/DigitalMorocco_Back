@@ -19,7 +19,8 @@ const UserSchema = new mongoose.Schema({
     youtubeId: String,
     email: {
         type: String,
-        unique: true
+        unique: true,
+        lowercase: true,
     },
     role: {
         type: String,
@@ -49,24 +50,44 @@ const UserSchema = new mongoose.Schema({
     metadata: {
         type: mongoose.Schema.Types.Mixed
     }
-})
+} ,
+{
+  timestamps: {
+    createdAt: "createdAt",
+    updatedAt: "updatedAt",
+  },
+});
 
 
 UserSchema.index({ email: 1 });
 
-UserSchema.pre('save', function (next) {
-    if (this.email) {
-        this.email = this.email.toLowerCase();
+// Middleware pour le nettoyage de l'email
+UserSchema.pre('save', function(next) {
+    if (this.isModified('email')) {
+        this.email = this.email.toLowerCase().trim();
     }
     next();
 });
 
-UserSchema.pre('findOneAndUpdate', function (next) {
+UserSchema.pre('findOneAndUpdate', function(next) {
     if (this._update.email) {
-        this._update.email = this._update.email.toLowerCase();
+        this._update.email = this._update.email.toLowerCase().trim();
     }
     next();
 });
+
+// Virtual pour le nom complet
+UserSchema.virtual('fullName').get(function() {
+    return `${this.firstName || ''} ${this.lastName || ''}`.trim();
+});
+
+UserSchema.statics.findActiveMembersByRole = function(role) {
+    return this.find({ 
+        role, 
+        isDeleted: false,
+        status: 'verified'
+    });
+};
 
 const User = mongoose.model("User", UserSchema)
 module.exports = User

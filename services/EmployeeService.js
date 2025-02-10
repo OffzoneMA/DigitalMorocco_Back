@@ -94,6 +94,44 @@ async function deleteEmployee(employeeId) {
     }
 }
 
+const deleteEmployeeImage = async (employeeId) => {
+    try {
+      // Récupérer les détails de l'employé depuis la base de données
+      const employee = await Employee.findById(employeeId);
+      if (!employee) {
+        throw new Error("Employee not found");
+      }
+  
+      // Vérifier si l'employé a une image associée
+      if (!employee.image) {
+        throw new Error("No image associated with this employee");
+      }
+  
+      // Extraire le chemin et le nom de fichier à partir de `imagePath`
+      const [path, filename] = uploadService.extractPathAndFilename(employee.image);
+  
+      // Supprimer l'image depuis le stockage
+      const isDeleted = await uploadService.deleteFile(filename, path);
+  
+      if (!isDeleted) {
+        throw new Error("Failed to delete the image");
+      }
+  
+      // Optionnel : Mettre à jour l'employé pour supprimer la référence à l'image
+      const updatedEmployee = await Employee.findByIdAndUpdate(employeeId, { image: null }, { new: true });
+      await ActivityHistoryService.createActivityHistory(
+            employee.createdBy,
+            'employee_image_deleted',
+            { targetName: employee.fullName, targetDesc: `Image of employee ${employee.fullName} was deleted.` }
+        );
+      return updatedEmployee;
+    } catch (error) {
+      console.error("Error deleting employee image:", error.message);
+      return { success: false, message: error.message };
+    }
+  };
+  
+
 
 // async function getAllEmployees() {
 //     try {
@@ -189,5 +227,6 @@ module.exports = {
     deleteEmployee,
     getAllEmployees,
     getAllEmployeesByUser,
-    getEmployeeByUser , searchEmployees , getAllEmployeesByUserWithoutPagination
+    getEmployeeByUser , searchEmployees , 
+    getAllEmployeesByUserWithoutPagination , deleteEmployeeImage
 };

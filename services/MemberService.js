@@ -1,7 +1,9 @@
 const Member = require("../models/Member");
+const User = require("../models/User");
 const SubscriptionLogs = require("../models/SubscriptionLogs");
 const Subscription = require("../models/Subscription");
 const Investor = require("../models/Investor");
+const Partner = require("../models/Partner");
 const Project = require("../models/Project");
 const SubscriptionService = require("../services/SubscriptionService");
 const SubscriptionPlanService = require("../services/SubscriptionPlanService");
@@ -98,8 +100,6 @@ async function searchMembers(searchTerm) {
         throw new Error('Error searching members: ' + error.message);
     }
 }
-
-
 async function updateMember(memberId, updateData) {
     try {
         const updatedMember = await Member.findByIdAndUpdate(memberId, updateData, { new: true });
@@ -111,7 +111,6 @@ async function updateMember(memberId, updateData) {
         throw error;
     }
 }
-
 const createCompany = async (userId, companyData) => {
     try {
         const existingMember = await Member.findOne({ owner: userId });
@@ -206,16 +205,29 @@ const createOrUpdateInvestor = async (userId, companyData, logo) => {
             existingInvestor.country = companyData.country;
             existingInvestor.location = companyData.country;
             existingInvestor.city = companyData.city?.name;
-            existingInvestor.stage = companyData.stage;
+            existingInvestor.investmentStage = companyData.investmentStages?.[0];
+            existingInvestor.investmentStages = companyData.investmentStages;
             existingInvestor.companyType = companyData.companyType;
             existingInvestor.type = companyData.companyType;
+            existingInvestor.foundedDate = companyData.foundedDate?.trim() !== '' ? companyData.foundedDate : new Date();
+            existingInvestor.headquarter = companyData.headquarter;
+            existingInvestor.phoneNumber = companyData.phoneNumber;
+            existingInvestor.investmentCapacity = companyData.investmentCapacity;
+            existingInvestor.investorType = companyData.companyType;
+            existingInvestor.fund = companyData.fund;
+            existingInvestor.fundingRound = companyData.fundingRound;
+            existingInvestor.acquisitions = companyData.acquisitions;
+            existingInvestor.PreferredInvestmentIndustry = companyData.PreferredInvestmentIndustry;
+            existingInvestor.numberOfInvestment = companyData.numberOfInvestment;
+            existingInvestor.numberOfExits = companyData.numberOfExits;
             existingInvestor.taxNbr = companyData.taxIdentfier;
             existingInvestor.corporateNbr = companyData.corporateNbr;
             existingInvestor.address = companyData.address;
+            existingInvestor.lastFundingType = companyData.lastFundingType;
 
             if (logo) {
                 const logoLink = await uploadService.uploadFile(logo, `Investors/${existingInvestor.owner}`, 'logo');
-                existingInvestor.image = logoLink;
+                existingInvestor.logo = logoLink;
             }
 
             const savedInvestor = await existingInvestor.save();
@@ -292,46 +304,6 @@ const createTestCompany = async (userId, role, companyData, logo) => {
             throw new Error('Rôle non valide fourni');
     }
 };
-
-// const createTestCompany = async (userId, companyData , logo) => {
-//     try {
-//         const existingMember = await Member.findOne({ owner: userId });
-//         const actionType = existingMember?.companyName ? 'company_updated' : 'company_created';
-//         if (existingMember) {
-//             existingMember.companyName = companyData.companyName;
-//             existingMember.legalName = companyData.legalName;
-//             existingMember.website = companyData.website;
-//             existingMember.contactEmail = companyData.contactEmail;
-//             existingMember.desc = companyData.desc;
-//             existingMember.country = companyData.country;
-//             existingMember.city = companyData.city;
-//             existingMember.stage = companyData.stage;
-//             existingMember.companyType = companyData.companyType;
-//             existingMember.taxNbr = companyData.taxIdentfier;
-//             existingMember.corporateNbr = companyData.corporateNbr;
-
-//             if (logo) {
-//                 let logoLink = await uploadService.uploadFile(logo, "Members/" + existingMember.owner + "", 'logo')
-//                 existingMember.logo = logoLink
-//             }
-
-//             const savedMember = await existingMember.save();
-//             await ActivityHistoryService.createActivityHistory(
-//                 userId,
-//                 actionType,
-//                 { targetName: companyData.companyName, targetDesc: `` }
-//             );
-
-//             return {
-//                 message: 'Nouvelle entreprise ajoutée avec succès',
-//                 company: savedMember,
-//             };
-//         }
-//         throw new Error("Le membre n'existe pas pour cet utilisateur");
-//     } catch (error) {
-//         throw new Error("Impossible de créer l'entreprise : " + error.message);
-//     }
-// };
 
 const CreateMember = async (userId, member) => {
     try {
@@ -490,201 +462,243 @@ const createTestProject = async (memberId, infos, documents) => {
     return project;
 };
 
-async function createProject(ownerId, projectData , pitchDeck, businessPlan , financialProjection, documentsFiles , logo) {
+async function createProject(ownerId, projectData, pitchDeck, businessPlan, financialProjection, documentsFiles, logo) {
     try {
-
-      const member = await Member.findById(ownerId);
-      if (!member) {
-        throw new Error("Member not found");
-    }
-      const project = new Project({ owner: ownerId, ...projectData });
-
-      if (logo) {
-        let logoLink = await uploadService.uploadFile(logo, "Members/" + member.owner + "/Project_logos", logo.originalname)
-        project.logo = logoLink
-    }
-
-    let Docs = [];
-
-    if (documentsFiles) {
-        for (const doc of documentsFiles) {
-            let fileLink = await uploadService.uploadFile(doc, "Members/" + member.owner + "/Project_documents", doc.originalname);
-            Docs.push({ name: doc.originalname, link: fileLink, type: doc.mimetype  , documentType:"other"});
+        const member = await Member.findById(ownerId);
+        if (!member) {
+            throw new Error("Member not found");
         }
-    }
-    if (pitchDeck) {
-        let pitchDeckLink = await uploadService.uploadFile(pitchDeck, "Members/" + member.owner + "/Project_documents", pitchDeck.originalname);
-        Docs.push({ name: pitchDeck.originalname, link: pitchDeckLink, type: pitchDeck.mimetype , documentType:"pitchDeck" });
-    }
 
-    if (businessPlan) {
-        let businessPlanLink = await uploadService.uploadFile(businessPlan, "Members/" + member.owner + "/Project_documents", businessPlan.originalname);
-        Docs.push({ name: businessPlan.originalname, link: businessPlanLink, type: businessPlan.mimetype , documentType:"businessPlan" });
-    }
+        const project = new Project({ 
+            owner: ownerId, 
+            ...projectData,
+            documents: []
+        });
 
-    if (financialProjection) {
-        let financialProjectionLink = await uploadService.uploadFile(financialProjection, "Members/" + member.owner + "/Project_documents", financialProjection.originalname);
-        Docs.push({ name: financialProjection.originalname, link: financialProjectionLink, type: financialProjection.mimetype , documentType:"financialProjection"});
-    }
+        const documents = [];
+        
+        // Gérer le logo séparément
+        if (logo) {
+            try {
+                 // Supprimer l'ancien logo s'il existe
+                 if (project.logo) {
+                    const oldLogoName = getFileNameFromURL(project.logo);
+                    if (oldLogoName) {
+                        await uploadService.deleteFile(oldLogoName, `Members/${member.owner}/Project_logos`);
+                        console.log('file deleted')
+                    }
+                }
 
-    project.documents = Docs;
+                const uniqueLogoName = generateUniqueFileName(logo.originalname);
+                const logoLink = await uploadService.uploadFile(
+                    logo, 
+                    `Members/${member.owner}/Project_logos`, 
+                    uniqueLogoName
+                );
+                project.logo = logoLink;
+            } catch (error) {
+                console.error('Logo upload failed:', error);
+                throw new Error('Logo upload failed');
+            }
+        }
 
-      const savedProject = await project.save();
+        // Fonction d'upload unique pour tous les types de documents
+        async function uploadDocument(file, documentType = "other") {
+            if (!file) return null;
+            
+            try {
+                const uniqueFileName = generateUniqueFileName(file.originalname);
+                const fileLink = await uploadService.uploadFile(
+                    file, 
+                    `Members/${member.owner}/Project_documents`, 
+                    uniqueFileName
+                );
+                
+                return {
+                    name: file.originalname,
+                    link: fileLink,
+                    type: file.mimetype,
+                    documentType
+                };
+            } catch (error) {
+                console.error(`Upload failed for ${file.originalname}:`, error);
+                throw new Error(`Upload failed for ${file.originalname}`);
+            }
+        }
 
-      // Enregistrement de l'action dans l'historique
-      await ActivityHistoryService.createActivityHistory(
-        member.owner,
-        'project_created',
-        { targetName: project.name, targetDesc: `` }
-      );
-      return savedProject;
+        // Upload des documents spéciaux un par un
+        const specialDocs = [
+            { file: pitchDeck, type: "pitchDeck" },
+            { file: businessPlan, type: "businessPlan" },
+            { file: financialProjection, type: "financialProjection" }
+        ];
+
+        for (const { file, type } of specialDocs) {
+            if (file) {
+                const doc = await uploadDocument(file, type);
+                if (doc) documents.push(doc);
+            }
+        }
+
+        // Upload des documents additionnels un par un
+        if (Array.isArray(documentsFiles)) {
+            for (const file of documentsFiles) {
+                const doc = await uploadDocument(file);
+                if (doc) documents.push(doc);
+            }
+        }
+
+        // Assigner tous les documents
+        project.documents = documents;
+
+        // Sauvegarder le projet
+        const savedProject = await project.save();
+
+        // Créer l'historique d'activité
+        await ActivityHistoryService.createActivityHistory(
+            member.owner,
+            'project_created',
+            { 
+                targetName: project.name, 
+                targetDesc: `Project created successfully with ${documents.length} documents` 
+            }
+        );
+
+        return savedProject;
+
     } catch (error) {
-      throw error;
+        console.error('Project creation error:', error);
+        throw new Error(`Failed to create project: ${error.message}`);
     }
 }
 
-async function updateProject(projectId, newData, pitchDeck, businessPlan, financialProjection , documentsFiles , logo) {
+
+async function updateProject(projectId, newData, pitchDeck, businessPlan, financialProjection, documentsFiles, logo) {
     try {
         const project = await Project.findById(projectId);
         if (!project) {
             throw new Error("Project not found");
         }
-        const projectFirstName = project?.name;
-        project.name = newData.name || project.name;
-        project.funding = newData.funding || project.funding;
-        project.totalRaised = newData.totalRaised || project.totalRaised;
-        project.currency = newData.currency || project.currency;
-        project.details = newData.details || project.details;
-        project.stage = newData.stage || project.stage;
-        project.visbility = newData.visbility|| project.visbility;
-        project.country = newData.country|| project.country;
-        project.sector = newData.sector|| project.sector;
-        project.website = newData.website || project.website;
-        project.contactEmail = newData.contactEmail || project.contactEmail;
-        project.listMember = newData.listMember || project.listMember;
-        project.status = newData.status || project.status;
 
+        const projectFirstName = project.name;
+        
+        // Mettre à jour les champs de base
+        const fieldsToUpdate = [
+            'name', 'funding', 'totalRaised', 'currency', 'details', 
+            'stage', 'visbility', 'country', 'sector', 'website', 
+            'contactEmail', 'listMember', 'status'
+        ];
+
+        fieldsToUpdate.forEach(field => {
+            if (newData[field] !== undefined) {
+                project[field] = newData[field];
+            }
+        });
+
+        // Gérer les milestones
         if (newData.milestones) {
-            const existingMilestoneNames = project.milestones.map(milestone => milestone.name);
-            newData.milestones.forEach(newMilestone => {
-              if (!existingMilestoneNames.includes(newMilestone.name)) {
-                project.milestones.push(newMilestone);
-              }
-            });
+            const existingMilestoneNames = new Set(project.milestones.map(m => m.name));
+            const newMilestones = newData.milestones.filter(m => !existingMilestoneNames.has(m.name));
+            project.milestones.push(...newMilestones);
         }
 
-        // if (newData.listMember) {
-        //     // Create a map of new members by personalEmail and workEmail
-        //     const newMembersMap = new Map(newData.listMember.map(member => [member.personalEmail + member.workEmail, member]));
-        //     // Filter out members that are no longer in the new list
-        //     project.listMember = project.listMember.filter(existingMember => {
-        //         const key = existingMember.personalEmail + existingMember.workEmail;
-        //         return newMembersMap.has(key);
-        //     });
+        const newDocuments = [...project.documents];
 
-        //     // Add or update members
-        //     newData.listMember.forEach(newMember => {
-        //     const key = newMember.personalEmail + newMember.workEmail;
-        //     const existingMemberIndex = project.listMember.findIndex(existingMember => (existingMember.personalEmail + existingMember.workEmail) === key);
-
-        //     if (existingMemberIndex !== -1) {
-        //         // Update existing member
-        //         project.listMember[existingMemberIndex] = { ...project.listMember[existingMemberIndex], ...newMember };
-        //     } else {
-        //         // Add new member
-        //         project.listMember.push(newMember);
-        //     }
-        //     });
-           
-        //   }
-        
+        // Gérer le logo séparément
         if (logo) {
-            let logoLink = await uploadService.uploadFile(logo, "Members/" + project.owner + "/Project_logos", logo.originalname)
-            project.logo = logoLink
-        }
-
-        if (newData?.deletedFiles?.length > 0) {
-            const deletedDocumentTypes = new Set(newData?.deletedFiles);
-
-            const documentsToRemove = project.documents.filter(doc => deletedDocumentTypes.has(doc.documentType));
-            project.documents = project.documents.filter(doc => !deletedDocumentTypes.has(doc.documentType));
-            
-            // Remove the files from storage
-            await Promise.all(documentsToRemove.map(async (doc) => {
-                await uploadService.deleteFile("Members/" + project.owner + "/Project_documents", doc.name);
-            }));
-        }
-
-        if (newData?.otherDeletedFiles?.length > 0) {
-            const deletedDocumentNames = new Set(newData.otherDeletedFiles);
-        
-            project.documents = project.documents.filter(
-                doc => !(doc.documentType === "other" && deletedDocumentNames.has(doc.name))
-            );
-        
-            await Promise.all(newData.otherDeletedFiles.map(async (fileName) => {
-                await uploadService.deleteFile("Members/" + project.owner + "/Project_documents", fileName);
-            }));
-        }        
-
-        if (pitchDeck) {
-            const pitchDeckLink = await uploadService.uploadFile(pitchDeck, "Members/" + project.owner + "/Project_documents", pitchDeck.originalname);
-            const existingPitchDeckIndex = project.documents.findIndex(doc => doc.documentType === "pitchDeck");
-            if (existingPitchDeckIndex !== -1) {
-                project.documents[existingPitchDeckIndex].link = pitchDeckLink;
-                project.documents[existingPitchDeckIndex].name = pitchDeck.originalname;
-                project.documents[existingPitchDeckIndex].type = pitchDeck.mimetype;
-            } else {
-                project.documents.push({ name: pitchDeck.originalname, link: pitchDeckLink, type: pitchDeck.mimetype, documentType: "pitchDeck" });
+            try {
+                const uniqueLogoName = generateUniqueFileName(logo.originalname);
+                const logoLink = await uploadService.uploadFile(
+                    logo, 
+                    `Members/${project.owner}/Project_logos`, 
+                    uniqueLogoName
+                );
+                project.logo = logoLink;
+            } catch (error) {
+                console.error('Logo upload failed:', error);
+                throw new Error('Logo upload failed');
             }
         }
 
-        if (businessPlan) {
-            const businessPlanLink = await uploadService.uploadFile(businessPlan, "Members/" + project.owner + "/Project_documents", businessPlan.originalname);
-            const existingBusinessPlanIndex = project.documents.findIndex(doc => doc.documentType === "businessPlan");
-            if (existingBusinessPlanIndex !== -1) {
-                project.documents[existingBusinessPlanIndex].link = businessPlanLink;
-                project.documents[existingBusinessPlanIndex].name = businessPlan.originalname;
-                project.documents[existingBusinessPlanIndex].type = businessPlan.mimetype;
-            } else {
-                project.documents.push({ name: businessPlan.originalname, link: businessPlanLink, type: businessPlan.mimetype, documentType: "businessPlan" });
-            }        
-        }
+        // Fonction d'upload unique
+        async function uploadDocument(file, documentType = "other") {
+            if (!file) return null;
 
-        if (financialProjection) {
-            const financialProjectionLink = await uploadService.uploadFile(financialProjection, "Members/" + project.owner + "/Project_documents", financialProjection.originalname);
-            const existingFinancialProjectionIndex = project.documents.findIndex(doc => doc.documentType === "financialProjection");
-            if (existingFinancialProjectionIndex !== -1) {
-                project.documents[existingFinancialProjectionIndex].link = financialProjectionLink;
-                project.documents[existingFinancialProjectionIndex].name = financialProjection.originalname;
-                project.documents[existingFinancialProjectionIndex].type = financialProjection.mimetype;
-            } else {
-                project.documents.push({ name: financialProjection.originalname, link: financialProjectionLink, type: financialProjection.mimetype, documentType: "financialProjection" });
-            }        
-        }
+            try {
+                const uniqueFileName = generateUniqueFileName(file.originalname);
+                const fileLink = await uploadService.uploadFile(
+                    file,
+                    `Members/${project.owner}/Project_documents`,
+                    uniqueFileName
+                );
 
-        if (documentsFiles) {
-            for (const doc of documentsFiles) {
-              const isFileExists = project.documents.some(document => document.name === doc.originalname);
-              
-              if (!isFileExists) {
-                const fileLink = await uploadService.uploadFile(doc, "Members/" + project.owner + "/Project_documents", doc.originalname);
-                project.documents.push({ name: doc.originalname, link: fileLink, type: doc.mimetype, documentType: "other" });
-              } 
+                return {
+                    name: file.originalname,
+                    link: fileLink,
+                    type: file.mimetype,
+                    documentType
+                };
+            } catch (error) {
+                console.error(`Upload failed for ${file.originalname}:`, error);
+                throw new Error(`Upload failed for ${file.originalname}`);
             }
         }
-          
+
+        // Upload et mise à jour des documents spéciaux
+        const specialDocs = [
+            { file: pitchDeck, type: "pitchDeck" },
+            { file: businessPlan, type: "businessPlan" },
+            { file: financialProjection, type: "financialProjection" }
+        ];
+
+        for (const { file, type } of specialDocs) {
+            if (file) {
+                const doc = await uploadDocument(file, type);
+                if (doc) {
+                    const existingIndex = newDocuments.findIndex(d => d.documentType === type);
+                    if (existingIndex !== -1) {
+                        newDocuments[existingIndex] = doc;
+                    } else {
+                        newDocuments.push(doc);
+                    }
+                }
+            }
+        }
+
+        // Upload et mise à jour des documents additionnels
+        if (Array.isArray(documentsFiles)) {
+            for (const file of documentsFiles) {
+                const isFileExists = newDocuments.some(doc => doc.name === file.originalname);
+                if (!isFileExists) {
+                    const doc = await uploadDocument(file);
+                    if (doc) newDocuments.push(doc);
+                }
+            }
+        }
+
+        // Mettre à jour les documents
+        project.documents = newDocuments;
+
+        // Sauvegarder les modifications
         const updatedProject = await project.save();
-        const member = await Member.findById(project?.owner)
+
+        // Créer l'historique d'activité
+        const member = await Member.findById(project.owner);
         await ActivityHistoryService.createActivityHistory(
             member.owner,
             'project_updated',
-            { targetName: projectFirstName, targetDesc: `Project updated for projectId ${projectId}` , to: project?.name }
+            { 
+                targetName: projectFirstName, 
+                targetDesc: `Project updated for projectId ${projectId}`,
+                to: project.name 
+            }
         );
+
         return updatedProject;
+
     } catch (error) {
-        console.log(error)
-        throw new Error('Error updating project');
+        console.error('Project update error:', error);
+        throw new Error(`Failed to update project: ${error.message}`);
     }
 }
 
@@ -792,6 +806,64 @@ const deleteMember = async (userId) => {
     await uploadService.deleteFolder('Members/' + userId)
 
 }
+
+const deleteCompanyLogo = async (userId) => {
+    try {
+      let existingCompany;
+      const user = await User.findById(userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+      // Récupérer les données de l'entreprise selon le rôle
+      switch (user.role?.toLowerCase()) {
+        case 'member':
+          existingCompany = await Member.findOne({ owner: userId });
+          break;
+        case 'investor':
+          existingCompany = await Investor.findOne({ owner: userId });
+          break;
+        case 'partner':
+          existingCompany = await Partner.findOne({ owner: userId });
+          break;
+        default:
+          throw new Error('Rôle non valide fourni');
+      }
+  
+      // Vérifier si l'entreprise existe
+      if (!existingCompany) {
+        throw new Error(`Aucune entreprise trouvée pour le rôle ${user?.role}`);
+      }
+  
+      // Vérifier si l'image ou le logo existe
+      const logoField = 'logo';
+      if (!existingCompany[logoField]) {
+        throw new Error("Aucun logo ou image associé à cette entreprise");
+      }
+  
+      // Extraire le chemin et le nom du fichier depuis l'URL
+      const [path, filename] = uploadService.extractPathAndFilename(existingCompany[logoField]);
+  
+      // Supprimer le fichier du stockage
+      const isDeleted = await uploadService.deleteFile(filename, path);
+      if (!isDeleted) {
+        throw new Error("Échec de la suppression du logo ou de l'image");
+      }
+  
+      // Mettre à jour l'entreprise pour supprimer la référence au logo
+      existingCompany[logoField] = null;
+      await existingCompany.save();  
+      await ActivityHistoryService.createActivityHistory(
+            userId,
+            'company_logo_deleted',
+            { targetName: existingCompany?.companyName, targetDesc: `Company logo deleted.` }
+    );
+      return { success: true, message: "Logo supprimé avec succès" };
+    } catch (error) {
+      console.error("Error deleting company logo:", error.message);
+      return { success: false, message: error.message };
+    }
+};
+  
 
 const getMemberById = async (id) => {
     return await Member.findById(id);
@@ -1158,6 +1230,38 @@ const checkMemberStatus = async (memberId) => {
 
 };
 
+// Utilitaire pour générer un nom de fichier unique
+const generateUniqueFileName = (originalName) => {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 15);
+    const extension = originalName.split('.').pop();
+    return `${timestamp}-${random}.${extension}`;
+};
+
+// Fonction utilitaire pour extraire le nom du fichier depuis l'URL Firebase
+const getFileNameFromURL = (url) => {
+    try {
+        const decodedUrl = decodeURIComponent(url);
+        const matches = decodedUrl.match(/([^\/]+)(?=\?|$)/);
+        return matches ? matches[0] : null;
+    } catch (error) {
+        console.error('Error extracting filename from URL:', error);
+        return null;
+    }
+};
+
+// Fonction utilitaire pour extraire le chemin depuis l'URL Firebase
+const getPathFromUrl = (url) => {
+    try {
+        const decodedUrl = decodeURIComponent(url);
+        const matches = decodedUrl.match(/o\/(.+?)\/[^/?#]+[^/]*$/);
+        return matches ? matches[1] : null;
+    } catch (error) {
+        console.error('Error extracting path from URL:', error);
+        return null;
+    }
+};
+
   module.exports = {checkMemberStatus, 
     createCompany,  deleteMember, getContacts, getAllMembers, createProject, checkSubscriptionStatus, 
     CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, getMemberByUserId, 
@@ -1165,5 +1269,5 @@ const checkMemberStatus = async (memberId) => {
      getAllProjectsForMember , updateProject , updateMember , createTestCompany , updateMember , 
      getMemberInfoByUserId , CreateMemberWithLogo , searchProjects , searchMembers , searchInvestorsForMember , 
      getDistinctInvestorsValuesForMember , getAllProjectsForMemberWithoutPagination , 
-    getContactRequestsForMember , getInvestorsForMemberWithoutPagination} 
+    getContactRequestsForMember , getInvestorsForMemberWithoutPagination , deleteCompanyLogo ,} 
 

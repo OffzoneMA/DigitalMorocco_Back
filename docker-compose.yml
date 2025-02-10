@@ -3,11 +3,53 @@ version: "3.9"
 services:
     app:
         container_name: container_digitalMoroccoBack_api
-        image: image_digitalmoroccoback_api
-        # restart: always
         build:
             context: .
             dockerfile: Dockerfile
             target: base
         ports:
             - "4000:4000"
+        networks:
+            - monitoring-network
+        healthcheck:
+            test: ["CMD", "wget", "-qO-", "http://localhost:4000/health"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+
+    prometheus:
+        image: prom/prometheus:latest
+        container_name: prometheus
+        ports:
+            - "9090:9090"
+        volumes:
+            - ./prometheus.yml:/etc/prometheus/prometheus.yml
+            - prometheus_data:/prometheus
+        networks:
+            - monitoring-network
+        depends_on:
+            - app
+
+    grafana:
+        image: grafana/grafana:latest
+        container_name: grafana
+        ports:
+            - "3000:3000"
+        environment:
+            - GF_SECURITY_ADMIN_USER=admin
+            - GF_SECURITY_ADMIN_PASSWORD=admin
+            - GF_USERS_ALLOW_SIGN_UP=false
+        volumes:
+            - grafana_data:/var/lib/grafana
+        networks:
+            - monitoring-network
+        depends_on:
+            - prometheus
+
+networks:
+    monitoring-network:
+        driver: bridge
+
+volumes:
+    prometheus_data:
+    grafana_data:
