@@ -1,16 +1,24 @@
 # Build stage
-FROM node:alpine as base
+FROM node:18-alpine as base
 
-# Add Python and build dependencies for potential native modules
-RUN apk add --no-cache python3 make g++
+# Add necessary build dependencies for bcrypt
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    gcc \
+    musl-dev \
+    linux-headers \
+    eudev-dev
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies and rebuild bcrypt
+RUN npm install \
+    && npm rebuild bcrypt --build-from-source
 
 # Copy application files
 COPY . .

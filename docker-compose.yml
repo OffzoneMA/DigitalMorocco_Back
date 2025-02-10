@@ -3,7 +3,6 @@ version: "3.9"
 services:
     app:
         container_name: container_digitalMoroccoBack_api
-        image: image_digitalmoroccoback_api
         build:
             context: .
             dockerfile: Dockerfile
