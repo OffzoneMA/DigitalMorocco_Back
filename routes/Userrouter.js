@@ -251,6 +251,8 @@ router.get('/auth/linkedin/signup/callback', (req, res, next) => {
         if (err || info instanceof AuthorizationError || info?.error) {
             return res.redirect(`${process.env.FRONTEND_URL}/${info?.error != undefined ? 'SignUp?error=' + info?.error + '' : 'SignUp'}`);
         }
+        console.log('Callback user object:', user);
+        console.log('Auth token:', user?.auth)
         const auth = user?.auth;
 
         const userRole = user?.user?.role;
@@ -272,6 +274,8 @@ router.get('/auth/linkedin/signin/callback', (req, res, next) => {
         if (err || info instanceof AuthorizationError || info?.error) {
             return res.redirect(`${process.env.FRONTEND_URL}/${info?.error != undefined ? 'SignIn?error=' + info?.error + '' : 'SignIn'}`);
         }
+        console.log('Callback user object:', user);
+        console.log('Auth token:', user?.auth)
         const auth = user?.auth;
 
         const userRole = user?.user?.role;
