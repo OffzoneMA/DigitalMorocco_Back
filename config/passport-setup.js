@@ -133,6 +133,7 @@ passport.use(
                 if (existingUser) {
                     const result = await generateUserInfos(existingUser)
                     const log = await UserLogService.createUserLog('Account Signin', existingUser._id);
+                    console.log("eee", result)
                     return done(null, { user: result.user, auth: result.accessToken , socialId: profile.id , provider: 'linkedin'});
                 }
 
@@ -186,6 +187,8 @@ passport.use('linkedin-signup',
                 });
 
                 const result = await generateUserInfos(newUser);
+                console.log('Result from generateUserInfos:', result);
+                console.log('AccessToken:', result.accessToken);
                 await UserLogService.createUserLog('Account Initial Signup', newUser._id);
                 await UserLogService.createUserLog('Verified', newUser._id);
 
@@ -213,6 +216,8 @@ passport.use('linkedin-signin',
 
                 if (existingUser) {
                     const result = await generateUserInfos(existingUser);
+                    console.log('Result from generateUserInfos:', result);
+                    console.log('AccessToken:', result.accessToken);
                     await UserLogService.createUserLog('Account Signin', existingUser._id);
                     return done(null, { user: result.user, auth: result.accessToken, socialId: profile.id, provider: 'linkedin' });
                 }
