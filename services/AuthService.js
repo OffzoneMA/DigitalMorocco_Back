@@ -230,36 +230,98 @@ const getAllUsersPage = async (page = 1, limit = 8, roles = [], statuses = []) =
 };
 
  
-const generateUserInfos = async (user) => {
-    const accessToken = await generateAccessToken(user)
-    let data
-    let projectCount = 0;
-    let eventCount = 0;
+// const generateUserInfos = async (user) => {
+//     const accessToken = await generateAccessToken(user)
+//     let data
+//     let projectCount = 0;
+//     let eventCount = 0;
    
-    if (user?.role?.toLowerCase() == "member"){
-        let member = await MemberService.getMemberByUserId(user._id)
-        projectCount = await ProjectService.countProjectsByMemberId(member?._id);
-        data = {
-            ...member?._doc ? member._doc : member,
-            projectCount
-        };
+//     if (user?.role?.toLowerCase() == "member"){
+//         let member = await MemberService.getMemberByUserId(user._id)
+//         projectCount = await ProjectService.countProjectsByMemberId(member?._id);
+//         data = {
+//             ...member?._doc ? member._doc : member,
+//             projectCount
+//         };
 
-    }
-    if (user?.role?.toLowerCase() == "partner") {
-        let partner = await PartnerService.getPartnerByUserId(user._id)
-        data = partner?._doc ? partner?._doc : partner
-    }
-    if (user?.role?.toLowerCase() == "investor") {
-        let investor = await InvestorService.getInvestorByUserId(user._id)
-        data = investor?._doc ? investor?._doc : investor
-    }
+//     }
+//     if (user?.role?.toLowerCase() == "partner") {
+//         let partner = await PartnerService.getPartnerByUserId(user._id)
+//         data = partner?._doc ? partner?._doc : partner
+//     }
+//     if (user?.role?.toLowerCase() == "investor") {
+//         let investor = await InvestorService.getInvestorByUserId(user._id)
+//         data = investor?._doc ? investor?._doc : investor
+//     }
 
-    eventCount = await EventService.countEventsByUserId(user?._id);
-    const result = user?._doc 
-    ? { ...user._doc, [user?.role?.toLowerCase()]: data, eventCount } 
-    : { ...user, [user?.role?.toLowerCase()]: data, eventCount };    
+//     eventCount = await EventService.countEventsByUserId(user?._id);
+//     const result = user?._doc 
+//     ? { ...user._doc, [user?.role?.toLowerCase()]: data, eventCount } 
+//     : { ...user, [user?.role?.toLowerCase()]: data, eventCount };    
     
-    return { accessToken: accessToken, user: result }
+//     return { accessToken: accessToken, user: result }
+// }
+
+const generateUserInfos = async (user) => {
+  console.log('generateUserInfos input user:', user?._id); // Debug log
+
+  const accessToken = await generateAccessToken(user);
+  console.log('Generated accessToken:', accessToken); // Debug log
+
+  let data = null;
+  let projectCount = 0;
+  let eventCount = 0;
+
+  // Vérifier si user et role existent avant de faire le toLowerCase()
+  const userRole = user?.role?.toLowerCase();
+  console.log('User role:', userRole); // Debug log
+
+  if (userRole) {
+      if (userRole === "member") {
+          let member = await MemberService.getMemberByUserId(user._id);
+          console.log('Found member:', member); // Debug log
+          
+          if (member?._id) {
+              projectCount = await ProjectService.countProjectsByMemberId(member._id);
+              data = {
+                  ...(member._doc || member),
+                  projectCount
+              };
+          }
+      }
+      else if (userRole === "partner") {
+          let partner = await PartnerService.getPartnerByUserId(user._id);
+          console.log('Found partner:', partner); // Debug log
+          data = partner?._doc || partner;
+      }
+      else if (userRole === "investor") {
+          let investor = await InvestorService.getInvestorByUserId(user._id);
+          console.log('Found investor:', investor); // Debug log
+          data = investor?._doc || investor;
+      }
+  }
+
+  eventCount = await EventService.countEventsByUserId(user?._id);
+  console.log('Event count:', eventCount); // Debug log
+
+  // Simplifier la logique de construction du résultat
+  const baseUser = user?._doc || user;
+  const result = {
+      ...baseUser,
+      eventCount
+  };
+
+  // N'ajouter les données spécifiques au rôle que si elles existent
+  if (userRole && data) {
+      result[userRole] = data;
+  }
+
+  console.log('Final result:', { accessToken, user: "user data" }); // Debug log
+
+  return { 
+      accessToken, 
+      user: result 
+  };
 }
 
 const generateUserInfosAll = async (user) => {
