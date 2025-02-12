@@ -253,11 +253,21 @@ router.get('/auth/linkedin/signup/callback', (req, res, next) => {
         }
         console.log('Callback user object:', user);
         console.log('Auth token:', user?.auth)
+
+        // Verify user object structure
+        if (!user || !user.auth) {
+            console.error('Missing user or auth token:', user);
+            return res.redirect(`${process.env.FRONTEND_URL}/SignUp?error=authentication_failed`);
+        }
+
         const auth = user?.auth;
 
         const userRole = user?.user?.role;
 
         const socialId = user?.socialId;
+
+        // Log final redirect values
+        console.log('Redirect values:', { auth, userRole, socialId });
 
         if (userRole) {
             res.redirect(`${process.env.FRONTEND_URL}/Success?auth=${auth}`);

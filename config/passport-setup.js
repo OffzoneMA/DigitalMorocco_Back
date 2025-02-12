@@ -187,8 +187,15 @@ passport.use('linkedin-signup',
                 });
 
                 const result = await generateUserInfos(newUser);
-                console.log('Result from generateUserInfos:', result);
-                console.log('AccessToken:', result.accessToken);
+                console.log('Sign Up Full result object:', JSON.stringify(result, null, 2));
+                console.log('Sign Up User object structure:', JSON.stringify(result.user, null, 2));
+                console.log('Sign Up AccessToken type:', typeof result.accessToken);
+
+                // Verify result structure
+                if (!result || !result.accessToken) {
+                    console.log('Failed to generate user information and access token');
+                }
+
                 await UserLogService.createUserLog('Account Initial Signup', newUser._id);
                 await UserLogService.createUserLog('Verified', newUser._id);
 
@@ -216,8 +223,9 @@ passport.use('linkedin-signin',
 
                 if (existingUser) {
                     const result = await generateUserInfos(existingUser);
-                    console.log('Result from generateUserInfos:', result);
-                    console.log('AccessToken:', result.accessToken);
+                    console.log('Full result object:', JSON.stringify(result, null, 2));
+                    console.log('User object structure:', JSON.stringify(result.user, null, 2));
+                    console.log('AccessToken type:', typeof result.accessToken);
                     await UserLogService.createUserLog('Account Signin', existingUser._id);
                     return done(null, { user: result.user, auth: result.accessToken, socialId: profile.id, provider: 'linkedin' });
                 }
