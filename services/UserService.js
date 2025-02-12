@@ -107,24 +107,34 @@ const getUserByEmail = async (email) => {
     }
 };
 
-const approveUserService = async (userId,role) => {
-    
+const approveUserService = async (userId, role) => {
     if (!(await User.findById(userId))) {
-        throw new Error('User doesn t exist !')
+        throw new Error('User doesn\'t exist!');
     }
-    
+
     const request = await requestServive.getRequestByUserId(userId, role);
-     
+    
     if (!request) {
         throw new Error('Request not found!');
     }
 
-    role == "member" && await MemberService.CreateMember(userId, {rc_ice: request?.rc_ice} )
-    role == "partner" && await PartnerService.CreatePartner({ owner: userId, num_rc: request?.num_rc })
-    role == "investor" && await InvestorService.CreateInvestor({ owner: userId, linkedin_link: request?.linkedin_link })
-    await requestServive.removeRequestByUserId(userId,role)
-    return await User.findByIdAndUpdate(userId, { status: 'accepted' })
-}
+    // Importer dynamiquement pour éviter la dépendance circulaire
+    const MemberService = require("./MemberService");
+    const PartnerService = require("./PartnerService");
+    const InvestorService = require("./InvestorService");
+
+    if (role === "member") {
+        await MemberService.CreateMember(userId, { rc_ice: request?.rc_ice });
+    } else if (role === "partner") {
+        await PartnerService.CreatePartner({ owner: userId, num_rc: request?.num_rc });
+    } else if (role === "investor") {
+        await InvestorService.CreateInvestor({ owner: userId, linkedin_link: request?.linkedin_link });
+    }
+
+    await requestServive.removeRequestByUserId(userId, role);
+    return await User.findByIdAndUpdate(userId, { status: 'accepted' });
+};
+
 
 
 const rejectUser = async (id, role) => {

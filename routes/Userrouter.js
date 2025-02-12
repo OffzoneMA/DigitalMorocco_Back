@@ -721,7 +721,7 @@ router.get('/distinct', UserController.getDistinctFieldValues);
  *       500:
  *         description: Internal server error
  */
-router.route("/ApproveUser/:userId").put(AuthController.AuthenticateAdmin, UserController.approveUser);
+router.put("/ApproveUser/:userId" , AuthController.AuthenticateAdmin, UserController.approveUser);
 
 /**
  * @swagger
@@ -764,7 +764,7 @@ router.route("/ApproveUser/:userId").put(AuthController.AuthenticateAdmin, UserC
  *       500:
  *         description: Internal server error
  */
-router.route("/RejectUser/:userId").put(AuthController.AuthenticateAdmin, UserController.rejectUser);
+router.put("/RejectUser/:userId" , AuthController.AuthenticateAdmin, UserController.rejectUser);
 
 /**
  * @swagger

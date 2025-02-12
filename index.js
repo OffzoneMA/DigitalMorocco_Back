@@ -87,6 +87,10 @@ class App {
             }
         }));
 
+        // Initialisation de Passport
+        this.app.use(passport.initialize());
+        this.app.use(passport.session());
+
     }
 
     setupI18n() {
@@ -154,9 +158,9 @@ class App {
                 console.log('🚀 Server is running on port:', port);
                 console.log('Metrics are exposed at : ' , `${process.env.BACKEND_URL}/metrics`);
                 
-                // Initialisation de Passport
-                this.app.use(passport.initialize());
-                this.app.use(passport.session());
+                // // Initialisation de Passport
+                // this.app.use(passport.initialize());
+                // this.app.use(passport.session());
 
                 // Configuration des tâches planifiées
                 this.setupScheduledTasks();
@@ -241,4 +245,4 @@ const connectToDatabase = async (retryCount = 5, delay = 10000) => {
 // Démarrage de l'application
 connectToDatabase();
 
-module.exports = new App().app;
+// module.exports = new App().app;
