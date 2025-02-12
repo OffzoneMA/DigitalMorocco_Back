@@ -327,8 +327,12 @@ const searchInvestors = async (searchTerm) => {
 };
 
 
-const CreateInvestor = async (investor) => {
-    return await Investor.create(investor);
+async function CreateInvestor (investor) {
+    try {
+        return await Investor.create(investor);
+    } catch (error) {
+        throw new Error(`Error creating member: ${error.message}`);
+    }
 }
 
 const getInvestorById = async (id) => {

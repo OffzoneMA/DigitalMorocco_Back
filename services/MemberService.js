@@ -5,9 +5,6 @@ const Subscription = require("../models/Subscription");
 const Investor = require("../models/Investor");
 const Partner = require("../models/Partner");
 const Project = require("../models/Project");
-const SubscriptionService = require("../services/SubscriptionService");
-const SubscriptionPlanService = require("../services/SubscriptionPlanService");
-const SubscriptionLogService = require("../services/SubscriptionLogService");
 const uploadService = require('./FileService')
 const MemberReq = require("../models/Requests/Member");
 const ContactRequest = require("../models/ContactRequest");
@@ -305,7 +302,8 @@ const createTestCompany = async (userId, role, companyData, logo) => {
     }
 };
 
-const CreateMember = async (userId, member) => {
+
+async function CreateMember (userId, member) {
     try {
         return await Member.create({ ...member, owner: userId });
     } catch (error) {
@@ -1262,12 +1260,12 @@ const getPathFromUrl = (url) => {
     }
 };
 
-  module.exports = {checkMemberStatus, 
-    createCompany,  deleteMember, getContacts, getAllMembers, createProject, checkSubscriptionStatus, 
-    CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, getMemberByUserId, 
-    checkSubscriptionStatus ,createCompany , getTestAllMembers , createTestProject , getInvestorsForMember ,
-     getAllProjectsForMember , updateProject , updateMember , createTestCompany , updateMember , 
-     getMemberInfoByUserId , CreateMemberWithLogo , searchProjects , searchMembers , searchInvestorsForMember , 
-     getDistinctInvestorsValuesForMember , getAllProjectsForMemberWithoutPagination , 
-    getContactRequestsForMember , getInvestorsForMemberWithoutPagination , deleteCompanyLogo ,} 
+module.exports = {checkMemberStatus, 
+createCompany,  deleteMember, getContacts, getAllMembers, createProject, 
+CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, getMemberByUserId, 
+checkSubscriptionStatus ,createCompany , getTestAllMembers , createTestProject , getInvestorsForMember ,
+    getAllProjectsForMember , updateProject , updateMember , createTestCompany , updateMember , 
+    getMemberInfoByUserId , CreateMemberWithLogo , searchProjects , searchMembers , searchInvestorsForMember , 
+    getDistinctInvestorsValuesForMember , getAllProjectsForMemberWithoutPagination , 
+getContactRequestsForMember , getInvestorsForMemberWithoutPagination , deleteCompanyLogo ,} 
 
