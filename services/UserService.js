@@ -1,4 +1,7 @@
 const User = require('../models/User');
+const Member = require('../models/Member');
+const Partner = require('../models/Partner');
+const Investor = require('../models/Investor');
 const MemberService = require('../services/MemberService');
 const PartnerService = require('../services/PartnerService');
 const InvestorService = require('../services/InvestorService');
@@ -118,17 +121,12 @@ const approveUserService = async (userId, role) => {
         throw new Error('Request not found!');
     }
 
-    // Importer dynamiquement pour éviter la dépendance circulaire
-    const MemberService = require("./MemberService");
-    const PartnerService = require("./PartnerService");
-    const InvestorService = require("./InvestorService");
-
     if (role === "member") {
-        await MemberService.CreateMember(userId, { rc_ice: request?.rc_ice });
+        await Member.create({ owner: userId, rc_ice: request?.rc_ice });
     } else if (role === "partner") {
-        await PartnerService.CreatePartner({ owner: userId, num_rc: request?.num_rc });
+        await Partner.create({ owner: userId, num_rc: request?.num_rc });
     } else if (role === "investor") {
-        await InvestorService.CreateInvestor({ owner: userId, linkedin_link: request?.linkedin_link });
+        await Investor.create({ owner: userId, linkedin_link: request?.linkedin_link });
     }
 
     await requestServive.removeRequestByUserId(userId, role);

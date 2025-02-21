@@ -1,7 +1,5 @@
 const jwt = require('jsonwebtoken');
 const i18n = require('i18next');
-const UserService = require('./UserService');
-const InvestorService = require('./InvestorService');
 const User = require('../models/User');
 const ejs = require('ejs');
 const fs = require('fs');

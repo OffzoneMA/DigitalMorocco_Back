@@ -295,6 +295,7 @@ const getAllProjects = async (args) => {
 
       // Base filter to find projects owned by the member
       const filter = {isDeleted: false};
+      // const filter = { isDeleted: { $ne: true } };
 
       // Filter by visibility if provided
       if (args.visibility) {
