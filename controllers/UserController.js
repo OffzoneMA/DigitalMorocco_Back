@@ -49,17 +49,25 @@ const getUsers = async (req, res) => {
 }
 
 const getAllUsers = async (req, res) => {
-  let { page = 1, limit = 10, roles = '', statuses = '' } = req.query;
+  let { page = 1, limit = 10, roles = '', statuses = '' , sortField = "" , sortOrder =""  } = req.query;
 
   const rolesArray = roles ? roles.split(',') : [];
   const statusesArray = statuses ? statuses.split(',') : [];
+
+  const dateFilter = req.query.date ? {
+    date: req.query.date,
+    field: req.query.dateField || 'dateCreated'
+  } : null;
 
   try {
     const response = await AuthService.getAllUsersPage(
       parseInt(page), 
       parseInt(limit), 
       rolesArray, 
-      statusesArray
+      statusesArray ,
+      dateFilter ,
+      sortField ,
+      sortOrder
     );
 
     res.status(200).json(response);
