@@ -120,6 +120,7 @@ const signInUser = async (u) => {
         status: 'success'
     });
 
+      await user.updateOne({ lastLogin: new Date() });
       const result = await generateUserInfos(user);
       return result;
 
@@ -195,39 +196,70 @@ const getAllUsers = async () => {
   }
 }
 
-const getAllUsersPage = async (page = 1, limit = 8, roles = [], statuses = []) => {
+const getAllUsersPage = async (page = 1, limit = 8, roles = [], statuses = [], dateFilter = null, sortField = 'dateCreated', sortOrder = 'desc') => {
   try {
     const filters = { isDeleted: false };
+    
+    // Filtrage par rôles
     if (roles.length > 0) {
       filters.role = { $in: roles };
     }
+    
+    // Filtrage par statuts
     if (statuses.length > 0) {
       filters.status = { $in: statuses };
     }
 
+    // Filtrage par date
+    if (dateFilter && dateFilter.date && dateFilter.date !== 'Invalid Date' && dateFilter.date.trim() !== '') {
+      const startDate = new Date(dateFilter.date);
+
+      if (!isNaN(startDate.getTime())) {
+        startDate.setHours(0, 0, 0, 0);
+        
+        const endDate = new Date(startDate);
+        endDate.setHours(23, 59, 59, 999);
+
+        const dateField = dateFilter.field === 'lastLogin' ? 'lastLogin' : 'dateCreated';
+        
+        filters[dateField] = {
+          $gte: startDate,
+          $lte: endDate
+        };
+      } else {
+        console.log('Date invalide ignorée:', dateFilter.date);
+      }
+    }
+
     const totalUsers = await User.countDocuments(filters);
-
     const totalPages = Math.ceil(totalUsers / limit);
-
     const currentPage = page > totalPages ? 1 : page;
 
+    // Création de l'objet de tri dynamique
+    const sortOptions = {};
+    if (sortField) {
+      sortOptions[sortField] = sortOrder;
+    }
+
     const users = await User.find(filters)
-      .sort({ dateCreated: 'desc' })
+      .sort(sortOptions)
       .skip((currentPage - 1) * limit)
       .limit(limit);
 
     return {
       data: users,
       pagination: {
-        currentPage, // Page réelle utilisée
+        currentPage,
         totalPages,
         totalItems: totalUsers,
       },
     };
   } catch (error) {
+    console.log(error);
     throw new Error(`Error getting list of users: ${error.message}`);
   }
 };
+
 
  
 // const generateUserInfos = async (user) => {

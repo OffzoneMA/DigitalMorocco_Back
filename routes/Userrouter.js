@@ -175,6 +175,31 @@ router.route("/AllUsers").get(AuthController.AllUsers)
  *           items:
  *             type: string
  *         description: Filtrer par statut
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Date to filter (YYYY-MM-DD)
+ *       - in: query
+ *         name: dateField
+ *         schema:
+ *           type: string
+ *           enum: [dateCreated, lastLogin]
+ *       - in: query
+ *         name: sortField
+ *         description: Field to sort the users by.
+ *         required: false
+ *         schema:
+ *           type: string
+ *           default: "dateCreated"
+ *       - in: query
+ *         name: sortOrder
+ *         description: Order to sort the users by ('asc' or 'desc').
+ *         required: false
+ *         schema:
+ *           type: string
+ *           default: "desc"
  *     responses:
  *       200:
  *         description: Liste des utilisateurs récupérée avec succès
