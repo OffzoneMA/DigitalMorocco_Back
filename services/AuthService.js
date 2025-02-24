@@ -10,6 +10,7 @@ const EventService = require('../services/EventService');
 const InvestorContactService = require('../services/InvestorContactService');
 const SponsorService = require('../services/SponsorService');
 const metrics = require('../metrics/prometheus');
+const Member = require('../models/Member')
 
 // const signInUser = async (u) => {
 //   let user = await User.findOne({ email: u.email.toLowerCase() })
@@ -311,7 +312,8 @@ const generateUserInfos = async (user) => {
   if (userRole) {
       if (userRole === "member") {
           let member = await MemberService.getMemberByUserId(user._id);
-          console.log('Found member:', member); // Debug log
+          console.log(user)
+          console.log('Found member:', member ); // Debug log
           
           if (member?._id) {
               projectCount = await ProjectService.countProjectsByMemberId(member._id);

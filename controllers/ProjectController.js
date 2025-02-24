@@ -95,8 +95,9 @@ async function addMilestone(req, res) {
 
 const getDistinctValuesForField = async (req, res) => {
   const { field } = req.params; 
+  const { visibility } = req.query;
   try {
-      const values = await ProjectService.getDistinctValues(field);
+      const values = await ProjectService.getDistinctValues(field , visibility);
       res.status(200).json({ field, values });
   } catch (error) {
       res.status(500).json({ message: error.message });
