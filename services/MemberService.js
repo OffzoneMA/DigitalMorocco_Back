@@ -867,8 +867,13 @@ const getMemberById = async (id) => {
     return await Member.findById(id);
 }
 const getMemberByUserId = async (userId) => {
-    const member = await Member.findOne({ owner: userId });
-    return member;
+    try {
+        const member = await Member.findOne({ owner: userId });
+        return member;
+    }catch(error) {
+        console.log(error)
+    }
+
 }
 
 const getMemberInfoByUserId = async (userId) => {

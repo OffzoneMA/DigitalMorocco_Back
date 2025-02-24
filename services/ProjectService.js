@@ -344,14 +344,20 @@ const getAllProjects = async (args) => {
   }
 };
 
-const getDistinctValues = async (fieldName) => {
+const getDistinctValues = async (fieldName, visibility) => {
   try {
-      const distinctValues = await Project.distinct(fieldName);
+      // Construire le filtre si la visibilité est fournie
+      const filter = visibility ? { visbility: visibility } : {};
+
+      // Obtenir les valeurs distinctes avec le filtre
+      const distinctValues = await Project.distinct(fieldName, filter);
+      
       return distinctValues;
   } catch (error) {
       throw new Error(`Error retrieving distinct values for ${fieldName}: ${error.message}`);
   }
 };
+
 
 const updateProject = async (projectId, updateData) => {
   try {

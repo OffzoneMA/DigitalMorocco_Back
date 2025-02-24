@@ -124,6 +124,13 @@ router.get('/', ProjectController.getprojects);
  *         schema:
  *           type: string
  *         description: The field to retrieve distinct values for (e.g., "sector", "stage", "country").
+ *       - in: query
+ *         name: visibility
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [public, private]
+ *         description: Filter projects by visibility (either "public" or "private").
  *     responses:
  *       200:
  *         description: A list of distinct values for the specified field

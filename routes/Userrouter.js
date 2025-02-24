@@ -313,6 +313,11 @@ router.get('/auth/linkedin/signin/callback', (req, res, next) => {
         console.log('Auth token:', user?.auth)
         const auth = user?.auth;
 
+        if (!user || !user.auth) {
+            console.error('Missing user or auth token:', user);
+            return res.redirect(`${process.env.FRONTEND_URL}/SignIn?error=authentication_failed`);
+        }
+
         const userRole = user?.user?.role;
 
         const socialId = user?.socialId;
