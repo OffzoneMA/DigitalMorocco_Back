@@ -3,6 +3,7 @@ const LinkedInStrategy = require('passport-linkedin-oauth2').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
 const User = require('../models/User'); 
+const AuthService = require('../services/AuthService');
 const {generateAccessToken,generateUserInfos} = require('../services/AuthService'); 
 const UserLogService = require('../services/UserLogService'); 
 
@@ -131,7 +132,7 @@ passport.use(
                 const existingUser = await User.findOne({ linkedinId: profile.id }) ;
 
                 if (existingUser) {
-                    const result = await generateUserInfos(existingUser)
+                    const result = await AuthService.generateUserInfos(existingUser)
                     const log = await UserLogService.createUserLog('Account Signin', existingUser._id);
                     console.log("eee", result)
                     return done(null, { user: result.user, auth: result.accessToken , socialId: profile.id , provider: 'linkedin'});
@@ -150,7 +151,7 @@ passport.use(
 
                 });
 
-                 const result = await generateUserInfos(newUser)
+                 const result = await AuthService.generateUserInfos(newUser)
                 const log = await UserLogService.createUserLog('Account Initial Signup', newUser._id);
                 const log2 = await UserLogService.createUserLog('Verified', newUser._id);
                 return done(null, { user: result.user, auth: result.accessToken ,socialId: profile.id , provider: 'linkedin' });
@@ -186,7 +187,7 @@ passport.use('linkedin-signup',
                     status: 'verified'
                 });
 
-                const result = await generateUserInfos(newUser);
+                const result = await AuthService.generateUserInfos(newUser);
                 console.log('Sign Up Full result object:', JSON.stringify(result, null, 2));
                 console.log('Sign Up User object structure:', JSON.stringify(result.user, null, 2));
                 console.log('Sign Up AccessToken type:', typeof result.accessToken);
@@ -222,7 +223,7 @@ passport.use('linkedin-signin',
                 const existingUser = await User.findOne({ linkedinId: profile.id });
 
                 if (existingUser) {
-                    const result = await generateUserInfos(existingUser);
+                    const result = await AuthService.generateUserInfos(existingUser);
                     console.log('Full result object:', JSON.stringify(result, null, 2));
                     console.log('User object structure:', JSON.stringify(result.user, null, 2));
                     console.log('AccessToken type:', typeof result.accessToken);

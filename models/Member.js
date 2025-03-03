@@ -58,6 +58,7 @@ const MemberSchema = new mongoose.Schema({
     
 })
 
+MemberSchema.index({ owner: 1 });
 
 const Member = mongoose.model("Member", MemberSchema)
 module.exports = Member
