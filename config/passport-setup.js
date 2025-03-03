@@ -15,6 +15,7 @@ const UserLogService = require('../services/UserLogService');
 const generateUserInfos = async (user) => {
   console.log('generateUserInfos input user:', user?._id); // Debug log
 
+  
   const accessToken = await generateAccessToken(user);
   console.log('Generated accessToken:', accessToken); // Debug log
 
@@ -68,6 +69,8 @@ const generateUserInfos = async (user) => {
   }
 
   console.log('Final result:', { accessToken, user: "user data" }); // Debug log
+
+  await UserLogService.createUserLog('Generate user info', user?._id);
 
   return { 
       accessToken, 
@@ -261,9 +264,10 @@ passport.use('linkedin-signup',
                 // Verify result structure
                 if (!result || !result.accessToken) {
                     console.log('Failed to generate user information and access token');
+                    await UserLogService.createUserLog('Failed to generate user information LinkedIn SignUp', newUser._id);
                 }
 
-                await UserLogService.createUserLog('Account Initial Signup', newUser._id);
+                await UserLogService.createUserLog('Account Initial Signup LinkedIn', newUser._id);
                 await UserLogService.createUserLog('Verified', newUser._id);
 
                 return done(null, { user: result.user, auth: result.accessToken, socialId: profile.id, provider: 'linkedin' });
@@ -293,7 +297,7 @@ passport.use('linkedin-signin',
                     console.log('Full result object:', JSON.stringify(result, null, 2));
                     console.log('User object structure:', JSON.stringify(result.user, null, 2));
                     console.log('AccessToken type:', typeof result.accessToken);
-                    await UserLogService.createUserLog('Account Signin', existingUser._id);
+                    await UserLogService.createUserLog('Account Signin LinkedIn', existingUser._id);
                     return done(null, { user: result.user, auth: result.accessToken, socialId: profile.id, provider: 'linkedin' });
                 }
 
