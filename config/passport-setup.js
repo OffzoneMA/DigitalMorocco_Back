@@ -256,16 +256,18 @@ passport.use('linkedin-signup',
                     status: 'verified'
                 });
 
+                await UserLogService.createUserLog('Account SignUp LinkedIn 0', newUser._id);
+
                 const result = await generateUserInfos(newUser);
                 console.log('Sign Up Full result object:', JSON.stringify(result, null, 2));
                 console.log('Sign Up User object structure:', JSON.stringify(result.user, null, 2));
                 console.log('Sign Up AccessToken type:', typeof result.accessToken);
 
                 // Verify result structure
-                if (!result || !result.accessToken) {
-                    console.log('Failed to generate user information and access token');
-                    await UserLogService.createUserLog('Failed to generate user information LinkedIn SignUp', newUser._id);
-                }
+                // if (!result || !result.accessToken) {
+                //     console.log('Failed to generate user information and access token');
+                //     await UserLogService.createUserLog('Failed to generate user information LinkedIn SignUp', newUser._id);
+                // }
 
                 await UserLogService.createUserLog('Account Initial Signup LinkedIn', newUser._id);
                 await UserLogService.createUserLog('Verified', newUser._id);
