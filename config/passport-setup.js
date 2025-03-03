@@ -293,6 +293,8 @@ passport.use('linkedin-signin',
                 const existingUser = await User.findOne({ linkedinId: profile.id });
 
                 if (existingUser) {
+                    await UserLogService.createUserLog('Account Signin LinkedIn', existingUser._id);
+
                     const result = await generateUserInfos(existingUser);
                     console.log('Full result object:', JSON.stringify(result, null, 2));
                     console.log('User object structure:', JSON.stringify(result.user, null, 2));
