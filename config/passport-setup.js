@@ -302,37 +302,58 @@ passport.use('linkedin-signin',
                     return done(null, false, { error: 'No email found in LinkedIn profile' });
                 }
                 
-                console.log('Looking for user with LinkedIn ID:', profile.id);
-                await UserLogService.createUserLog('Account Signin LinkedIn 0', profile.id);
-                
+                console.log('Looking for user with LinkedIn ID:', profile.id, 'and email:', email);
+        
                 const existingUser = await User.findOne({ linkedinId: profile.id });
                 console.log('Found user by LinkedIn ID:', existingUser ? 'Yes' : 'No');
         
                 if (existingUser) {
+                    console.log('Found existing user:', existingUser._id);
                     await UserLogService.createUserLog('Account Signin LinkedIn', existingUser._id);
-                    const result = await generateUserInfos(existingUser);
                     
-                    // Validate the result before returning
-                    if (!result || !result.accessToken) {
-                        console.error('Failed to generate user info or token:', result);
-                        return done(null, false, { error: 'Failed to generate authentication token' });
+                    try {
+                        const result = await generateUserInfos(existingUser);
+                        console.log('generateUserInfos result:', {
+                            hasResult: !!result,
+                            hasUser: !!result?.user,
+                            hasToken: !!result?.accessToken,
+                            tokenType: typeof result?.accessToken,
+                            tokenValue: result?.accessToken ? 'exists' : 'null'
+                        });
+                        
+                        // Validate the result before returning
+                        if (!result || !result.accessToken) {
+                            console.error('Failed to generate user info or token:', result);
+                            return done(null, false, { error: 'Failed to generate authentication token' });
+                        }
+                        
+                        const returnObject = { 
+                            user: result.user, 
+                            auth: result.accessToken, 
+                            socialId: profile.id, 
+                            provider: 'linkedin' 
+                        };
+                        
+                        console.log('Returning authentication object:', {
+                            hasUser: !!returnObject.user,
+                            hasAuth: !!returnObject.auth,
+                            authType: typeof returnObject.auth
+                        });
+                        
+                        return done(null, returnObject);
+                    } catch (genError) {
+                        console.error('Error generating user info:', genError);
+                        return done(null, false, { error: 'Failed to generate user information' });
                     }
-                    
-                    return done(null, { 
-                        user: result.user, 
-                        auth: result.accessToken, 
-                        socialId: profile.id, 
-                        provider: 'linkedin' 
-                    });
                 }
         
                 // Check if user exists with this email
                 const existingEmail = await User.findOne({ email });
                 if (existingEmail) {
-                    // User exists but not linked to LinkedIn
+                    console.log('Found user with matching email but not LinkedIn ID');
                     return done(null, false, { error: 'This account is registered with a different method' });
                 } else {
-                    // No account with this email - could handle new user registration here
+                    console.log('No account found with this email');
                     return done(null, false, { error: 'No account exists with this email' });
                 }
             } catch (error) {
