@@ -438,12 +438,13 @@ const getPastEventsWithUserParticipation = async (userId, args) => {
 
     // Transformation des données pour inclure l'indicateur de participation
     const eventsWithParticipation = pastEvents.map(event => {
-      const userParticipated = event.attendeesUsers.some(user => user.userId.equals(userId));
+      const userParticipated = event.attendeesUsers.some(user => user.userId && user.userId.equals(userId));
       return {
-        ...event.toObject(),
-        userParticipated
+          ...event.toObject(),
+          userParticipated
       };
     });
+  
 
     // Compter le total d'événements passés pour le calcul des pages
     const totalCount = await Event.countDocuments({ endDate: { $lt: currentDate } });

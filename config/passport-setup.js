@@ -292,27 +292,52 @@ passport.use('linkedin-signin',
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
+                console.log('LinkedIn profile received:', JSON.stringify(profile, null, 2));
+                
+                // Extract email properly from LinkedIn response
+                const email = profile.emails?.[0]?.value || profile.email;
+                
+                if (!email) {
+                    console.error('No email found in LinkedIn profile');
+                    return done(null, false, { error: 'No email found in LinkedIn profile' });
+                }
+                
+                console.log('Looking for user with LinkedIn ID:', profile.id);
+                await UserLogService.createUserLog('Account Signin LinkedIn 0', profile.id);
+                
                 const existingUser = await User.findOne({ linkedinId: profile.id });
-
+                console.log('Found user by LinkedIn ID:', existingUser ? 'Yes' : 'No');
+        
                 if (existingUser) {
                     await UserLogService.createUserLog('Account Signin LinkedIn', existingUser._id);
-
                     const result = await generateUserInfos(existingUser);
-                    console.log('Full result object:', JSON.stringify(result, null, 2));
-                    console.log('User object structure:', JSON.stringify(result.user, null, 2));
-                    console.log('AccessToken type:', typeof result.accessToken);
-                    await UserLogService.createUserLog('Account Signin LinkedIn', existingUser._id);
-                    return done(null, { user: result.user, auth: result.accessToken, socialId: profile.id, provider: 'linkedin' });
+                    
+                    // Validate the result before returning
+                    if (!result || !result.accessToken) {
+                        console.error('Failed to generate user info or token:', result);
+                        return done(null, false, { error: 'Failed to generate authentication token' });
+                    }
+                    
+                    return done(null, { 
+                        user: result.user, 
+                        auth: result.accessToken, 
+                        socialId: profile.id, 
+                        provider: 'linkedin' 
+                    });
                 }
-
-                const existingEmail = await User.findOne({ email: profile.email });
-                if (!existingEmail) {
-                    throw new Error('No account exists with this email');
+        
+                // Check if user exists with this email
+                const existingEmail = await User.findOne({ email });
+                if (existingEmail) {
+                    // User exists but not linked to LinkedIn
+                    return done(null, false, { error: 'This account is registered with a different method' });
+                } else {
+                    // No account with this email - could handle new user registration here
+                    return done(null, false, { error: 'No account exists with this email' });
                 }
-
-                return done(null, false, { error: 'This account is not registered using this Social network' });
             } catch (error) {
-                return done(null, false, { error: error.message });
+                console.error('LinkedIn authentication error:', error);
+                return done(error);
             }
         }
     )

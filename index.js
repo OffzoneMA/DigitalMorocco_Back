@@ -212,7 +212,7 @@ class App {
 }
 
 // Configuration de MongoDB
-mongoose.set('strictQuery', true);
+mongoose.set('strictQuery', false);
 
 const connectToDatabase = async (retryCount = 5, delay = 10000) => {
     try {

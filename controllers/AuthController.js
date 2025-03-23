@@ -127,7 +127,6 @@ const AuthenticateMember = async (req, res, next) => {
     const member = await MemberService.getMemberByUserId(userMember?._id)
 
     if (member) {
-
       req.memberId = member._id
       next()
     }

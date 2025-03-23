@@ -202,6 +202,7 @@ const getPastEventsForUserParticipate = async (req, res) => {
       const events = await EventService.getPastEventsWithUserParticipation(userId , req.query);
       res.status(200).json(events);
   } catch (error) {
+    console.log(error)
       res.status(500).json({ error: error.message });
   }
 };

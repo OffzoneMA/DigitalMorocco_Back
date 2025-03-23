@@ -306,6 +306,14 @@ router.get('/auth/linkedin/signup/callback', (req, res, next) => {
 router.get('/auth/linkedin/signin', passport.authenticate('linkedin-signin'));
 router.get('/auth/linkedin/signin/callback', (req, res, next) => {
     passport.authenticate('linkedin-signin', (err, user, info) => {
+        // Log all inputs to understand what's happening
+        console.log('Auth callback parameters:', { 
+            hasError: !!err, 
+            error: err, 
+            userValue: user, 
+            info: info 
+        });
+        
         if (err || info instanceof AuthorizationError || info?.error) {
             return res.redirect(`${process.env.FRONTEND_URL}/${info?.error != undefined ? 'SignIn?error=' + info?.error + '' : 'SignIn'}`);
         }
@@ -313,10 +321,11 @@ router.get('/auth/linkedin/signin/callback', (req, res, next) => {
         console.log('Auth token:', user?.auth)
         const auth = user?.auth;
 
-        // if (!user || !user.auth) {
-        //     console.error('Missing user or auth token:', user);
-        //     return res.redirect(`${process.env.FRONTEND_URL}/SignIn?error=authentication_failed`);
-        // }
+        // Critical check - make sure we have a user and auth token
+        if (!user || !user.auth) {
+            console.error('Missing user or auth token:', user);
+            return res.redirect(`${process.env.FRONTEND_URL}/SignIn?error=authentication_failed`);
+        }
 
         const userRole = user?.user?.role;
 

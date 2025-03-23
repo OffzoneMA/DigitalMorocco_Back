@@ -873,7 +873,6 @@ const getMemberByUserId = async (userId) => {
     }catch(error) {
         console.log(error)
     }
-
 }
 
 const getMemberInfoByUserId = async (userId) => {
