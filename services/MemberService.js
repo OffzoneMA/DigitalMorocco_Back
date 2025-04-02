@@ -595,9 +595,23 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
 
         // Gérer les milestones
         if (newData.milestones) {
-            const existingMilestoneNames = new Set(project.milestones.map(m => m.name));
-            const newMilestones = newData.milestones.filter(m => !existingMilestoneNames.has(m.name));
-            project.milestones.push(...newMilestones);
+            // Create a map of existing milestones for efficient lookup and update
+            const existingMilestonesMap = new Map(
+                project.milestones.map(milestone => [milestone.name, milestone])
+            );
+        
+            // Process each new milestone
+            newData.milestones.forEach(newMilestone => {
+                const existingMilestone = existingMilestonesMap.get(newMilestone.name);
+        
+                if (existingMilestone) {
+                    // Update existing milestone
+                    Object.assign(existingMilestone, newMilestone);
+                } else {
+                    // Add new milestone if it doesn't exist
+                    project.milestones.push(newMilestone);
+                }
+            });
         }
 
         const newDocuments = [...project.documents];
