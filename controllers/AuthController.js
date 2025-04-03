@@ -7,6 +7,8 @@ const ProjectService = require('../services/ProjectService');
 const AuthService = require('../services/AuthService');
 const UserLogService =require('../services/UserLogService');
 const SusbcriptionService = require('../services/SubscriptionService');
+const Member = require('../models/Member');
+const mongoose = require('mongoose');
 
 
 const login=async(req,res)=>{
@@ -79,6 +81,7 @@ const AuthenticateAdmin = async (req, res, next) => {
 const AuthenticateUser = async (req, res, next) => {
   const authHeader = req.headers['authorization']
   const token = authHeader && authHeader.split(' ')[1]
+  console.log(token)
   if (token == null) return res.sendStatus(401)
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, u) => {
     if (err) { return res.sendStatus(403) }
@@ -116,6 +119,7 @@ const AuthenticateUserOrAdmin = async (req, res, next) => {
 const AuthenticateMember = async (req, res, next) => {
   const authHeader = req.headers['authorization']
   const token = authHeader && authHeader.split(' ')[1]
+  console.log(token)
   if (token == null) return res.sendStatus(401)
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
     if (err) { return res.sendStatus(403) }
@@ -123,7 +127,6 @@ const AuthenticateMember = async (req, res, next) => {
     const member = await MemberService.getMemberByUserId(userMember?._id)
 
     if (member) {
-
       req.memberId = member._id
       next()
     }

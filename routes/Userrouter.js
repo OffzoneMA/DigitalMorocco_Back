@@ -306,21 +306,46 @@ router.get('/auth/linkedin/signup/callback', (req, res, next) => {
 router.get('/auth/linkedin/signin', passport.authenticate('linkedin-signin'));
 router.get('/auth/linkedin/signin/callback', (req, res, next) => {
     passport.authenticate('linkedin-signin', (err, user, info) => {
+        // Enhanced logging with full object structure
+        console.log('Auth callback parameters:', { 
+            hasError: !!err, 
+            error: err, 
+            userValue: user, 
+            userKeys: user ? Object.keys(user) : [],
+            userDetails: {
+                hasAuth: !!user?.auth,
+                authType: typeof user?.auth,
+                hasUser: !!user?.user,
+                hasRole: !!user?.user?.role,
+                hasSocialId: !!user?.socialId
+            },
+            info: info 
+        });
+        
         if (err || info instanceof AuthorizationError || info?.error) {
+            console.log('Auth error detected, redirecting to SignIn with error:', info?.error);
             return res.redirect(`${process.env.FRONTEND_URL}/${info?.error != undefined ? 'SignIn?error=' + info?.error + '' : 'SignIn'}`);
         }
-        console.log('Callback user object:', user);
-        console.log('Auth token:', user?.auth)
-        const auth = user?.auth;
-
+        
+        // Critical check - make sure we have a user and auth token
         if (!user || !user.auth) {
-            console.error('Missing user or auth token:', user);
+            console.error('Missing user or auth token:', {
+                hasUser: !!user,
+                userStruct: user ? JSON.stringify(user) : 'null',
+                authValue: user?.auth
+            });
             return res.redirect(`${process.env.FRONTEND_URL}/SignIn?error=authentication_failed`);
         }
 
-        const userRole = user?.user?.role;
-
-        const socialId = user?.socialId;
+        const auth = user.auth;
+        const userRole = user.user?.role;
+        const socialId = user.socialId;
+        
+        console.log('Authentication successful:', {
+            hasAuth: !!auth,
+            hasRole: !!userRole,
+            destination: userRole ? 'Success' : 'SuccessSignUp'
+        });
 
         if (userRole) {
             res.redirect(`${process.env.FRONTEND_URL}/Success?auth=${auth}`);
