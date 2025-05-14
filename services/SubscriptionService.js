@@ -2,6 +2,7 @@ const Subscription = require('../models/Subscription');
 const User = require('../models/User');
 const SubscriptionPlan = require('../models/SubscriptionPlan');
 const SubscriptionLogService = require('../services/SubscriptionLogService');
+const PaiementService = require('./PaiementService');
 const ActivityHistoryService = require('../services/ActivityHistoryService');
 const EmailService = require('../services/EmailingService');
 const i18n = require('i18next');
@@ -64,7 +65,7 @@ const dateIn1Year = () => dateInDays(365);
 
 const getDateExpires = sub => sub.dateExpired || (sub.billing === 'year' ? dateIn1Year() : dateIn1Month());
 
-const isSubscriptionActive = sub => sub.dateExpired > Date.now() && sub.dateStopped === undefined;
+const isSubscriptionActive = sub => sub.dateExpired > Date.now();
 
 // Créer une nouvelle souscription pour un utilisateur
 async function createSubscriptionForUser(userId, planId, data) {
@@ -86,47 +87,50 @@ async function createSubscriptionForUser(userId, planId, data) {
             ...data,
             user: userId,
             plan: plan?._id,
-            totalCredits: plan?.credits + (existingSubscription?.totalCredits || 0),
-            dateExpired: dateExpired
+            totalCredits: existingSubscription?.totalCredits || 0,
+            dateExpired: dateExpired ,
+            pendingUpgrade: {
+                newPlan: plan?._id,
+                newCredits: plan?.credits + (existingSubscription?.totalCredits || 0),
+                previousPlanName: plan.name,
+                newPlanName: plan.name,
+                newBilling: data.billing,
+                newExpirationDate: dateExpired,
+                price: plan.price,
+                currency: 'MAD'
+            },
         });
 
-        user.subscription = newSubscription._id;
-        await user.save();
+        await newSubscription.save();
 
-        // Préparation des données pour l'email
-        const emailPlanDetails = {
+        // user.subscription = newSubscription._id;
+        // await user.save();
+
+        // Générer la session de paiement
+        const paymentSession = await PaiementService.generatePaymentSession({
             name: plan.name,
             price: plan.price,
-            duration: data.billing === 'year' ? 12 : 1,
-            features: plan.featureDescriptions,
+            currency: 'MAD',
+            customerId: userId,
+            subscriptionId: newSubscription._id,
+            language: user?.language ?  getLanguageIdByLabel(user?.language) : 'en',
+            type: 'new',
+            metadata: {
+                name: user?.displayName ? user?.displayName : user?.firstName + ' ' + user?.lastName,
+                email: user?.email
+            }
+        });
+
+        return {
+            success: true,
+            data: paymentSession,
         };
-
-        // Envoi de l'email de bienvenue
-        await EmailService.sendNewSubscriptionEmail(user._id , emailPlanDetails);
-
-
-        const logData = {
-            credits: plan?.credits,  
-            totalCredits: plan?.credits,  
-            subscriptionExpireDate: dateExpired,
-            type: 'Initial Purchase',
-            transactionId: 'TXN123456789', 
-            notes: 'User subscribe to a new plan',
-        };
-
-        // Appel à la fonction pour créer un log de souscription
-        await SubscriptionLogService.createSubscriptionLog(newSubscription._id, logData);
-        await ActivityHistoryService.createActivityHistory(
-            userId,
-            'new_subscription',
-            { targetName: `${plan.name}`, targetDesc: `User subscribed to plan ${planId}` }
-        );
-        return newSubscription;
     } catch (error) {
         console.log(error)
         throw new Error('Error creating subscription: ' + error.message);
     }
 }
+
 async function upgradeSubscription(subscriptionId, newPlanId , newBilling) {
     try {
         const subscription = await Subscription.findById(subscriptionId);
@@ -140,56 +144,52 @@ async function upgradeSubscription(subscriptionId, newPlanId , newBilling) {
             throw new Error('New subscription plan not found');
         }
 
+        console.log("subscription", subscription)
+
         if (!isSubscriptionActive(subscription)) {
             throw new Error('Cannot upgrade an inactive subscription.');
         }
 
-        const previousPlanName = oldPlan?.name;
 
-        subscription.plan = newPlanId;
-        subscription.totalCredits += newPlan.credits;
-
-        if (newBilling) {
-            subscription.billing = newBilling;
-        }
-
-        // Mise à jour de la date d'expiration en fonction du nouveau type de facturation
-        const newExpirationDate = newBilling === 'year' ? dateIn1Year() : dateIn1Month();
-        subscription.dateExpired = newExpirationDate;
-
-        // Créer un log de mise à niveau
-        const logData = {
-            credits: newPlan.credits,
-            totalCredits: subscription.totalCredits,
-            subscriptionExpireDate: subscription.dateExpired,
-            type: 'Upgrade',
-            transactionId: 'TXN234567890', 
-            notes: `User upgraded to a higher plan and changed billing to ${newBilling}`,
-        };
-         // Préparation des données pour l'email
-         const emailPlanDetails = {
-            name: newPlan.name,
+        subscription.pendingUpgrade = {
+            newPlan: newPlan._id,
+            newCredits: newPlan.credits,
+            previousPlanName: oldPlan.name,
+            newPlanName: newPlan.name,
+            newBilling: newBilling,
+            newExpirationDate: newBilling === 'year' ? dateIn1Year() : dateIn1Month(),
             price: newPlan.price,
-            duration: newBilling === 'year' ? 12 : 1,
-            features: newPlan.featureDescriptions,
-            previousPlan: previousPlanName,
-            upgradeBenefits: newPlan.upgradeBenefits || []
+            currency: 'MAD'
         };
 
         await subscription.save();
-        await EmailService.sendUpgradeEmail(subscription.user?._id , emailPlanDetails);
-        await SubscriptionLogService.createSubscriptionLog(subscription._id, logData);
-        await ActivityHistoryService.createActivityHistory(
-            subscription.user,
-            'subscription_upgraded',
-            { targetName: `${newPlan?.name}`, targetDesc: `User upgraded to plan ${newPlanId}` }
-        );
+        
+        //Générer la session de paiement
+        const user = await User.findById(subscription.user);
 
-        return subscription;
+        const paymentSession = await PaiementService.generatePaymentSession({
+            name: newPlan.name,
+            price: newPlan.price,
+            currency: 'MAD',
+            customerId: subscription.user,
+            subscriptionId: subscription._id,
+            language: user?.language ?  getLanguageIdByLabel(user?.language) : 'en',
+            type: 'upgrade',
+            metadata: {
+                name: user?.displayName ? user?.displayName : user?.firstName + ' ' + user?.lastName, 
+                email: user?.email
+            }
+        });
+
+        return {
+            success : true,
+            data : paymentSession,
+        };
     } catch (error) {
         throw new Error('Error upgrading subscription: ' + error.message);
     }
 }
+
 const getSubscriptionById = async (id) => {
     return await Subscription.findById(id);
 }
@@ -368,48 +368,42 @@ async function renewSubscription(subscriptionId) {
             throw new Error('Subscription plan not found');
         }
 
-        const newExpirationDate = subscription.billing === 'year' ? dateIn1Year() : dateIn1Month();
-        subscription.dateExpired = newExpirationDate;
-        subscription.totalCredits = subscription.totalCredits + plan.credits;
-
-        // Créer un log de renouvellement
-        const logData = {
-            credits: plan.credits,
-            totalCredits: subscription.totalCredits + plan.credits,
-            subscriptionExpireDate: newExpirationDate,
-            type: 'Renew',
-            transactionId: 'TXN987654321', 
-            notes: 'User renewed the subscription',
+        subscription.pendingUpgrade = {
+            newPlan: subscription.plan,
+            newCredits: plan.credits,
+            previousPlanName: plan.name,
+            newPlanName: plan.name,
+            newBilling: subscription.billing,
+            newExpirationDate: subscription.billing === 'year' ? dateIn1Year() : dateIn1Month(),
+            price: plan.price,
+            currency: 'MAD'
         };
 
         await subscription.save();
 
         const user = await User.findById(subscription.user);
-        if (user) {
-            user.subscription = subscription._id; 
-            await user.save();
-        }
 
         const userLanguage = getLanguageIdByLabel(user?.language);
 
-        // Préparation des données pour l'email
-        const emailPlanDetails = {
+        // Générer la session de paiement
+        const paymentSession = await PaiementService.generatePaymentSession({
             name: plan.name,
             price: plan.price,
-            duration: subscription.billing === 'year' ? 12 : 1,
-            features: plan.featureDescriptions,
-            renewalDate: formatDate(newExpirationDate, userLanguage),
+            currency: 'MAD',
+            customerId: subscription.user,
+            subscriptionId: subscription._id,
+            language: userLanguage,
+            type: 'renew',
+            metadata: {
+                name: user?.displayName ? user?.displayName : user?.firstName + ' ' + user?.lastName,
+                email: user?.email
+            }
+        });
+            
+        return {
+            success: true,
+            data: paymentSession,
         };
-
-        await EmailService.sendRenewalEmail(subscription.user?._id , emailPlanDetails);
-
-        await SubscriptionLogService.createSubscriptionLog(subscription._id, logData);
-        await ActivityHistoryService.createActivityHistory(
-            subscription.user,
-            'subscription_renew',
-            { targetName: `Subscription renewed`, targetDesc: `User renewed subscription ${subscriptionId}` }
-        );
-        return subscription;
     } catch (error) {
         console.log(error)
         throw new Error('Error renewing subscription: ' + error.message);
@@ -458,5 +452,5 @@ async function deleteSubscription(subscriptionId) {
 module.exports = {  createSubscriptionForUser,  upgradeSubscription,  getSubscriptionById,
     cancelSubscription,  autoCancelExpiredSubscriptions,  pauseSubscription,  getSubscriptionsByUser,  renewSubscription,  dateInDays,  dateIn1Month,
     dateIn1Year,  getDateExpires , checkUserSubscription , getSubscriptions , updateSubscription , 
-    deleteSubscription , searchSubscriptionsByUser
+    deleteSubscription , searchSubscriptionsByUser , formatDate , getLanguageIdByLabel
 };

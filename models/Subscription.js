@@ -12,7 +12,20 @@ const SubscriptionSchema = new mongoose.Schema({
     },
     billing: { type: String, default: 'month' },
     totalCredits: Number,
-    subscriptionStatus: { type: String, enum: ['active', 'cancelled', 'paused' , 'notActive'], default: 'active' } ,
+    subscriptionStatus: { type: String, enum: ['active', 'cancelled', 'paused' , 'notActive'], default: 'notActive' } ,
+    transactions: [
+        {type: mongoose.Schema.Types.ObjectId, ref: 'Transaction' }
+    ],
+    pendingUpgrade: {
+        newPlan: { type: mongoose.Schema.Types.ObjectId, ref: 'SubscriptionPlan' },
+        newCredits: Number,
+        previousPlanName: String,
+        newPlanName: String,
+        newBilling: { type: String, enum: ['month', 'year' , null] },
+        newExpirationDate: {type:  Date},
+        price: Number,
+        currency: String
+    },
     autoRenew: {
         type: Boolean,
         default: true
