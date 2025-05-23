@@ -209,7 +209,7 @@ const generatePaymentSession = async (paymentDetails) => {
     chargeId: subscriptionId ? `${subscriptionId}_${timestamp}` : `charge_${timestamp}`,
     orderId: `${name}_plan_${type}_${timestamp}`,
     price: price !== 0 ? price.toString() : '1',
-    currency: currency || 'MAD',
+    currency: 'EUR',
     description: 'User Subscription Payment',
     
     // Deep linking
@@ -222,6 +222,65 @@ const generatePaymentSession = async (paymentDetails) => {
     successUrl: payzoneConfig.successUrl,
     failureUrl: payzoneConfig.failureUrl,
     cancelUrl: payzoneConfig.cancelUrl,
+  };
+  
+  // Generate signature
+  const jsonPayload = JSON.stringify(payload);
+  const signature = generatePaywallSignature(jsonPayload);
+  
+  return {
+    paywallUrl: payzoneConfig.paywallUrl,
+    payload: jsonPayload,
+    signature
+  };
+
+  // const res = await payzoneApiRequest('POST', '/api/v3/charges', payload);
+  
+  // const charge = res.data;
+
+  // console.log('Charge response:', charge);
+  // res.redirect(charge.redirectUrl);
+};
+
+const generatePaymentSessionForCredits = async (paymentDetails) => {
+  const { name, price, currency , customerId , subscriptionId , type , language , metadata = {}  } = paymentDetails;
+
+  console.log('Generating payment session for credits:', paymentDetails);
+  
+  // Current timestamp for unique identifiers
+  const timestamp = Math.floor(Date.now() / 1000);
+  
+  // Build payload
+  const payload = {
+    // Authentication parameters
+    merchantAccount: payzoneConfig.merchantAccount,
+    timestamp: timestamp,
+    skin: 'vps-1-vue',
+    
+    // Customer parameters
+    customerId: customerId || `user_${timestamp}`,
+    // customerCountry: 'US',
+    customerName: metadata?.name || 'User',
+    customerEmail: metadata?.email || '',
+    customerLocale: language === 'fr' ? 'fr_FR' : 'en_US',
+    
+    // Charge parameters
+    chargeId: subscriptionId ? `${subscriptionId}_${timestamp}` : `charge_${timestamp}`,
+    orderId: `${name}_plan_${type}_${timestamp}`,
+    price: price !== 0 ? price.toString() : '1',
+    currency: currency || 'USD',
+    description: 'User Credits Purchase',
+    
+    // Deep linking
+    mode: 'DEEP_LINK',
+    paymentMethod: 'CREDIT_CARD',
+    showPaymentProfiles: 'false',
+    
+    // URLs
+    callbackUrl: payzoneConfig.callbackUrl,
+    successUrl: payzoneConfig.successCreditsUrl,
+    failureUrl: payzoneConfig.failureCreditsUrl,
+    cancelUrl: payzoneConfig.cancelCreditsUrl,
   };
   
   // Generate signature
@@ -420,6 +479,31 @@ const processPaymentCallback = async (data) => {
           emailData.renewalDate = formatDate(subscription.dateExpired , userLanguage);
           await EmailingService.sendRenewalEmail(user._id, emailData);
           break;
+
+        case 'achat-credits':
+          const pendingcredits = subscription?.pendingUpgrade;
+          subscription.totalCredits = subscription.totalCredits + toValidNumber(pendingcredits.newCredits);
+          subscription.dateExpired = dateIn1Month();
+          subscription.pendingUpgrade = null;
+
+          const updatedSub = await subscription.save({new: true});
+
+          logData.credits = pendingcredits?.newCredits;
+          logData.totalCredits = updatedSub.totalCredits;
+          logData.subscriptionExpireDate = updatedSub.dateExpired;
+          logData.type = 'Purchase Credits';
+          logData.notes = `User purchased ${updatedSub?.totalCredits} credits`;
+
+          await SubscriptionLogService.createSubscriptionLog(updatedSub?._id, logData);
+          
+          await ActivityHistoryService.createActivityHistory(
+              user._id,
+              'purchase_credits',
+              { targetName: `${plan.name}`, targetDesc: `User purchased ${updatedSub?.totalCredits} credits` }
+          );
+          
+          // await EmailingService.sendPurchaseCreditsEmail(user._id, emailData);
+          break;
       }
 
       console.log('Subscription updated:', subscription);
@@ -577,5 +661,6 @@ module.exports = {
   getTransaction,
   captureTransaction,
   cancelTransaction,
-  refundTransaction
+  refundTransaction ,
+  generatePaymentSessionForCredits
 };

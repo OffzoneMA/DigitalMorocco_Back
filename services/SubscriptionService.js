@@ -97,7 +97,7 @@ async function createSubscriptionForUser(userId, planId, data) {
                 newBilling: data.billing,
                 newExpirationDate: dateExpired,
                 price: plan.price,
-                currency: 'MAD'
+                currency: 'USD'
             },
         });
 
@@ -110,7 +110,7 @@ async function createSubscriptionForUser(userId, planId, data) {
         const paymentSession = await PaiementService.generatePaymentSession({
             name: plan.name,
             price: plan.price,
-            currency: 'MAD',
+            currency: 'USD',
             customerId: userId,
             subscriptionId: newSubscription._id,
             language: user?.language ?  getLanguageIdByLabel(user?.language) : 'en',
@@ -159,7 +159,7 @@ async function upgradeSubscription(subscriptionId, newPlanId , newBilling) {
             newBilling: newBilling,
             newExpirationDate: newBilling === 'year' ? dateIn1Year() : dateIn1Month(),
             price: newPlan.price,
-            currency: 'MAD'
+            currency: 'USD'
         };
 
         await subscription.save();
@@ -170,7 +170,7 @@ async function upgradeSubscription(subscriptionId, newPlanId , newBilling) {
         const paymentSession = await PaiementService.generatePaymentSession({
             name: newPlan.name,
             price: newPlan.price,
-            currency: 'MAD',
+            currency: 'USD',
             customerId: subscription.user,
             subscriptionId: subscription._id,
             language: user?.language ?  getLanguageIdByLabel(user?.language) : 'en',
@@ -376,7 +376,7 @@ async function renewSubscription(subscriptionId) {
             newBilling: subscription.billing,
             newExpirationDate: subscription.billing === 'year' ? dateIn1Year() : dateIn1Month(),
             price: plan.price,
-            currency: 'MAD'
+            currency: 'USD'
         };
 
         await subscription.save();
@@ -389,7 +389,7 @@ async function renewSubscription(subscriptionId) {
         const paymentSession = await PaiementService.generatePaymentSession({
             name: plan.name,
             price: plan.price,
-            currency: 'MAD',
+            currency: 'USD',
             customerId: subscription.user,
             subscriptionId: subscription._id,
             language: userLanguage,
@@ -448,9 +448,53 @@ async function deleteSubscription(subscriptionId) {
     }
 }
 
+async function achatCredits(userId, data) {
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new Error('User not found');
+        }
+        const subscription = await Subscription.findOne({ user: userId, subscriptionStatus: 'active' });
+        if (!subscription) {
+            throw new Error('No active subscription found for this user');
+        }
+
+        subscription.pendingUpgrade.newCredits = data?.credits;
+        subscription.pendingUpgrade.price = data?.price;
+        subscription.pendingUpgrade.currency = 'USD';
+        
+
+        await subscription.save();
+        
+        // Process the payment
+        const paymentSession = await PaiementService.generatePaymentSessionForCredits({
+            name: 'Credits-Purchase',
+            price: data?.price,
+            currency: 'MAD',
+            customerId: userId,
+            subscriptionId: subscription?._id,
+            type: 'achat-credits',
+            language: user?.language ?  getLanguageIdByLabel(user?.language) : 'en',
+            metadata: {
+                name: user?.displayName ? user?.displayName : user?.firstName + ' ' + user?.lastName,
+                email: user?.email
+            }
+        });
+
+        return {
+            success: true,
+            data: paymentSession,
+        };
+    }
+    catch (error) {
+        console.log('error' , error)
+        throw new Error('Error purchasing credits: ' + error.message);
+    }
+}
+
 
 module.exports = {  createSubscriptionForUser,  upgradeSubscription,  getSubscriptionById,
     cancelSubscription,  autoCancelExpiredSubscriptions,  pauseSubscription,  getSubscriptionsByUser,  renewSubscription,  dateInDays,  dateIn1Month,
     dateIn1Year,  getDateExpires , checkUserSubscription , getSubscriptions , updateSubscription , 
-    deleteSubscription , searchSubscriptionsByUser , formatDate , getLanguageIdByLabel
+    deleteSubscription , searchSubscriptionsByUser , formatDate , getLanguageIdByLabel , achatCredits
 };
