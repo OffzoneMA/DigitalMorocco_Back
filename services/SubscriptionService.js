@@ -31,7 +31,7 @@ const languages = [
     { id: 'el', label: 'Greek' },
 ];
 
-const USD_TO_MAD = process.env.USD_TO_MAD ? parseFloat(process.env.USD_TO_MAD) : 10.1; // Taux de conversion USD vers MAD, par défaut 10.0
+const USD_TO_MAD = process.env.USD_TO_MAD ? parseFloat(process.env.USD_TO_MAD) : 9.7; // Taux de conversion USD vers MAD, par défaut 10.0
 
 function convertUsdToMad(amountInUsd) {
   return amountInUsd * USD_TO_MAD;
