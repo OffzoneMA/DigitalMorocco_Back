@@ -7,7 +7,6 @@ const ActivityHistoryService = require('../services/ActivityHistoryService');
 const EmailService = require('../services/EmailingService');
 const i18n = require('i18next');
 
-
 const languages = [
     { id: 'en', label: 'English' },
     { id: 'fr', label: 'French' },
@@ -30,28 +29,34 @@ const languages = [
     { id: 'da', label: 'Danish' },
     { id: 'no', label: 'Norwegian' },
     { id: 'el', label: 'Greek' },
-  ];
-  
-  function getLanguageIdByLabel(label) {
+];
+
+const USD_TO_MAD = process.env.USD_TO_MAD ? parseFloat(process.env.USD_TO_MAD) : 10.1; // Taux de conversion USD vers MAD, par défaut 10.0
+
+function convertUsdToMad(amountInUsd) {
+  return amountInUsd * USD_TO_MAD;
+}
+
+function getLanguageIdByLabel(label) {
     const language = languages.find(lang => lang.label === label);
     return language ? language.id : null;
-  }
+}
 
-  const formatDate = (timestamp, userLanguage) => {
+const formatDate = (timestamp, userLanguage) => {
     // Conversion du timestamp en objet Date
     const date = new Date(timestamp);
-    
+
     // Définir la locale en fonction de la langue de l'utilisateur
-    const locale = userLanguage === 'fr' ? 'fr-FR' : 
-                   userLanguage === 'es' ? 'es-ES' : 
-                   userLanguage === 'de' ? 'de-DE' : 'en-US';
-    
+    const locale = userLanguage === 'fr' ? 'fr-FR' :
+        userLanguage === 'es' ? 'es-ES' :
+            userLanguage === 'de' ? 'de-DE' : 'en-US';
+
     return date.toLocaleDateString(locale, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
     });
-  };
+};
 
 const getSubscriptions = async () => {
     return await Subscription.find()
@@ -81,114 +86,178 @@ async function createSubscriptionForUser(userId, planId, data) {
             throw new Error('Subscription Plan not found.');
         }
 
-        const dateExpired = data.billing === 'year' ? dateIn1Year() : dateIn1Month();
+        //Date d'expiration de la souscription
+        const dateExpired = plan?.price <=0 ? dateIn1Year() : (data.billing === 'year' ? dateIn1Year() : dateIn1Month());
 
-        const newSubscription = await Subscription.create({
+        const isFreePlan = plan.price <= 0;
+        const newCredits = plan.credits + (existingSubscription?.totalCredits || 0);
+
+        const subscriptionPayload = {
             ...data,
             user: userId,
-            plan: plan?._id,
-            totalCredits: existingSubscription?.totalCredits || 0,
-            dateExpired: dateExpired ,
+            plan: plan._id,
+            totalCredits: isFreePlan ? newCredits : (existingSubscription?.totalCredits || 0),
+            dateExpired: dateExpired,
+        };
+
+        // Cas d’un plan gratuit (sans paiement)
+        if (isFreePlan) {
+            const newSubscription = await Subscription.create({
+                ...subscriptionPayload,
+                subscriptionStatus: 'active',
+            });
+
+            user.subscription = newSubscription._id;
+            await user.save();
+
+            const emailPlanDetails = {
+                name: plan.name,
+                price: plan.price,
+                duration: data.billing === 'year' ? 12 : 1,
+                features: plan.featureDescriptions,
+            };
+
+            await EmailService.sendNewSubscriptionEmail(user._id, emailPlanDetails, user.language);
+
+            const logData = {
+                credits: plan.credits,
+                totalCredits: newCredits,
+                subscriptionExpireDate: dateExpired,
+                type: 'Initial Purchase',
+                transactionId: 'FREE_PLAN',
+                notes: 'User subscribed to a free plan',
+            };
+
+            await SubscriptionLogService.createSubscriptionLog(newSubscription._id, logData);
+            await ActivityHistoryService.createActivityHistory(
+                userId,
+                'new_subscription',
+                { targetName: `${plan.name}`, targetDesc: `User subscribed to free plan ${planId}` }
+            );
+
+            return {
+                success: true,
+                isPaymentSessionCreated: false,
+                data: newSubscription,
+            };
+        }
+
+        // Cas d’un plan payant (on prépare l’upgrade différé)
+        const newSubscription = await Subscription.create({
+            ...subscriptionPayload,
             pendingUpgrade: {
-                newPlan: plan?._id,
-                newCredits: plan?.credits + (existingSubscription?.totalCredits || 0),
-                previousPlanName: plan.name,
+                newPlan: plan._id,
+                newCredits: plan.credits,
+                previousPlanName: existingSubscription?.planName || '',
                 newPlanName: plan.name,
                 newBilling: data.billing,
                 newExpirationDate: dateExpired,
                 price: plan.price,
-                currency: 'USD'
+                currency: 'USD',
             },
         });
-
-        await newSubscription.save();
-
-        // user.subscription = newSubscription._id;
-        // await user.save();
 
         // Générer la session de paiement
         const paymentSession = await PaiementService.generatePaymentSession({
             name: plan.name,
-            price: plan.price,
-            currency: 'USD',
+            price: convertUsdToMad(plan.price),
+            currency: 'MAD',
             customerId: userId,
             subscriptionId: newSubscription._id,
-            language: user?.language ?  getLanguageIdByLabel(user?.language) : 'en',
+            language: user?.language ? getLanguageIdByLabel(user.language) : 'en',
             type: 'new',
             metadata: {
-                name: user?.displayName ? user?.displayName : user?.firstName + ' ' + user?.lastName,
-                email: user?.email
-            }
+                name: user.displayName || `${user.firstName} ${user.lastName}`,
+                email: user.email,
+            },
         });
 
         return {
             success: true,
+            isPaymentSessionCreated: true,
             data: paymentSession,
         };
     } catch (error) {
-        console.log(error)
+        console.error(error);
         throw new Error('Error creating subscription: ' + error.message);
     }
 }
 
-async function upgradeSubscription(subscriptionId, newPlanId , newBilling) {
+
+async function upgradeSubscription(subscriptionId, newPlanId, newBilling) {
     try {
         const subscription = await Subscription.findById(subscriptionId);
         if (!subscription) {
-            throw new Error('Subscription not found');
+            throw new Error('Subscription not found.');
         }
-        const oldPlan = await SubscriptionPlan.findById(subscription.plan);
-
-        const newPlan = await SubscriptionPlan.findById(newPlanId);
-        if (!newPlan) {
-            throw new Error('New subscription plan not found');
-        }
-
-        console.log("subscription", subscription)
 
         if (!isSubscriptionActive(subscription)) {
             throw new Error('Cannot upgrade an inactive subscription.');
         }
 
+        const oldPlan = await SubscriptionPlan.findById(subscription.plan);
+        const newPlan = await SubscriptionPlan.findById(newPlanId);
+
+        if (!newPlan) {
+            throw new Error('New subscription plan not found.');
+        }
+
+        // Ne pas upgrader vers le même plan
+        if (oldPlan._id.equals(newPlan._id)) {
+            throw new Error('You are already subscribed to this plan.');
+        }
+
+        // Interdire upgrade vers un plan gratuit (inutile)
+        if (newPlan.price <= 0) {
+            throw new Error('Cannot upgrade to a free plan.');
+        }
+
+        const user = await User.findById(subscription.user);
+        if (!user) {
+            throw new Error('User not found.');
+        }
+
+        const newExpirationDate = newBilling === 'year' ? dateIn1Year() : dateIn1Month();
 
         subscription.pendingUpgrade = {
             newPlan: newPlan._id,
             newCredits: newPlan.credits,
             previousPlanName: oldPlan.name,
             newPlanName: newPlan.name,
-            newBilling: newBilling,
-            newExpirationDate: newBilling === 'year' ? dateIn1Year() : dateIn1Month(),
+            newBilling,
+            newExpirationDate,
             price: newPlan.price,
             currency: 'USD'
         };
 
         await subscription.save();
-        
-        //Générer la session de paiement
-        const user = await User.findById(subscription.user);
 
         const paymentSession = await PaiementService.generatePaymentSession({
             name: newPlan.name,
-            price: newPlan.price,
-            currency: 'USD',
-            customerId: subscription.user,
+            price: convertUsdToMad(newPlan.price),
+            currency: 'MAD',
+            customerId: user._id,
             subscriptionId: subscription._id,
-            language: user?.language ?  getLanguageIdByLabel(user?.language) : 'en',
+            language: user.language ? getLanguageIdByLabel(user.language) : 'en',
             type: 'upgrade',
             metadata: {
-                name: user?.displayName ? user?.displayName : user?.firstName + ' ' + user?.lastName, 
-                email: user?.email
+                name: user.displayName || `${user.firstName} ${user.lastName}`,
+                email: user.email
             }
         });
 
         return {
-            success : true,
-            data : paymentSession,
+            success: true,
+            data: paymentSession,
+            isPaymentSessionCreated: true,
         };
+
     } catch (error) {
+        console.error(error);
         throw new Error('Error upgrading subscription: ' + error.message);
     }
 }
+
 
 const getSubscriptionById = async (id) => {
     return await Subscription.findById(id);
@@ -220,7 +289,7 @@ async function cancelSubscription(subscriptionId) {
             totalCredits: subscription.totalCredits,
             subscriptionExpireDate: subscription.dateExpired,
             type: 'Cancel',
-            transactionId: null, 
+            transactionId: null,
             notes: 'User cancelled the subscription',
         };
         // Préparation des données pour l'email
@@ -233,7 +302,7 @@ async function cancelSubscription(subscriptionId) {
         };
 
         // Envoi de l'email de bienvenue
-        await EmailService.sendCancellationEmail(user._id , emailPlanDetails);
+        await EmailService.sendCancellationEmail(user._id, emailPlanDetails);
         await SubscriptionLogService.createSubscriptionLog(subscription._id, logData);
         await ActivityHistoryService.createActivityHistory(
             subscription.user,
@@ -262,7 +331,7 @@ async function autoCancelExpiredSubscriptions() {
                 totalCredits: subscription.totalCredits,
                 subscriptionExpireDate: subscription.dateExpired,
                 type: 'Cancel',
-                transactionId: null, 
+                transactionId: null,
                 notes: 'Subscription automatically cancelled due to expiration',
             };
             await subscription.save();
@@ -297,7 +366,7 @@ async function pauseSubscription(subscriptionId) {
             totalCredits: subscription.totalCredits,
             subscriptionExpireDate: subscription.dateExpired,
             type: 'paused',
-            transactionId: null, 
+            transactionId: null,
             notes: 'User paused the subscription',
         };
         await SubscriptionLogService.createSubscriptionLog(subscription._id, logData);
@@ -320,8 +389,8 @@ async function getSubscriptionsByUser(userId) {
             user: userId,
             subscriptionStatus: 'active'
         })
-        .sort({ dateCreated: -1 }) 
-        .populate('plan'); 
+            .sort({ dateCreated: -1 })
+            .populate('plan');
 
         return subscription;
     } catch (error) {
@@ -336,15 +405,15 @@ async function searchSubscriptionsByUser(user, searchTerm) {
 
         const subscriptions = await Subscription.find({
             user: user?._id,
-            subscriptionStatus: 'active', 
+            subscriptionStatus: 'active',
             $or: [
-                { 'plan.name': regex },         
+                { 'plan.name': regex },
                 { 'subscriptionStatus': regex },
                 // { 'plan.description': regex },  
             ]
         })
-        .sort({ dateCreated: -1 }) 
-        .populate('plan');         
+            .sort({ dateCreated: -1 })
+            .populate('plan');
         return subscriptions;
     } catch (error) {
         console.log(error);
@@ -363,52 +432,58 @@ async function renewSubscription(subscriptionId) {
             throw new Error('Subscription is not active, cannot renew.');
         }
 
-        const plan = await SubscriptionPlan.findById(subscription?.plan)
+        const plan = await SubscriptionPlan.findById(subscription.plan);
         if (!plan) {
             throw new Error('Subscription plan not found');
         }
 
+        if (plan.price <= 0) {
+            throw new Error('Cannot renew a free subscription plan.');
+        }
+
+        const newExpirationDate = subscription.billing === 'year' ? dateIn1Year() : dateIn1Month();
+
         subscription.pendingUpgrade = {
-            newPlan: subscription.plan,
+            newPlan: plan._id,
             newCredits: plan.credits,
             previousPlanName: plan.name,
             newPlanName: plan.name,
             newBilling: subscription.billing,
-            newExpirationDate: subscription.billing === 'year' ? dateIn1Year() : dateIn1Month(),
+            newExpirationDate,
             price: plan.price,
-            currency: 'USD'
+            currency: 'USD',
         };
 
         await subscription.save();
 
         const user = await User.findById(subscription.user);
+        const userLanguage = getLanguageIdByLabel(user?.language) || 'en';
 
-        const userLanguage = getLanguageIdByLabel(user?.language);
-
-        // Générer la session de paiement
         const paymentSession = await PaiementService.generatePaymentSession({
             name: plan.name,
-            price: plan.price,
-            currency: 'USD',
+            price: convertUsdToMad(plan.price),
+            currency: 'MAD',
             customerId: subscription.user,
             subscriptionId: subscription._id,
             language: userLanguage,
             type: 'renew',
             metadata: {
-                name: user?.displayName ? user?.displayName : user?.firstName + ' ' + user?.lastName,
-                email: user?.email
-            }
+                name: user?.displayName || `${user?.firstName} ${user?.lastName}`,
+                email: user?.email,
+            },
         });
-            
+
         return {
             success: true,
             data: paymentSession,
+            isPaymentSessionCreated: true,
         };
     } catch (error) {
-        console.log(error)
+        console.error('Error renewing subscription:', error);
         throw new Error('Error renewing subscription: ' + error.message);
     }
 }
+ 
 
 async function checkUserSubscription(userId) {
     try {
@@ -417,7 +492,7 @@ async function checkUserSubscription(userId) {
             subscriptionStatus: 'active',
             dateExpired: { $gt: new Date() }  // Vérifie que la date d'expiration est dans le futur
         }).populate('plan');
-        
+
         return subscription ? true : false;
     } catch (error) {
         throw new Error('Error checking subscription: ' + error.message);
@@ -462,19 +537,19 @@ async function achatCredits(userId, data) {
         subscription.pendingUpgrade.newCredits = data?.credits;
         subscription.pendingUpgrade.price = data?.price;
         subscription.pendingUpgrade.currency = 'USD';
-        
+
 
         await subscription.save();
-        
+
         // Process the payment
         const paymentSession = await PaiementService.generatePaymentSessionForCredits({
             name: 'Credits-Purchase',
-            price: data?.price,
+            price: convertUsdToMad(data?.price),
             currency: 'MAD',
             customerId: userId,
             subscriptionId: subscription?._id,
             type: 'achat-credits',
-            language: user?.language ?  getLanguageIdByLabel(user?.language) : 'en',
+            language: user?.language ? getLanguageIdByLabel(user?.language) : 'en',
             metadata: {
                 name: user?.displayName ? user?.displayName : user?.firstName + ' ' + user?.lastName,
                 email: user?.email
@@ -487,14 +562,15 @@ async function achatCredits(userId, data) {
         };
     }
     catch (error) {
-        console.log('error' , error)
+        console.log('error', error)
         throw new Error('Error purchasing credits: ' + error.message);
     }
 }
 
 
-module.exports = {  createSubscriptionForUser,  upgradeSubscription,  getSubscriptionById,
-    cancelSubscription,  autoCancelExpiredSubscriptions,  pauseSubscription,  getSubscriptionsByUser,  renewSubscription,  dateInDays,  dateIn1Month,
-    dateIn1Year,  getDateExpires , checkUserSubscription , getSubscriptions , updateSubscription , 
-    deleteSubscription , searchSubscriptionsByUser , formatDate , getLanguageIdByLabel , achatCredits
+module.exports = {
+    createSubscriptionForUser, upgradeSubscription, getSubscriptionById,
+    cancelSubscription, autoCancelExpiredSubscriptions, pauseSubscription, getSubscriptionsByUser, renewSubscription, dateInDays, dateIn1Month,
+    dateIn1Year, getDateExpires, checkUserSubscription, getSubscriptions, updateSubscription,
+    deleteSubscription, searchSubscriptionsByUser, formatDate, getLanguageIdByLabel, achatCredits
 };
