@@ -32,7 +32,18 @@ const languages = [
     { id: 'el', label: 'Greek' },
 ];
 
-async function convertUSDtoMAD(amount) {
+async function convertCurrency1(amount, from = 'USD', to = 'MAD') {
+    try {
+        const response = await axios.get(`https://latest.currency-api.pages.dev/v1/currencies/${from.toLowerCase()}.json`);
+        console.log('Response:', response.data);
+        const rate = response.data[from.toLowerCase()][to.toLowerCase()];
+        return amount * rate;
+    } catch (error) {
+        console.error('Erreur:', error);
+    }
+}
+
+async function convertCurrency2(amount) {
     try {
         const response = await axios.get('https://v6.exchangerate-api.com/v6/e1289ff884515590e0ad3027/latest/USD');
         const rate = response?.data?.conversion_rates?.MAD;
@@ -40,6 +51,29 @@ async function convertUSDtoMAD(amount) {
     } catch (error) {
         console.error('Erreur API:', error.message);
         return null;
+    }
+}
+
+async function convertUSDtoMAD(amount) {
+    // Première tentative
+    try {
+        const result1 = await convertCurrency1(amount, 'USD', 'MAD');
+
+        return parseFloat(result1.toFixed(2));
+    } catch (error1) {
+        console.log('❌ API principale échouée, tentative avec l\'API de secours...');
+        
+        // Deuxième tentative
+        try {
+            const result2 = await convertCurrency2(amount);
+            console.log('✅ Succès avec l\'API de secours');
+            return result2;
+        } catch (error2) {
+            console.error('❌ Les deux APIs ont échoué');
+            console.error('Erreur API 1:', error1.message);
+            console.error('Erreur API 2:', error2.message);
+            return null;
+        }
     }
 }
 
