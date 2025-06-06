@@ -184,7 +184,7 @@ const payzoneApiRequest = async (method, path, data = null) => {
    * @returns {object} - Payment session details
    */
 const generatePaymentSession = async (paymentDetails) => {
-  const { name, price, currency, customerId , subscriptionId , language , type , metadata = {}  } = paymentDetails;
+  const { name, price , displayPrice , customerId , subscriptionId , language , type , metadata = {}  } = paymentDetails;
   
   // Current timestamp for unique identifiers
   const timestamp = Math.floor(Date.now() / 1000);
@@ -208,6 +208,8 @@ const generatePaymentSession = async (paymentDetails) => {
     orderId: `${name}_plan_${type}_${timestamp}`,
     price: price !== 0 ? price.toString() : '1',
     currency: 'MAD',
+    displayPrice: displayPrice,
+    displayCurrency: 'USD',
     description: 'User Subscription Payment',
     
     // Deep linking
@@ -241,7 +243,7 @@ const generatePaymentSession = async (paymentDetails) => {
 };
 
 const generatePaymentSessionForCredits = async (paymentDetails) => {
-  const { name, price, currency , customerId , subscriptionId , type , language , metadata = {}  } = paymentDetails;
+  const { name, price, displayPrice , customerId , subscriptionId , type , language , metadata = {}  } = paymentDetails;
   
   // Current timestamp for unique identifiers
   const timestamp = Math.floor(Date.now() / 1000);
@@ -264,7 +266,9 @@ const generatePaymentSessionForCredits = async (paymentDetails) => {
     chargeId: subscriptionId ? `${subscriptionId}_${timestamp}` : `charge_${timestamp}`,
     orderId: `${name}_plan_${type}_${timestamp}`,
     price: price !== 0 ? price.toString() : '1',
-    currency: currency || 'MAD',
+    currency: 'MAD',
+    displayPrice: displayPrice,
+    displayCurrency: 'USD',
     description: 'User Credits Purchase',
     
     // Deep linking

@@ -6,6 +6,7 @@ const PaiementService = require('./PaiementService');
 const ActivityHistoryService = require('../services/ActivityHistoryService');
 const EmailService = require('../services/EmailingService');
 const i18n = require('i18next');
+const axios = require('axios');
 
 const languages = [
     { id: 'en', label: 'English' },
@@ -31,10 +32,15 @@ const languages = [
     { id: 'el', label: 'Greek' },
 ];
 
-const USD_TO_MAD = process.env.USD_TO_MAD ? parseFloat(process.env.USD_TO_MAD) : 9.7; // Taux de conversion USD vers MAD, par défaut 10.0
-
-function convertUsdToMad(amountInUsd) {
-  return amountInUsd * USD_TO_MAD;
+async function convertUSDtoMAD(amount) {
+    try {
+        const response = await axios.get('https://v6.exchangerate-api.com/v6/e1289ff884515590e0ad3027/latest/USD');
+        const rate = response?.data?.conversion_rates?.MAD;
+        return (amount * rate).toFixed(2); // Retourne le montant converti avec 2 décimales
+    } catch (error) {
+        console.error('Erreur API:', error.message);
+        return null;
+    }
 }
 
 function getLanguageIdByLabel(label) {
@@ -156,12 +162,12 @@ async function createSubscriptionForUser(userId, planId, data) {
                 currency: 'USD',
             },
         });
-
+        const convertedPrice = await convertUsdToMad(plan.price);
         // Générer la session de paiement
         const paymentSession = await PaiementService.generatePaymentSession({
             name: plan.name,
-            price: convertUsdToMad(plan.price),
-            currency: 'MAD',
+            price: convertedPrice,
+            displayPrice: plan.price,
             customerId: userId,
             subscriptionId: newSubscription._id,
             language: user?.language ? getLanguageIdByLabel(user.language) : 'en',
@@ -231,10 +237,11 @@ async function upgradeSubscription(subscriptionId, newPlanId, newBilling) {
         };
 
         await subscription.save();
-
+        const convertedPrice = await convertUSDtoMAD(newPlan.price);
         const paymentSession = await PaiementService.generatePaymentSession({
             name: newPlan.name,
-            price: convertUsdToMad(newPlan.price),
+            price: convertedPrice,
+            displayPrice: newPlan.price,
             currency: 'MAD',
             customerId: user._id,
             subscriptionId: subscription._id,
@@ -458,11 +465,11 @@ async function renewSubscription(subscriptionId) {
 
         const user = await User.findById(subscription.user);
         const userLanguage = getLanguageIdByLabel(user?.language) || 'en';
-
+        const convertedPrice = await convertUSDtoMAD(plan.price);
         const paymentSession = await PaiementService.generatePaymentSession({
             name: plan.name,
-            price: convertUsdToMad(plan.price),
-            currency: 'MAD',
+            price: convertedPrice,
+            displayPrice: plan.price,
             customerId: subscription.user,
             subscriptionId: subscription._id,
             language: userLanguage,
@@ -540,12 +547,12 @@ async function achatCredits(userId, data) {
 
 
         await subscription.save();
-
+        const convertUsdToMad = await convertUSDtoMAD(data?.price);
         // Process the payment
         const paymentSession = await PaiementService.generatePaymentSessionForCredits({
             name: 'Credits-Purchase',
-            price: convertUsdToMad(data?.price),
-            currency: 'MAD',
+            price: convertUsdToMad,
+            displayPrice: data?.price,
             customerId: userId,
             subscriptionId: subscription?._id,
             type: 'achat-credits',
