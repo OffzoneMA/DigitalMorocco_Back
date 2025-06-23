@@ -237,7 +237,7 @@ passport.use('linkedin-signup',
         {
             clientID: process.env.LINKEDIN_CLIENT_ID,
             clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-            callbackURL: `${process.env.BACKEND_URL}/users/auth/linkedin/signup/callback`,
+            callbackURL: `https://apitest.digitalmorocco.net/users/auth/linkedin/signup/callback`,
             scope: ['email', 'profile','openid'],
             state: true,
         },
