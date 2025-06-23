@@ -499,7 +499,7 @@ const processPaymentCallback = async (data) => {
           await ActivityHistoryService.createActivityHistory(
               user._id,
               'purchase_credits',
-              { targetName: `${plan.name}`, targetDesc: `User purchased ${updatedSub?.totalCredits} credits` }
+              { targetName: `${pendingcredits.newCredits}`, targetDesc: `User purchased ${updatedSub?.totalCredits} credits` }
           );
           
           // await EmailingService.sendPurchaseCreditsEmail(user._id, emailData);
