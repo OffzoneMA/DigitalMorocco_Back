@@ -20,6 +20,16 @@ const createSubscriptionForUser = async (req, res) => {
     }
 };
 
+const achatCredits = async (req, res) => {
+    const userId = req.userId;
+    try {
+        const subscription = await SubscriptionService.achatCredits(userId, req.body);
+        res.status(201).json(subscription);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
 const upgradeSubscription = async (req, res) => {
     const { subscriptionId } = req.params;
 
@@ -128,4 +138,4 @@ const deleteSubscription = async (req, res) => {
 
 module.exports = { getSubscriptions, createSubscriptionForUser, upgradeSubscription, getSubscriptionById,
     cancelSubscription, autoCancelExpiredSubscriptions, pauseSubscription, updateSubscription,
-    getSubscriptionsByUser, renewSubscription  ,  deleteSubscription}
+    getSubscriptionsByUser, renewSubscription  ,  deleteSubscription  , achatCredits };

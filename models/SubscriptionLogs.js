@@ -15,7 +15,7 @@ const SubscriptionLogsSchema = new mongoose.Schema({
     subscriptionExpireDate: Date,
     type:{
         type: String,
-        enum: ['Renew', 'Initial Purchase' ,'Cancel' ,'Upgrade' , 'Add Payment Method' , 'Change Payment Method'],
+        enum: ['Renew', 'Initial Purchase' ,'Cancel' ,'Upgrade' , 'Add Payment Method' , 'Change Payment Method' , 'Purchase Credits'],
         default: 'Initial Purchase',
 
     },

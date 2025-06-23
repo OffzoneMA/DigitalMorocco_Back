@@ -11,6 +11,7 @@ const bodyParser = require('body-parser');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const prometheus = require('./metrics/prometheus.js');
+const rawBodyMiddleware = require('./middelware/rawBodyMiddleware')
 require("dotenv").config();
 
 // Import des configurations
@@ -49,7 +50,9 @@ const routes = {
   search: require('./routes/SearchRouter'),
   billing: require('./routes/BillingRouter'),
   notifications: require('./routes/NotificationRouter'),
-  sponsors: require('./routes/SponsorRouter')
+  sponsors: require('./routes/SponsorRouter'),
+  payment: require('./routes/PaymentRouter'),
+  transactions: require('./routes/TransactionRouter'),
 };
 
 class App {
@@ -68,13 +71,19 @@ class App {
 
         // Ajouter le middleware Prometheus avant les autres middlewares
         this.app.use(prometheus.metricsMiddleware);
-
+        this.app.use('/payment/callback', rawBodyMiddleware);
         // Configuration des middlewares de base
         this.app.use(cors());
-        this.app.use(express.json({ limit: "100mb" }));
+        // this.app.use(express.json({ limit: "100mb" }));
+        this.app.use((req, res, next) => {
+            if (req.path === '/payment/callback') {
+                return next(); // ne pas parser le JSON ici
+            }
+            express.json({ limit: "100mb" })(req, res, next);
+        });
         this.app.use(express.static(path.join(__dirname, "images")));
         this.app.use(cookieParser());
-        this.app.use(bodyParser.json());
+        // this.app.use(bodyParser.json());
         
         // Configuration de la session
         this.app.use(session({
@@ -138,6 +147,8 @@ class App {
           const response = `Test i18n works! ${req.t('welcome_email.title')} ${req.t('welcome_email.title1')}`;
           res.status(200).send(response);
       });
+
+    //   this.app.use('/payment/callback', rawBodyMiddleware);
 
       // Configuration des routes avec les noms originaux
       Object.entries(routes).forEach(([path, router]) => {

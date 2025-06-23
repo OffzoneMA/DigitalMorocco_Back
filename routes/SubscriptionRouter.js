@@ -138,6 +138,30 @@ router.post('/user/plan/:planId',AuthController.AuthenticateUser, SubscriptionCo
 
 /**
  * @swagger
+ * /subscriptions/achat-credits:
+ *   post:
+ *     summary: Purchase credits for a user
+ *     tags: [Subscription]
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *            type: object
+ *            properties:
+ *             credits:
+ *              type: number
+ *             price:
+ *              type: number
+ *     responses:
+ *       201:
+ *         description: Credits purchased
+ *       500:
+ *         description: Server error
+ */
+router.post('/achat-credits', AuthController.AuthenticateUser, SubscriptionController.achatCredits);
+
+/**
+ * @swagger
  * /subscriptions/{subscriptionId}/upgrade:
  *   post:
  *     summary: Upgrade a subscription
