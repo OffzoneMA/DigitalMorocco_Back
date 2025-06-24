@@ -290,14 +290,7 @@ passport.use('linkedin-signin',
         },
         async (accessToken, refreshToken, profile, done) => {
             try {                
-                // Extract email properly from LinkedIn response
-                const email = profile.emails?.[0]?.value || profile.email;
-                
-                if (!email) {
-                    console.error('No email found in LinkedIn profile');
-                    return done(null, false, { error: 'No email found in LinkedIn profile' });
-                }
-                        
+                     
                 const existingUser = await User.findOne({ linkedinId: profile.id });
         
                 if (existingUser) {
@@ -305,13 +298,6 @@ passport.use('linkedin-signin',
                     
                     try {
                         const result = await generateUserInfos(existingUser);
-                        console.log('generateUserInfos result:', {
-                            hasResult: !!result,
-                            hasUser: !!result?.user,
-                            hasToken: !!result?.accessToken,
-                            tokenType: typeof result?.accessToken,
-                            tokenValue: result?.accessToken ? 'exists' : 'null'
-                        });
                         
                         // Validate the result before returning
                         if (!result || !result.accessToken) {
@@ -337,7 +323,7 @@ passport.use('linkedin-signin',
                 const existingEmail = await User.findOne({ email });
                 if (existingEmail) {
                     console.log('Found user with matching email but not LinkedIn ID');
-                    return done(null, false, { error: 'This account is registered with a different method' });
+                    return done(null, false, { error: 'This account is not registered using this Social network' });
                 } else {
                     console.log('No account found with this email');
                     return done(null, false, { error: 'No account exists with this email' });
