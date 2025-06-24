@@ -397,6 +397,25 @@ router.get('/', EventController.getEvents);
 
 /**
  * @swagger
+ * /events/all-upcoming:
+ *   get:
+ *     summary: Get all events
+ *     description: Retrieve a list of all events
+ *     tags: [Events]
+ *     responses:
+ *       200:
+ *         description: List of events
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Event'
+ */
+router.get('/all-upcoming', EventController.getEventsUpcoming);
+
+/**
+ * @swagger
  * /events/authuser:
  *   get:
  *     summary: Get all events for the authenticated user
