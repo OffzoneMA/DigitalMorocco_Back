@@ -192,7 +192,7 @@ passport.use(
             clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
             callbackURL: '/users/auth/linkedin/callback',
             scope: ['r_liteprofile', 'r_emailaddress'], 
-            state: true,
+            state: false,
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
@@ -238,8 +238,9 @@ passport.use('linkedin-signup',
             clientID: process.env.LINKEDIN_CLIENT_ID,
             clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
             callbackURL: `${process.env.BACKEND_URL}/users/auth/linkedin/signup/callback`,
+            userProfileURL: 'https://api.linkedin.com/v2/userinfo',
             scope: ['email', 'profile','openid'],
-            state: true,
+            state: false,
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
@@ -259,15 +260,12 @@ passport.use('linkedin-signup',
                 await UserLogService.createUserLog('Account SignUp LinkedIn 0', newUser._id);
 
                 const result = await generateUserInfos(newUser);
-                console.log('Sign Up Full result object:', JSON.stringify(result, null, 2));
-                console.log('Sign Up User object structure:', JSON.stringify(result.user, null, 2));
-                console.log('Sign Up AccessToken type:', typeof result.accessToken);
 
-                // Verify result structure
-                // if (!result || !result.accessToken) {
-                //     console.log('Failed to generate user information and access token');
-                //     await UserLogService.createUserLog('Failed to generate user information LinkedIn SignUp', newUser._id);
-                // }
+                //Verify result structure
+                if (!result || !result.accessToken) {
+                    console.log('Failed to generate user information and access token');
+                    await UserLogService.createUserLog('Failed to generate user information LinkedIn SignUp', newUser._id);
+                }
 
                 await UserLogService.createUserLog('Account Initial Signup LinkedIn', newUser._id);
                 await UserLogService.createUserLog('Verified', newUser._id);
@@ -288,12 +286,10 @@ passport.use('linkedin-signin',
             callbackURL: `${process.env.BACKEND_URL}/users/auth/linkedin/signin/callback`,
             userProfileURL: 'https://api.linkedin.com/v2/userinfo',
             scope: ['email', 'profile','openid'],
-            state: true,
+            state: false,
         },
         async (accessToken, refreshToken, profile, done) => {
-            try {
-                console.log('LinkedIn profile received:', JSON.stringify(profile, null, 2));
-                
+            try {                
                 // Extract email properly from LinkedIn response
                 const email = profile.emails?.[0]?.value || profile.email;
                 
@@ -301,14 +297,10 @@ passport.use('linkedin-signin',
                     console.error('No email found in LinkedIn profile');
                     return done(null, false, { error: 'No email found in LinkedIn profile' });
                 }
-                
-                console.log('Looking for user with LinkedIn ID:', profile.id, 'and email:', email);
-        
+                        
                 const existingUser = await User.findOne({ linkedinId: profile.id });
-                console.log('Found user by LinkedIn ID:', existingUser ? 'Yes' : 'No');
         
                 if (existingUser) {
-                    console.log('Found existing user:', existingUser._id);
                     await UserLogService.createUserLog('Account Signin LinkedIn', existingUser._id);
                     
                     try {
@@ -323,7 +315,6 @@ passport.use('linkedin-signin',
                         
                         // Validate the result before returning
                         if (!result || !result.accessToken) {
-                            console.error('Failed to generate user info or token:', result);
                             return done(null, false, { error: 'Failed to generate authentication token' });
                         }
                         
@@ -333,12 +324,7 @@ passport.use('linkedin-signin',
                             socialId: profile.id, 
                             provider: 'linkedin' 
                         };
-                        
-                        console.log('Returning authentication object:', {
-                            hasUser: !!returnObject.user,
-                            hasAuth: !!returnObject.auth,
-                            authType: typeof returnObject.auth
-                        });
+                    
                         
                         return done(null, returnObject);
                     } catch (genError) {
