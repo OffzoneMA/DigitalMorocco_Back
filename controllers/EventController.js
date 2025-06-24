@@ -33,6 +33,15 @@ const getEvents=async(req,res)=>{
     }
 }
 
+const getEventsUpcoming =async(req,res)=>{
+  try {
+      const events = await EventService.getAllEventsUpcoming(req.query);
+      res.status(200).json(events);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+}
+
 const getEventById=async(req,res)=>{
     try {
         const eventId = req.params.id;
@@ -264,5 +273,5 @@ module.exports = {
     sendTicketToUser, supprimerCollection , addConnectedAttendee , updateConnectedAttendee , deleteConnectedAttendee ,
     addPromoCode , getEventsForUser , getDistinctFieldValues , getPastEventsForUserParticipate , getDistinctValuesForUser , 
     createEventWithJson , getAllUpcomingEventsForUserParticipate , getEventByIdWithParticipate , 
-    getUpcomingEventsWithoutSponsorNotSent , getDistinctFieldValuesUpcomingEventNotSent
+    getUpcomingEventsWithoutSponsorNotSent , getDistinctFieldValuesUpcomingEventNotSent , getEventsUpcoming
 };

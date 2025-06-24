@@ -25,6 +25,28 @@ async function getAllEvents(args) {
     }
 }
 
+async function getAllEventsUpcoming(args) {
+  try {
+    const page = parseInt(args.page, 10) || 1;
+    const pageSize = parseInt(args.pageSize, 10) || 10;
+    const skip = (page - 1) * pageSize;
+
+    // Appliquer le même filtre à countDocuments
+    const filter = { status: 'upcoming' };
+    const totalCount = await Event.countDocuments(filter);
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    const events = await Event.find(filter)
+      .skip(skip)
+      .limit(pageSize);
+
+    return { totalPages, events };
+  } catch (error) {
+    console.error('Error in getAllEventsUpcoming:', error);
+    throw error;
+  }
+}
+
 //Events by userId
 async function getAllEventsByUser(userId) {
     try {
@@ -709,5 +731,5 @@ module.exports = {
     countEventsByUserId , getEventsForUser , getDistinctValues , getPastEventsWithUserParticipation ,
     getDistinctValuesByUser , createEventWithJson , searchParticipateEvents , searchUpcomingEvents ,
     searchPastEvents , getAllUpcommingEvents , getEventByIdWithParticipate , getAllUpcomingEventsWithSponsors , 
-    getAllUpcomingEventsWithSponsorsNotSent , getDistinctFieldValuesForUpcomingEventsNotSent
+    getAllUpcomingEventsWithSponsorsNotSent , getDistinctFieldValuesForUpcomingEventsNotSent , getAllEventsUpcoming
 };
