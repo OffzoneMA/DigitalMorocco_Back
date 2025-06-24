@@ -290,7 +290,14 @@ passport.use('linkedin-signin',
         },
         async (accessToken, refreshToken, profile, done) => {
             try {                
-                     
+                // Extract email properly from LinkedIn response
+                const email = profile.emails?.[0]?.value || profile.email;
+                
+                if (!email) {
+                    console.error('No email found in LinkedIn profile');
+                    return done(null, false, { error: 'No email found in LinkedIn profile' });
+                }
+                        
                 const existingUser = await User.findOne({ linkedinId: profile.id });
         
                 if (existingUser) {
