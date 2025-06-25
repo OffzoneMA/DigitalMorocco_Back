@@ -1,4 +1,4 @@
-const storage=require('../config/FireStorage')
+const storage = require('../config/FireStorage')
 const { listAll,ref, uploadBytesResumable, getDownloadURL,  deleteObject } = require('firebase/storage');
 
 
@@ -32,7 +32,6 @@ const deleteFile = async (filename,path) => {
 
 const deleteFolder = async (path) => {
     try {
-        
         const storageRef = ref(storage, path );
         const items = await listAll(storageRef);
         const deletePromises = items.items.map(async (itemRef) => {

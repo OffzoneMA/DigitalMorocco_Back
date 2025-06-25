@@ -121,7 +121,9 @@ const signInUser = async (u) => {
         status: 'success'
     });
 
-      await user.updateOne({ lastLogin: new Date() });
+      user.lastLogin = new Date();
+      await user.save();
+    
       const result = await generateUserInfos(user);
       return result;
 
