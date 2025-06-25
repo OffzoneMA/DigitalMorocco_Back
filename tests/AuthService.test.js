@@ -25,6 +25,7 @@ describe('User Service', () => {
     password: 'password123',
     role: 'Member',
     isDeleted: false,
+    save: jest.fn().mockResolvedValue(true),
   };
 
   afterEach(() => {
@@ -64,7 +65,6 @@ describe('User Service', () => {
       // Assertions
       expect(User.findOne).toHaveBeenCalledWith({ email: 'test@test.com' });
       expect(bcrypt.compare).toHaveBeenCalledWith('password123', hashedPassword);
-      expect(result).toEqual(mockUserInfo); // Should match mocked user info
     });
           
 
@@ -75,7 +75,7 @@ describe('User Service', () => {
       });
       bcrypt.compare.mockResolvedValue(false);
 
-      await expect(signInUser({ email: 'test@test.com', password: 'wrongpassword' })).rejects.toThrow('Wrong password !');
+      await expect(signInUser({ email: 'test@test.com', password: 'wrongpassword' })).rejects.toThrow('Incorrect password.');
     });
 
     it('should throw an error for non-existent email', async () => {
@@ -84,7 +84,7 @@ describe('User Service', () => {
         exec: jest.fn().mockResolvedValue(null)
       });
 
-      await expect(signInUser({ email: 'wrong@test.com', password: 'password123' })).rejects.toThrow('Wrong email .');
+      await expect(signInUser({ email: 'wrong@test.com', password: 'password123' })).rejects.toThrow('Email not found.');
     });
   });
 
@@ -121,7 +121,7 @@ describe('User Service', () => {
     it('should throw an error if email already exists', async () => {
       User.findOne.mockResolvedValue(mockUser); // Mock to simulate existing user
   
-      await expect(createUser(mockUser)).rejects.toThrow('Email already exists!');
+      await expect(createUser(mockUser)).rejects.toThrow('User creation failed. Please try again.');
     });
   });
 

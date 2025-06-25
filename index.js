@@ -256,4 +256,4 @@ const connectToDatabase = async (retryCount = 5, delay = 10000) => {
 // Démarrage de l'application
 connectToDatabase();
 
-// module.exports = new App().app;
+module.exports = new App().app;
