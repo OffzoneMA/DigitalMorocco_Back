@@ -196,7 +196,7 @@ async function createSubscriptionForUser(userId, planId, data) {
                 currency: 'USD',
             },
         });
-        const convertedPrice = await convertUsdToMad(plan.price);
+        const convertedPrice = await convertUSDtoMAD(plan.price);
         // Générer la session de paiement
         const paymentSession = await PaiementService.generatePaymentSession({
             name: plan.name,
@@ -231,9 +231,9 @@ async function upgradeSubscription(subscriptionId, newPlanId, newBilling) {
             throw new Error('Subscription not found.');
         }
 
-        if (!isSubscriptionActive(subscription)) {
-            throw new Error('Cannot upgrade an inactive subscription.');
-        }
+        // if (!isSubscriptionActive(subscription)) {
+        //     throw new Error('Cannot upgrade an inactive subscription.');
+        // }
 
         const oldPlan = await SubscriptionPlan.findById(subscription.plan);
         const newPlan = await SubscriptionPlan.findById(newPlanId);
@@ -469,9 +469,9 @@ async function renewSubscription(subscriptionId) {
             throw new Error('Subscription not found');
         }
 
-        if (!isSubscriptionActive(subscription)) {
-            throw new Error('Subscription is not active, cannot renew.');
-        }
+        // if (!isSubscriptionActive(subscription)) {
+        //     throw new Error('Subscription is not active, cannot renew.');
+        // }
 
         const plan = await SubscriptionPlan.findById(subscription.plan);
         if (!plan) {
