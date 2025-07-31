@@ -15,11 +15,11 @@ const User = require("../models/User");
 const NotificationService = require('../services/NotificationService');
 
 const CreateInvestorContactReq = async (memberId, investorId) => {
-    const cost = process.env.credits || 3
+    const cost = 320
     const delay = process.env.Contact_Delay_After_Reject_by_days || 180
     const member = await MemberService.getMemberById(memberId)
     const investor = await InvestorService.getInvestorById(investorId)
-    const subscription = await SubscriptionService.getSubscriptionsByUser(member.owner)
+    const subscription = await SubscriptionService.getSubscriptionsByUser(member?.owner)
 
     if (!member || !investor) {
         throw new Error("member Or Investor doesn't exist")
@@ -73,7 +73,7 @@ const CreateInvestorContactReq = async (memberId, investorId) => {
     
     // Log the activity in the history
     await ActivityHistoryService.createActivityHistory(
-        member.owner,
+        member?.owner,
         'contact_request_sent', 
         historyData 
     );
@@ -81,7 +81,7 @@ const CreateInvestorContactReq = async (memberId, investorId) => {
     // await NotificationService.createNotification(investor?.owner , '' , '' , member?.owner , '' ,'')
 
     //Send Email Notification to the investor
-    await EmailingService.sendNewContactRequestEmail(investor.owner, member?.companyName, member?.country);
+    await EmailingService.sendNewContactRequestEmail(investor?.owner, member?.companyName, member?.country);
 
 
     return contact
@@ -93,7 +93,7 @@ const CreateInvestorContactReqForProject = async (memberId, investorId , project
     const member = await MemberService.getMemberById(memberId)
     const investor = await InvestorService.getInvestorById(investorId)
     const project = await ProjectService.getProjectById(projectId) 
-    const subscription = await SubscriptionService.getSubscriptionsByUser(member.owner);
+    const subscription = await SubscriptionService.getSubscriptionsByUser(member?.owner);
 
     if (!member || !investor || !project) {
         throw new Error("member Or Investor Or Project doesn't exist")
@@ -128,7 +128,7 @@ const CreateInvestorContactReqForProject = async (memberId, investorId , project
     let docLink = null;
 
     if (document) {
-        docLink = await uploadService.uploadFile(document, `Members/${member.owner}/Project_documents`, document.originalname);
+        docLink = await uploadService.uploadFile(document, `Members/${member?.owner}/Project_documents`, document.originalname);
     }
 
     const contactRequestData = {
@@ -162,13 +162,13 @@ const CreateInvestorContactReqForProject = async (memberId, investorId , project
     });
 
     await ActivityHistoryService.createActivityHistory(
-        member.owner,
+        member?.owner,
         'contact_sent',
         { targetName: `${investor?.companyName || investor?.name}`, targetDesc: `Contact request from member to investor ${investorId} for project ${projectId}` , for: project?.name }
     );
 
     await ActivityHistoryService.createActivityHistory(
-        investor.owner,
+        investor?.owner,
         'contact_request_received',
         { targetName: `${project?.name}`, targetDesc: `Contact request received from member ${memberId} for project ${projectId}` , from: member?.companyName }
     );
@@ -184,10 +184,10 @@ const CreateInvestorContactReqForProject = async (memberId, investorId , project
 
 // First part: Deduct credits and create draft contact request
 const CreateDraftContactRequest = async (memberId, investorId) => {
-    const cost = process.env.credits || 100;
+    const cost = 320;
     const member = await MemberService.getMemberById(memberId);
     const investor = await InvestorService.getInvestorById(investorId);
-    const subscription = await SubscriptionService.getSubscriptionsByUser(member.owner);
+    const subscription = await SubscriptionService.getSubscriptionsByUser(member?.owner);
     if (!member) {
         throw new Error("Member doesn't exist");
     }
@@ -460,7 +460,7 @@ const getAllContactRequest = async (args, role, id) => {
       // Filtrage par secteurs de projets
       if (args?.projectSectors && args.projectSectors.length > 0) {
         const projectQueryBySectors = await Project.find({
-          sector: { $in: args.projectSectors.split(',') }
+          sector: { $in: args.projectSectors.split(',') } , status: { $ne: "Draft" }
         }).select('_id');
   
         const projectIdsBySectors = projectQueryBySectors.map(project => project._id);
@@ -472,7 +472,7 @@ const getAllContactRequest = async (args, role, id) => {
       // Filtrage par financement
       if (args?.funding) {
         const projectQueryByFunding = await Project.find({
-          funding: args.funding
+          funding: args.funding , status: { $ne: "Draft" }
         }).select('_id');
   
         const projectIdsByFunding = projectQueryByFunding.map(project => project._id);
@@ -484,7 +484,7 @@ const getAllContactRequest = async (args, role, id) => {
       // Filtrage par pays
       if (args?.country) {
         const projectQueryByCountry = await Project.find({
-          country: args.country
+          country: args.country , status: { $ne: "Draft" }
         }).select('_id');
   
         const projectIdsByCountry = projectQueryByCountry.map(project => project._id);
@@ -496,7 +496,7 @@ const getAllContactRequest = async (args, role, id) => {
       // Filtrage par stade de projet
       if (args?.projectStage) {
         const projectQueryByStage = await Project.find({
-          stage: args.projectStage
+          stage: args.projectStage , status: { $ne: "Draft" }
         }).select('_id');
   
         const projectIdsByStage = projectQueryByStage.map(project => project._id);
@@ -508,7 +508,7 @@ const getAllContactRequest = async (args, role, id) => {
       // Filtrage par statut de projet
       if (args?.projectStatus && args.projectStatus.length > 0) {
         const projectQueryByStatus = await Project.find({
-          status: { $in: args.projectStatus.split(',') }
+          status: { $in: args.projectStatus.split(',') } , status: { $ne: "Draft" }
         }).select('_id');
   
         const projectIdsByStatus = projectQueryByStatus.map(project => project._id);

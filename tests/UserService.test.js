@@ -1,80 +1,165 @@
-const { approveUser } = require('../services/UserService');
-const requestServive = require('../services/RequestService');
-const MemberService = require('../services/MemberService');
-const PartnerService = require('../services/PartnerService');
-const InvestorService = require('../services/InvestorService');
+const UserService = require('../services/UserService');
 const User = require('../models/User');
+const Member = require('../models/Member');
+const Partner = require('../models/Partner');
+const Investor = require('../models/Investor');
+const UserLog = require('../models/UserLog');
+const requestServive = require('../services/RequestService');
+const FileService = require('../services/FileService');
+const EmailingService = require('../services/EmailingService');
+const ActivityHistoryService = require('../services/ActivityHistoryService');
+const bcrypt = require('bcrypt');
+const { Types } = require('mongoose');
 
-jest.mock('../services/RequestService');
+// Mock des dépendances
+jest.mock('../models/User');
+jest.mock('../models/Member');
+jest.mock('../models/Partner');
+jest.mock('../models/Investor');
+jest.mock('../models/UserLog');
+jest.mock('bcrypt');
 jest.mock('../services/MemberService');
 jest.mock('../services/PartnerService');
 jest.mock('../services/InvestorService');
-jest.mock('../models/User');
+jest.mock('../services/RequestService');
+jest.mock('../services/FileService');
+jest.mock('../services/EmailingService');
+jest.mock('../services/ActivityHistoryService');
 
 describe('UserService', () => {
-  describe('approveUser', () => {
-    it('should approve a user with role "member"', async () => {
-      const id = 'user-id';
-      const role = 'member';
-      const request = { rc_ice: '123456' };
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
-      User.findById.mockResolvedValueOnce(true);
-      requestServive.getRequestByUserId.mockResolvedValueOnce(request);
+  describe('getUsers', () => {
+    it('should return users with pagination', async () => {
+      const mockUsers = [{ _id: '1', name: 'User1' }, { _id: '2', name: 'User2' }];
+      User.find.mockReturnValue({
+        skip: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockResolvedValue(mockUsers)
+      });
 
-      await approveUser(id, role);
+      const result = await UserService.getUsers({ start: 0, qt: 10 });
+      expect(result).toEqual(mockUsers);
+      expect(User.find).toHaveBeenCalled();
+    });
+  });
 
-      expect(MemberService.CreateMember).toHaveBeenCalledWith({ owner: id, rc_ice: request.rc_ice });
-      expect(requestServive.removeRequestByUserId).toHaveBeenCalledWith(id, role);
-      expect(User.findByIdAndUpdate).toHaveBeenCalledWith(id, { status: 'accepted' });
+  describe('deleteUser', () => {
+    it('should delete user and related data', async () => {
+      const userId = new Types.ObjectId();
+      User.findById.mockResolvedValue({ _id: userId, role: 'member' });
+      
+      await UserService.deleteUser(userId);
+      
+      expect(User.deleteOne).toHaveBeenCalledWith({ _id: userId });
+      expect(UserLog.deleteMany).toHaveBeenCalledWith({ owner: userId });
+    });
+  });
+
+  describe('updateUser', () => {
+    it('should update user with hashed password', async () => {
+      const userId = new Types.ObjectId();
+      const userData = { password: 'newpass' };
+      const hashedPass = 'hashedpass';
+      
+      bcrypt.hash.mockResolvedValue(hashedPass);
+      User.findByIdAndUpdate.mockResolvedValue({ _id: userId, password: hashedPass });
+
+      const result = await UserService.updateUser(userId, userData);
+      
+      expect(bcrypt.hash).toHaveBeenCalledWith('newpass', 10);
+      expect(User.findByIdAndUpdate).toHaveBeenCalledWith(
+        userId,
+        { password: hashedPass },
+        { new: true, runValidators: true }
+      );
+    });
+  });
+
+  describe('getUserByID', () => {
+    it('should return user with subscription', async () => {
+      const userId = new Types.ObjectId();
+      const mockUser = { _id: userId, name: 'Test User' };
+      
+      User.findById.mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(mockUser)
+      });
+
+      const result = await UserService.getUserByID(userId);
+      expect(result).toEqual(mockUser);
     });
 
-    it('should approve a user with role "partner"', async () => {
-      const id = 'user-id';
-      const role = 'partner';
-      const request = { num_rc: '789012' };
+    it('should throw error if user not found', async () => {
+      User.findById.mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(null)
+      });
 
-      User.findById.mockResolvedValueOnce(true);
-      requestServive.getRequestByUserId.mockResolvedValueOnce(request);
-
-      await approveUser(id, role);
-
-      expect(PartnerService.CreatePartner).toHaveBeenCalledWith({ owner: id, num_rc: request.num_rc });
-      expect(requestServive.removeRequestByUserId).toHaveBeenCalledWith(id, role);
-      expect(User.findByIdAndUpdate).toHaveBeenCalledWith(id, { status: 'accepted' });
+      await expect(UserService.getUserByID('invalid'))
+        .rejects.toThrow('User not found');
     });
+  });
 
-    it('should approve a user with role "investor"', async () => {
-      const id = 'user-id';
-      const role = 'investor';
-      const request = { linkedin_link: 'https://linkedin.com/in/user' };
+  describe('approveUserService', () => {
+    it('should approve member user', async () => {
+      const userId = new Types.ObjectId();
+      const mockRequest = { rc_ice: '123' };
+      
+      User.findById.mockResolvedValue({ _id: userId });
+      requestServive.getRequestByUserId.mockResolvedValue(mockRequest);
+      User.findByIdAndUpdate.mockResolvedValue({ _id: userId, status: 'accepted' });
 
-      User.findById.mockResolvedValueOnce(true);
-      requestServive.getRequestByUserId.mockResolvedValueOnce(request);
-
-      await approveUser(id, role);
-
-      expect(InvestorService.CreateInvestor).toHaveBeenCalledWith({ owner: id, linkedin_link: request.linkedin_link });
-      expect(requestServive.removeRequestByUserId).toHaveBeenCalledWith(id, role);
-      expect(User.findByIdAndUpdate).toHaveBeenCalledWith(id, { status: 'accepted' });
+      const result = await UserService.approveUserService(userId, 'member');
+      
+      expect(Member.create).toHaveBeenCalledWith({ owner: userId, rc_ice: '123' });
+      expect(result.status).toBe('accepted');
     });
+  });
 
-    it('should throw an error if user does not exist', async () => {
-      const id = 'user-id';
-      const role = 'member';
+  describe('resetPassword', () => {
+    it('should reset password successfully', async () => {
+      const token = 'valid-token';
+      const mockUser = { _id: '1', password: 'old' };
+      
+      EmailingService.verifyResetToken.mockResolvedValue(mockUser);
+      bcrypt.hash.mockResolvedValue('new-hashed');
+      User.findByIdAndUpdate.mockResolvedValue(true);
 
-      User.findById.mockResolvedValueOnce(false);
-
-      await expect(approveUser(id, role)).rejects.toThrow('User doesn\'t exist!');
+      await UserService.resetPassword(token, 'newpass', 'newpass', 'en');
+      
+      expect(bcrypt.hash).toHaveBeenCalledWith('newpass', 10);
+      expect(ActivityHistoryService.createActivityHistory).toHaveBeenCalled();
     });
+  });
 
-    it('should throw an error if request is not found', async () => {
-      const id = 'user-id';
-      const role = 'member';
+  describe('updateUserProfile', () => {
+    it('should update user profile with image', async () => {
+      const userId = new Types.ObjectId();
+      const mockFile = { originalname: 'test.jpg' };
+      const mockUser = { _id: userId, save: jest.fn().mockResolvedValue(true) };
+      
+      User.findById.mockResolvedValue(mockUser);
+      FileService.uploadFile.mockResolvedValue('http://image.url');
 
-      User.findById.mockResolvedValueOnce(true);
-      requestServive.getRequestByUserId.mockResolvedValueOnce(null);
+      await UserService.updateUserProfile(userId, { name: 'New' }, mockFile);
+      
+      expect(FileService.uploadFile).toHaveBeenCalled();
+      expect(mockUser.save).toHaveBeenCalled();
+    });
+  });
 
-      await expect(approveUser(id, role)).rejects.toThrow('Request not found!');
+  describe('countUsersByMonth', () => {
+    it('should return monthly counts', async () => {
+      const currentYear = new Date().getFullYear();
+      User.countDocuments.mockResolvedValue(5);
+
+      const result = await UserService.countUsersByMonth();
+      
+      expect(result.year).toBe(currentYear);
+      expect(result.monthlyCounts).toHaveLength(12);
     });
   });
 });

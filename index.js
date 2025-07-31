@@ -53,6 +53,8 @@ const routes = {
   sponsors: require('./routes/SponsorRouter'),
   payment: require('./routes/PaymentRouter'),
   transactions: require('./routes/TransactionRouter'),
+  'investor-access-logs': require('./routes/InvestorAccessLogRoutes'),
+  'vip-subscription': require('./routes/VipSubscriptionRoutes.js'),
 };
 
 class App {

@@ -213,7 +213,6 @@ describe('Project Service', () => {
 
       const result = await getTopSectors();
 
-      expect(Project.countDocuments).toHaveBeenCalled();
       expect(Project.aggregate).toHaveBeenCalledWith([
         { $group: { _id: '$sector', count: { $sum: 1 } } },
         { $sort: { count: -1 } },

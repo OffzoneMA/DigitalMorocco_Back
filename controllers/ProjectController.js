@@ -20,6 +20,15 @@ const deleteProject = async (req, res) => {
     }
 };
 
+const deleteProjectCompletly = async (req, res) => {
+    try {
+        const result = await ProjectService.deleteProjectCompletly(req.params.projectId);
+        res.status(200).json({ message: result });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 const getProjectById = async (req, res) => {
     try {
         const project = await ProjectService.getProjectById(req.params.projectId);
@@ -136,8 +145,18 @@ async function deleteProjectLogo (req, res) {
   }
 }
 
+const getTheDraftProjects = async (req, res) => {
+  try {
+    console.log("Fetching draft projects for memberId:", req.memberId);
+      const memberId = req.memberId;
+      const projects = await ProjectService.getTheDraftProjects(memberId);
+      res.status(200).json(projects);
+  } catch (error) {
+      res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {  getprojects , deleteProject , getProjectById , addMilestone , 
   removeMilestone , updateProjectStatus , getTopSectors , getAllProjects , 
   getDistinctValuesForField , updateProject , deleteProjectDocument , 
-  deleteProjectLogo
-}
+  deleteProjectLogo , getTheDraftProjects , deleteProjectCompletly };

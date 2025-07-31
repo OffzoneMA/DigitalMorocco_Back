@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ProjectController = require('../controllers/ProjectController');
+const AuthController = require('../controllers/AuthController');
 
 /**
  * @swagger
@@ -171,6 +172,41 @@ router.get('/distinct/:field', ProjectController.getDistinctValuesForField);
  *         description: Project deleted successfully.
  */
 router.delete('/:projectId', ProjectController.deleteProject);
+
+/**
+ * @swagger
+ * /projects/delete-completly/{projectId}:
+ *   delete:
+ *     summary: Delete a project completely
+ *     tags: [Projects]
+ *     description: Delete a project completly by its ID.
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         description: ID of the project to delete.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Project deleted successfully.
+ */
+router.delete('/delete-completly/:projectId', ProjectController.deleteProjectCompletly);
+
+/**
+ * @swagger
+ * /projects/draft:
+ *   get:
+ *     summary: Retrieve draft projects for a member
+ *     tags: [Projects]
+ *     description: Get the draft project associated with the authenticated member.
+ *     responses:
+ *       200:
+ *         description: A list of draft projects
+ *       500:
+ *         description: Server error
+ */
+router.get('/draft', AuthController.AuthenticateMember, ProjectController.getTheDraftProjects);
 
 /**
  * @swagger

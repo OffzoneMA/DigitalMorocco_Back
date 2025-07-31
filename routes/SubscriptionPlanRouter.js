@@ -36,6 +36,8 @@ const AuthController = require("../controllers/AuthController")
  *           type: number
  *         annualPrice: 
  *           type: number
+ *         discountRate:
+ *           type: number
  *         annualDiscountRate: 
  *           type: number
  *         duration:

@@ -136,6 +136,22 @@ const deleteSubscription = async (req, res) => {
     }
 };
 
+const deductionCredits = async (req, res) => {
+    const userId = req.userId;
+    const { credits , serviceType } = req.body;
+    console.log("Deduction Credits:", req.body);
+    if (!credits || credits <= 0) {
+        return res.status(400).json({ error: 'Invalid credits amount' });
+    }
+
+    try {
+        const subscription = await SubscriptionService.deductionCredits(userId, credits , serviceType);
+        res.status(201).json(subscription);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
 module.exports = { getSubscriptions, createSubscriptionForUser, upgradeSubscription, getSubscriptionById,
     cancelSubscription, autoCancelExpiredSubscriptions, pauseSubscription, updateSubscription,
-    getSubscriptionsByUser, renewSubscription  ,  deleteSubscription  , achatCredits };
+    getSubscriptionsByUser, renewSubscription  ,  deleteSubscription  , achatCredits , checUserkSubscription, deductionCredits };

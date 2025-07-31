@@ -1,10 +1,13 @@
 const Subscription = require('../models/Subscription');
 const User = require('../models/User');
+const Project = require('../models/Project');
+const Member = require('../models/Member');
 const SubscriptionPlan = require('../models/SubscriptionPlan');
 const SubscriptionLogService = require('../services/SubscriptionLogService');
 const PaiementService = require('./PaiementService');
 const ActivityHistoryService = require('../services/ActivityHistoryService');
 const EmailService = require('../services/EmailingService');
+const InvestorAccessLogService = require('../services/InvestorAccessLogService');
 const i18n = require('i18next');
 const axios = require('axios');
 
@@ -142,6 +145,7 @@ async function createSubscriptionForUser(userId, planId, data) {
 
         // Cas d’un plan gratuit (sans paiement)
         if (isFreePlan) {
+            console.log("subscription for free plan", isFreePlan);
             const newSubscription = await Subscription.create({
                 ...subscriptionPayload,
                 subscriptionStatus: 'active',
@@ -180,43 +184,44 @@ async function createSubscriptionForUser(userId, planId, data) {
                 isPaymentSessionCreated: false,
                 data: newSubscription,
             };
+        } else {
+            // Cas d’un plan payant (on prépare l’upgrade différé)
+            const newSubscription = await Subscription.create({
+                ...subscriptionPayload,
+                pendingUpgrade: {
+                    newPlan: plan._id,
+                    newCredits: plan.credits,
+                    previousPlanName: existingSubscription?.planName || '',
+                    newPlanName: plan.name,
+                    newBilling: data.billing,
+                    newExpirationDate: dateExpired,
+                    price: plan.price,
+                    currency: 'USD',
+                },
+            });
+            const convertedPrice = await convertUSDtoMAD(plan.price);
+            // Générer la session de paiement
+            const paymentSession = await PaiementService.generatePaymentSession({
+                name: plan.name,
+                price: convertedPrice,
+                displayPrice: plan.price,
+                customerId: userId,
+                subscriptionId: newSubscription._id,
+                language: user?.language ? getLanguageIdByLabel(user.language) : 'en',
+                type: 'new',
+                metadata: {
+                    name: user.displayName || `${user.firstName} ${user.lastName}`,
+                    email: user.email,
+                },
+            });
+
+            return {
+                success: true,
+                isPaymentSessionCreated: true,
+                data: paymentSession,
+            };
         }
-
-        // Cas d’un plan payant (on prépare l’upgrade différé)
-        const newSubscription = await Subscription.create({
-            ...subscriptionPayload,
-            pendingUpgrade: {
-                newPlan: plan._id,
-                newCredits: plan.credits,
-                previousPlanName: existingSubscription?.planName || '',
-                newPlanName: plan.name,
-                newBilling: data.billing,
-                newExpirationDate: dateExpired,
-                price: plan.price,
-                currency: 'USD',
-            },
-        });
-        const convertedPrice = await convertUSDtoMAD(plan.price);
-        // Générer la session de paiement
-        const paymentSession = await PaiementService.generatePaymentSession({
-            name: plan.name,
-            price: convertedPrice,
-            displayPrice: plan.price,
-            customerId: userId,
-            subscriptionId: newSubscription._id,
-            language: user?.language ? getLanguageIdByLabel(user.language) : 'en',
-            type: 'new',
-            metadata: {
-                name: user.displayName || `${user.firstName} ${user.lastName}`,
-                email: user.email,
-            },
-        });
-
-        return {
-            success: true,
-            isPaymentSessionCreated: true,
-            data: paymentSession,
-        };
+        
     } catch (error) {
         console.error(error);
         throw new Error('Error creating subscription: ' + error.message);
@@ -570,7 +575,7 @@ async function achatCredits(userId, data) {
         if (!user) {
             throw new Error('User not found');
         }
-        const subscription = await Subscription.findOne({ user: userId, subscriptionStatus: 'active' });
+        const subscription = await Subscription.findOne({ user: userId, subscriptionStatus: 'active' }).sort({ dateCreated: -1 });
         if (!subscription) {
             throw new Error('No active subscription found for this user');
         }
@@ -608,10 +613,59 @@ async function achatCredits(userId, data) {
     }
 }
 
+async function deductionCredits(userId , credits , serviceType) {
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const subscription = await Subscription.findOne({ user: userId, subscriptionStatus: 'active' }).sort({ dateCreated: -1 });
+        if (!subscription) {
+            throw new Error('No active subscription found for this user');
+        }
+
+        if (subscription.totalCredits < credits) {
+            throw new Error('Insufficient credits');
+        }
+
+        subscription.totalCredits -= credits;
+        await subscription.save({ new: true });
+
+        if(serviceType === 'ADD_PROJECT') {
+            // Ajouter le projet draft à l'utilisateur
+            const member = await Member.findOne({ owner: userId });
+            if (!member) {
+                throw new Error('Member not found for the user');
+            }
+            // Créer un projet avec le statut 'draft'
+            await Project.create({
+                owner: member._id,
+                name: 'Draft Project',
+                status: 'Draft',
+            });
+        } 
+
+        if(serviceType === "ACCESS_INVESTORS") {
+            // Log access 
+            await InvestorAccessLogService.logAccess(userId , true);
+        }
+
+        return {
+            success: true,
+            message: `Successfully deducted ${credits} credits from user ${userId}. Remaining credits: ${subscription.totalCredits}`,
+            subscription: subscription
+        };
+    } catch (error) {
+        console.error('Error deducting credits:', error);
+        throw new Error('Error deducting credits: ' + error);
+    }
+    
+}
 
 module.exports = {
     createSubscriptionForUser, upgradeSubscription, getSubscriptionById,
     cancelSubscription, autoCancelExpiredSubscriptions, pauseSubscription, getSubscriptionsByUser, renewSubscription, dateInDays, dateIn1Month,
     dateIn1Year, getDateExpires, checkUserSubscription, getSubscriptions, updateSubscription,
-    deleteSubscription, searchSubscriptionsByUser, formatDate, getLanguageIdByLabel, achatCredits
+    deleteSubscription, searchSubscriptionsByUser, formatDate, getLanguageIdByLabel, achatCredits , deductionCredits
 };

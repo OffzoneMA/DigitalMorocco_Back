@@ -42,12 +42,12 @@ const ProjectSchema = new mongoose.Schema({
     visbility:{
         type: String,
         enum: ['public', 'private'],
-        default:'public'
+        default:'private'
     },
     dateCreated: { type: Date, default: Date.now },
     status: {
         type: String,
-        enum:["In Progress", "Active" , "Stand by"],
+        enum:["In Progress", "Active" , "Stand by" , "Draft"],
         default :"In Progress"
     },
     // stages: [String],
@@ -56,7 +56,17 @@ const ProjectSchema = new mongoose.Schema({
     isDeleted: {
         type: Boolean,
         default: false
-    }
+    },
+    publicVisibilityPayment: {
+        paid: { type: Boolean, default: false },
+        paidAt: { type: Date }, 
+        expiresAt: { type: Date },
+        creditsUsed: { type: Number }, 
+    },
+    mask: {
+        type: Boolean,
+        default: false
+    },
 })
 
 

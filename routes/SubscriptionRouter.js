@@ -353,4 +353,29 @@ router.put('/:id', SubscriptionController.updateSubscription);
  */
 router.delete('/:id', SubscriptionController.deleteSubscription);
 
+/**
+ * @swagger
+ * /subscriptions/deduct-credits:
+ *   patch:
+ *     summary: Deduct credits from a user's subscription
+ *     tags: [Subscription]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               credits:
+ *                 type: number
+ *               serviceType:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Credits deducted successfully
+ *       500:
+ *         description: Server error
+ */
+router.patch('/deduct-credits', AuthController.AuthenticateUser, SubscriptionController.deductionCredits);
+
 module.exports = router

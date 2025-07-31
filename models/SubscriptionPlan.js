@@ -17,6 +17,7 @@ const SubscriptionPlanSchema = new mongoose.Schema({
     price: Number,
     annualPrice: Number, 
     annualDiscountRate: Number,
+    discountRate: Number,
     duration:Number,
     planType: { type: String, required: true },
     credits: { type: Number, default: 0 },

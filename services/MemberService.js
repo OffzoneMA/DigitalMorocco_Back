@@ -584,7 +584,7 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
         const fieldsToUpdate = [
             'name', 'funding', 'totalRaised', 'currency', 'details', 
             'stage', 'visbility', 'country', 'sector', 'website', 
-            'contactEmail', 'listMember', 'status'
+            'contactEmail', 'listMember', 'status' , 'publicVisibilityPayment'
         ];
 
         fieldsToUpdate.forEach(field => {
@@ -720,7 +720,7 @@ async function getAllProjectsForMember(memberId, args) {
         const pageSize = args.pageSize || 8;
         const skip = (page - 1) * pageSize;
 
-        const filter = { owner: memberId };
+        const filter = { owner: memberId , status: { $ne: "Draft" } , isDeleted: { $ne: true } };
 
         if (args.visibility) {
             filter.visibility = args.visibility;
@@ -750,7 +750,7 @@ async function getAllProjectsForMember(memberId, args) {
 
 async function getAllProjectsForMemberWithoutPagination(memberId , args) {
     try {
-        const filter = { owner: memberId };
+        const filter = { owner: memberId , status: { $ne: "Draft" } , isDeleted: { $ne: true } };
 
         if (args.visibility) {
             filter.visibility = args.visibility;
@@ -773,7 +773,7 @@ async function getAllProjectsForMemberWithoutPagination(memberId , args) {
 
 async function searchProjects(user, searchQuery) {
     try {
-        const filter = {};
+        const filter = { status: { $ne: "Draft" } , isDeleted: { $ne: true } , mask: { $ne: true } };
 
         if (user?.role?.toLowerCase() === 'member') {
             const member = await getMemberByUserId(user?._id)
@@ -1023,6 +1023,10 @@ const getInvestorsForMember = async (memberId, args) => {
     // Supprimer les doublons d'investisseurs par leur _id
     const uniqueInvestors = [];
     const seenIds = new Set();
+
+    if (!Array.isArray(contactRequests)) {
+        return { investors: [], totalPages, currentPage };
+    }
 
     for (const request of contactRequests) {
         const investor = request.investor;
