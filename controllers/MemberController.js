@@ -175,6 +175,17 @@ try {
 }
 }
 
+async function getAllProjectsForMemberWithoutPaginationAndMaskNotFiltered(req, res) {
+try {
+    const memberId = req.memberId;
+    const args = req.query;
+    const projects = await MemberService.getAllProjectsForMemberWithoutPaginationAndMaskNotFiltered(memberId, args);
+    res.status(200).json(projects);
+} catch (error) {
+    res.status(400).json({ message: error.message });
+}
+}
+
 const contactRequest = async (req, res) => {
     try {
         const { investorId, projectId } = req.body;
@@ -387,6 +398,6 @@ module.exports = {  addCompanyToMember,getContacts,getMembers, createEnterprise,
      getUniqueCountries , getUniqueStages , getUniqueCompanyTypes , createTestCompany ,
     updateMember , shareProject , CreateMemberWithLogo , getDistinctInvestorFieldValues ,
 getDistinctRequestFieldValues , getAllProjectsForMemberWithoutPagination  , getInvestorsForMemberWithoutPagination , 
-createDraftContactRequest , finalizeContactRequest , deleteCompanyLogo  ,
+createDraftContactRequest , finalizeContactRequest , deleteCompanyLogo  , getAllProjectsForMemberWithoutPaginationAndMaskNotFiltered
 };
 

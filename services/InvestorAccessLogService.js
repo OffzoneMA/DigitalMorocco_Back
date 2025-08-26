@@ -113,13 +113,37 @@ const getAccessLogsByUserAndDate = async (userId, dateString) => {
     }
 };
 
+/**
+ * Supprime un log d'accès
+ */
+const deleteAccessLog = async (accessId) => {
+    try {
+        const result = await InvestorAccessLog.findByIdAndDelete(accessId);
+        if (!result) throw new Error("Log d'accès non trouvé.");
+        return result;
+    } catch (error) {
+        console.error("Erreur dans deleteAccessLog:", error);
+        throw new Error("Impossible de supprimer le log d'accès.");
+    }
+};
 
+/**
+ * Supprime tous les logs d'accès d'un utilisateur
+ */
+const deleteAccessLogsByUser = async (userId) => {
+    try {
+        const result = await InvestorAccessLog.deleteMany({ user: userId });
+        return result;
+    } catch (error) {
+        console.error("Erreur dans deleteAccessLogsByUser:", error);
+        throw new Error("Impossible de supprimer les logs d'accès.");
+    }
+};
 
+/**
+ * Exporte les fonctions du service
+ */ 
 module.exports = {
-    logAccess,
-    updateAccessLog,
-    getAccessLogsByUser,
-    getLastAccessLogByUser,
-    getAccessLogsByDate,
-    getAccessLogsByUserAndDate
+    logAccess, updateAccessLog, getAccessLogsByUser, getLastAccessLogByUser, getAccessLogsByDate,
+    getAccessLogsByUserAndDate, deleteAccessLog, deleteAccessLogsByUser
 };

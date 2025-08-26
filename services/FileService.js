@@ -5,7 +5,7 @@ const { listAll,ref, uploadBytesResumable, getDownloadURL,  deleteObject } = req
 const uploadFile = async (file,path,filename) => {
 
     try {
-        const storageRef = ref(storage, `${path}/${filename}`); //const storageRef = ref(storage, `files/${req.file.originalname + "       " + dateTime}`);
+        const storageRef = ref(storage, `${path}/${filename}`); //const storageRef = ref(storage, `files/${req.file.originalname + " " + dateTime}`);
         const metadata = {
             contentType: file.mimetype,
         };
@@ -17,8 +17,6 @@ const uploadFile = async (file,path,filename) => {
     }
 
 }
-
-
 
 const deleteFile = async (filename,path) => {
     try {

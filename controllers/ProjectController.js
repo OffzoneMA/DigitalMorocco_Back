@@ -156,7 +156,45 @@ const getTheDraftProjects = async (req, res) => {
   }
 };
 
+  const maskProjectByIdsAndUnMaskOthers = async (req, res) => {
+  try {
+    const { projectsIds } = req.body;
+    const memberId = req.memberId;
+
+    const result = await ProjectService.maskProjectByIdsAndUnMaskOthers(projectsIds, memberId);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+    console.log("Error occurred while masking projects:", error);
+  }
+};
+
+
+const unmaskProjectByIds = async (req, res) => {
+  try {
+    const { projectIds } = req.body;
+
+    const result = await ProjectService.unmaskProjectsByIds(projectIds);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const maskProjectByIds = async (req, res) => {
+  try {
+    const { projectIds } = req.body;
+
+    const result = await ProjectService.maskProjectsByIds(projectIds);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {  getprojects , deleteProject , getProjectById , addMilestone , 
   removeMilestone , updateProjectStatus , getTopSectors , getAllProjects , 
   getDistinctValuesForField , updateProject , deleteProjectDocument , 
-  deleteProjectLogo , getTheDraftProjects , deleteProjectCompletly };
+  deleteProjectLogo , getTheDraftProjects , deleteProjectCompletly , 
+  maskProjectByIds , unmaskProjectByIds , maskProjectByIdsAndUnMaskOthers
+};

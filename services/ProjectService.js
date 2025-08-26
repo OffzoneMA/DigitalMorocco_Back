@@ -5,6 +5,7 @@ const uploadService = require('./FileService');
 const Member = require('../models/Member');
 const Subscription = require('../models/Subscription');
 const cron = require('node-cron');
+const mongoose = require("mongoose");
 
 const SUBSCRIPTION_PROJECT_LIMIT = {
   'Basic': 1,
@@ -517,6 +518,102 @@ const getTheDraftProjects = async (memberId) => {
   }
 }
 
+const unmaskProjectsByIds = async (projectIds) => {
+  try {
+    const result = await Project.updateMany(
+      { _id: { $in: projectIds } },
+      { $set: { mask: false } } // explicitement false
+    );
+
+    return {
+      success: true,
+      unmaskedCount: result.modifiedCount || result.nModified || 0
+    };
+  } catch (error) {
+    console.error('Error unmasking projects:', error);
+    throw new Error('Failed to unmask projects');
+  }
+};
+
+
+const maskProjectsByIds = async (projectIds) => {
+  try {
+    const result = await Project.updateMany(
+      { _id: { $in: projectIds } },
+      { $set: { mask: true } } // explicitement true
+    );
+
+    return {
+      success: true,
+      maskedCount: result.modifiedCount || result.nModified || 0
+    };
+  } catch (error) {
+    console.error('Error masking projects:', error);
+    throw new Error('Failed to mask projects');
+  }
+};
+
+
+const maskProjectByIdsAndUnMaskOthers = async (projectIds, memberId) => {
+  
+  if (!Array.isArray(projectIds)) {
+    throw new Error("projectsIds doit être un tableau");
+  }
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    // 🔹 Récupérer tous les projets du membre
+    const projectsOfMember = await Project.find(
+      { owner: memberId, isDeleted: { $ne: true } },
+      "_id mask"
+    ).session(session);
+
+    if (!projectsOfMember.length) {
+      throw new Error("Aucun projet trouvé pour ce membre");
+    }
+
+    // 🔹 Construire deux sets : à masquer et à démasquer
+    const allProjectIds = projectsOfMember.map(p => p._id.toString());
+    const toMask = projectIds.filter(id => allProjectIds.includes(id));
+    const toUnmask = allProjectIds.filter(id => !toMask.includes(id));
+
+    // 🔹 Forcer les projets sélectionnés en "mask: true"
+    if (toMask.length > 0) {
+      await Project.updateMany(
+        { _id: { $in: toMask }, owner: memberId },
+        { $set: { mask: true } }, // ✅ on écrit explicitement
+        { session }
+      );
+    }
+
+    // 🔹 Forcer tous les autres en "mask: false"
+    if (toUnmask.length > 0) {
+      await Project.updateMany(
+        { _id: { $in: toUnmask }, owner: memberId },
+        { $set: { mask: false } }, // ✅ même ceux qui n’avaient pas mask
+        { session }
+      );
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return {
+      success: true,
+      maskedCount: toMask.length,
+      unmaskedCount: toUnmask.length
+    };
+
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error("❌ Error mask/unmask projects:", error);
+    throw new Error("Failed to mask/unmask projects");
+  }
+};
+
 cron.schedule("0 0 * * *", async () => {
   try {
     const now = new Date();
@@ -541,63 +638,64 @@ cron.schedule("0 0 * * *", async () => {
 });
 
 // Cron : tous les jours à minuit
-cron.schedule('0 0 * * *', async () => {
-  try {
-    console.log('[CRON] Démarrage de la tâche de masquage des projets publics...');
+// cron.schedule('0 0 * * *', async () => {
+//   try {
+//     console.log('[CRON] Démarrage de la tâche de masquage des projets publics...');
 
-    const projects = await Project.find({ visbility: 'public', isDeleted: {$ne: true} });
-    const memberIds = [...new Set(projects.map(project => String(project.owner)))]; 
+//     const projects = await Project.find({ visbility: 'public', isDeleted: {$ne: true} });
+//     const memberIds = [...new Set(projects.map(project => String(project.owner)))]; 
 
-    const members = await Member.find({ _id: { $in: memberIds } });
+//     const members = await Member.find({ _id: { $in: memberIds } });
 
-    for (const member of members) {
-      const subscription = await Subscription.findOne({
-        user: member.owner
-      }).sort({ dateCreated: -1 });
+//     for (const member of members) {
+//       const subscription = await Subscription.findOne({
+//         user: member.owner
+//       }).sort({ dateCreated: -1 });
 
-      const publicProjects = await Project.find({ owner: member._id, visbility: 'public', isDeleted: { $ne: true } }).sort({ dateCreated: -1 });
+//       const publicProjects = await Project.find({ owner: member._id, visbility: 'public', isDeleted: { $ne: true } }).sort({ dateCreated: -1 });
 
-      if (subscription && subscription.subscriptionStatus === 'active') {
-        const projectLimit = SUBSCRIPTION_PROJECT_LIMIT[subscription.plan?.name] || 0;
+//       if (subscription && subscription.subscriptionStatus === 'active') {
+//         const projectLimit = SUBSCRIPTION_PROJECT_LIMIT[subscription.plan?.name] || 0;
 
-        if (publicProjects.length > projectLimit) {
-          const projectsToMask = publicProjects.slice(projectLimit);
-          for (const project of projectsToMask) {
-            if (!project.mask) {
-              project.mask = true;
-              await project.save();
-            }
-          }
-          const projectsToUnmask = publicProjects.slice(0, projectLimit);
-          for (const project of projectsToUnmask) {
-            if (project.mask) {
-              project.mask = false;
-              await project.save();
-            }
-          }
-        }
-      } else {
-        // Aucun abonnement actif : autoriser 1 seul projet public visible
-        for (let i = 0; i < publicProjects.length; i++) {
-          const project = publicProjects[i];
-          const shouldBeMasked = i > 0;
-          if (project.mask !== shouldBeMasked) {
-            project.mask = shouldBeMasked;
-            await project.save();
-          }
-        }
-      }
-    }
-    console.log('[CRON] Fin de la tâche de masquage des projets publics.');
-  } catch (err) {
-    console.error('[CRON ERROR]', err);
-  }
-});
+//         if (publicProjects.length > projectLimit) {
+//           const projectsToMask = publicProjects.slice(projectLimit);
+//           for (const project of projectsToMask) {
+//             if (!project.mask) {
+//               project.mask = true;
+//               await project.save();
+//             }
+//           }
+//           const projectsToUnmask = publicProjects.slice(0, projectLimit);
+//           for (const project of projectsToUnmask) {
+//             if (project.mask) {
+//               project.mask = false;
+//               await project.save();
+//             }
+//           }
+//         }
+//       } else {
+//         // Aucun abonnement actif : autoriser 1 seul projet public visible
+//         for (let i = 0; i < publicProjects.length; i++) {
+//           const project = publicProjects[i];
+//           const shouldBeMasked = i > 0;
+//           if (project.mask !== shouldBeMasked) {
+//             project.mask = shouldBeMasked;
+//             await project.save();
+//           }
+//         }
+//       }
+//     }
+//     console.log('[CRON] Fin de la tâche de masquage des projets publics.');
+//   } catch (err) {
+//     console.error('[CRON ERROR]', err);
+//   }
+// });
 
 module.exports = {
   getProjects, CreateProject, getProjectById, ProjectByNameExists,
   getProjectByMemberId, deleteProject, addMilestone, removeMilestone,
   countProjectsByMember, countProjectsByMemberId, updateProjectStatus,
   getTopSectors, getAllProjects, getDistinctValues, updateProject, deleteProjectDocument,
-  deleteProjectLogo, getTheDraftProjects , deleteProjectCompletly
-}; 
+  deleteProjectLogo, getTheDraftProjects , deleteProjectCompletly , maskProjectsByIds, unmaskProjectsByIds ,
+  maskProjectByIdsAndUnMaskOthers
+};

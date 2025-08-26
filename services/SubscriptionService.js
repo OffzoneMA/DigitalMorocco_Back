@@ -10,6 +10,7 @@ const EmailService = require('../services/EmailingService');
 const InvestorAccessLogService = require('../services/InvestorAccessLogService');
 const i18n = require('i18next');
 const axios = require('axios');
+const MemberService = require('../services/MemberService');
 
 const languages = [
     { id: 'en', label: 'English' },
@@ -275,6 +276,22 @@ async function upgradeSubscription(subscriptionId, newPlanId, newBilling) {
             currency: 'USD'
         };
 
+        if((oldPlan.price > newPlan.price) && user?.role?.toLowerCase() == 'member') {
+
+            const member = await MemberService.getMemberByUserId(user._id);
+
+            const totalProjects = await MemberService.getAllProjectsForMemberWithoutPagination(member._id , {});
+            const totalMaskedProjects = totalProjects.filter(p => p.mask);
+
+            subscription.previousPlanInfo = {
+                planName: oldPlan.name,
+                isDowngrade: true ,
+                userRole: user?.role,
+                totalProjects: totalProjects?.length || 0,
+                totalMaskedProjects: totalMaskedProjects?.length || 0
+            };
+        }
+
         await subscription.save();
         const convertedPrice = await convertUSDtoMAD(newPlan.price);
         const paymentSession = await PaiementService.generatePaymentSession({
@@ -303,7 +320,6 @@ async function upgradeSubscription(subscriptionId, newPlanId, newBilling) {
         throw new Error('Error upgrading subscription: ' + error.message);
     }
 }
-
 
 const getSubscriptionById = async (id) => {
     return await Subscription.findById(id);
@@ -338,6 +354,7 @@ async function cancelSubscription(subscriptionId) {
             transactionId: null,
             notes: 'User cancelled the subscription',
         };
+
         // Préparation des données pour l'email
         const emailPlanDetails = {
             name: subscription.plan.name,
@@ -346,6 +363,9 @@ async function cancelSubscription(subscriptionId) {
             features: subscription.plan.featureDescriptions,
             endDate: formatDate(subscription.dateExpired, user.language),
         };
+
+        // Supprimer tous les access log de l'utilisateur 
+        await InvestorAccessLogService.deleteAccessLogsByUser(user._id);
 
         // Envoi de l'email de bienvenue
         await EmailService.sendCancellationEmail(user._id, emailPlanDetails);
@@ -382,6 +402,7 @@ async function autoCancelExpiredSubscriptions() {
             };
             await subscription.save();
             await SubscriptionLogService.createSubscriptionLog(subscription._id, logData);
+            await InvestorAccessLogService.deleteAccessLogsByUser(subscription?.user);
             // await ActivityHistoryService.createActivityHistory(
             //     subscription.user,
             //     'subscription_auto_canceled',

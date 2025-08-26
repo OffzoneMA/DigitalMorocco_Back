@@ -1,0 +1,21 @@
+Investor_Request:
+  user: ObjectId
+  type: String
+  status: String
+  date: Date
+  responseDate: Date
+  message: String
+
+Member_Request:
+  user: ObjectId
+  status: String
+  date: Date
+  responseDate: Date
+  message: String
+
+Partner_Request:
+  user: ObjectId
+  status: String
+  date: Date
+  responseDate: Date
+  message: String

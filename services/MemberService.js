@@ -750,6 +750,29 @@ async function getAllProjectsForMember(memberId, args) {
 
 async function getAllProjectsForMemberWithoutPagination(memberId , args) {
     try {
+        const filter = { owner: memberId , status: { $ne: "Draft" } , isDeleted: { $ne: true } , mask: { $ne: true } };
+
+        if (args.visibility) {
+            filter.visibility = args.visibility;
+        }
+
+        if (args.status) {
+            filter.status = args.status;
+        }
+
+        if (args.date) {
+            const date = new Date(args.date);
+            filter.dateCreated = { $gte: date };
+        }
+        const projects = await Project.find(filter).sort({ dateCreated: 'desc' });
+        return projects;
+    } catch (error) {
+        throw new Error('Error fetching projects for member: ' + error.message);
+    }
+}
+
+async function getAllProjectsForMemberWithoutPaginationAndMaskNotFiltered(memberId , args) {
+    try {
         const filter = { owner: memberId , status: { $ne: "Draft" } , isDeleted: { $ne: true } };
 
         if (args.visibility) {
@@ -1289,5 +1312,7 @@ checkSubscriptionStatus ,createCompany , getTestAllMembers , createTestProject ,
     getAllProjectsForMember , updateProject , updateMember , createTestCompany , updateMember , 
     getMemberInfoByUserId , CreateMemberWithLogo , searchProjects , searchMembers , searchInvestorsForMember , 
     getDistinctInvestorsValuesForMember , getAllProjectsForMemberWithoutPagination , 
-getContactRequestsForMember , getInvestorsForMemberWithoutPagination , deleteCompanyLogo ,} 
+getContactRequestsForMember , getInvestorsForMemberWithoutPagination , deleteCompanyLogo ,
+getAllProjectsForMemberWithoutPaginationAndMaskNotFiltered
+} 
 

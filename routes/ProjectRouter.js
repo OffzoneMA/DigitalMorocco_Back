@@ -488,4 +488,82 @@ router.delete('/:projectId/documents/:documentId', ProjectController.deleteProje
  */
 router.delete('/:projectId/deleteLogo', ProjectController.deleteProjectLogo);
 
+/**
+ * @swagger
+ * /projects/mask-projects-by-ids:
+ *   put:
+ *     summary: Mask projects by IDs
+ *     tags: [Projects]
+ *     parameters:
+ *       - in: body
+ *         name: body
+ *         required: true
+ *         description: Array of project IDs to mask
+ *         schema:
+ *           type: object
+ *           properties:
+ *             projectsIds:
+ *               type: array
+ *               items:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Projects masked successfully
+ *       400:
+ *         description: Error masking projects
+ */
+router.put("/mask-projects", ProjectController.maskProjectByIds);
+
+/**
+ * @swagger
+ * /projects/unmask-projects-by-ids:
+ *   put:
+ *     summary: Unmask projects by IDs
+ *     tags: [Projects]
+ *     parameters:
+ *       - in: body
+ *         name: body
+ *         required: true
+ *         description: Array of project IDs to mask
+ *         schema:
+ *           type: object
+ *           properties:
+ *             projectsIds:
+ *               type: array
+ *               items:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Projects unmasked successfully
+ *       400:
+ *         description: Error unmasking projects
+ */
+router.put("/unmask-projects-by-ids", ProjectController.unmaskProjectByIds);
+
+/**
+ * @swagger
+ * /projects/mask-unmask-projects:
+ *   put:
+ *     summary: Mask or unmask projects by IDs
+ *     tags: [Projects]
+ *     parameters:
+ *       - in: body
+ *         name: body
+ *         required: true
+ *         description: Array of project IDs to mask
+ *         schema:
+ *           type: object
+ *           properties:
+ *             projectsIds:
+ *               type: array
+ *               items:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Projects masked successfully
+ *       400:
+ *         description: Error masking projects
+ */
+router.put("/mask-unmask-projects",AuthController.AuthenticateMember , ProjectController.maskProjectByIdsAndUnMaskOthers);
+
 module.exports = router

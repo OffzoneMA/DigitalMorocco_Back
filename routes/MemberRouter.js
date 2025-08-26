@@ -925,6 +925,44 @@ router.get('/projects',AuthController.AuthenticateMember, MemberController.getAl
  */
 router.get('/projectswithoutpage',AuthController.AuthenticateMember, MemberController.getAllProjectsForMemberWithoutPagination);
 
+
+/**
+ * @swagger
+ * /members/projectswithoutpage-mask-not-filtered:
+ *   get:
+ *     summary: Get all projects for a member without pagination and mask not filtered
+ *     tags: [Members]
+ *     description: Retrieve all projects associated with a specific member.
+ *     parameters:
+ *       - in: query
+ *         name: visibility
+ *         schema:
+ *           type: string
+ *           enum: ['public', 'private']
+ *         description: Filter by project visibility
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: ["In Progress", "Active", "Stand by"]
+ *         description: Filter by project status
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter by projects created on or after the given date
+ *     responses:
+ *       '200':
+ *         description: A list of projects associated with the member.
+ *       '404':
+ *         description: Member not found.
+ *       '500':
+ *         description: Internal server error.
+ */
+router.get('/projectswithoutpage-mask-not-filtered',AuthController.AuthenticateMember, MemberController.getAllProjectsForMemberWithoutPaginationAndMaskNotFiltered);
+
+
 /**
  * @swagger
  * /members/{id}:

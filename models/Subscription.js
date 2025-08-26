@@ -26,6 +26,12 @@ const SubscriptionSchema = new mongoose.Schema({
         price: Number,
         currency: String
     },
+    previousPlanInfo: {
+        planName: String,
+        isDowngrade: Boolean,
+        userRole: String ,
+        totalProjects: Number
+    },
     autoRenew: {
         type: Boolean,
         default: true
