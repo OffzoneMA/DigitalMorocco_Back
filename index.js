@@ -55,6 +55,7 @@ const routes = {
   transactions: require('./routes/TransactionRouter'),
   'investor-access-logs': require('./routes/InvestorAccessLogRoutes'),
   'vip-subscription': require('./routes/VipSubscriptionRoutes.js'),
+   emailing: require('./routes/EmailingRouter')
 };
 
 class App {

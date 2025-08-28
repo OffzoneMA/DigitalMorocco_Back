@@ -17,6 +17,9 @@ const paymentConfig = {
     failureCreditsUrl: `${process.env.FRONTEND_URL}/ManageCredits?statuspaid=failed`,
     pendingUrl : `${process.env.FRONTEND_URL}/Subscription?statuspaid=cancelled`,
     cancelUrl : `${process.env.FRONTEND_URL}/Subscription`,	
+    // successUrl : `${process.env.BACKEND_URL}/payment/return?status=AUTHORISED`,
+    // failureUrl : `${process.env.BACKEND_URL}/payment/return?status=DECLINED`,
+    // cancelUrl  : `${process.env.BACKEND_URL}/payment/return?status=CANCELLED`,
     cancelCreditsUrl: `${process.env.FRONTEND_URL}/ManageCredits`,
     apiBaseUrl: 'https://payment-sandbox.payzone.ma',
   };

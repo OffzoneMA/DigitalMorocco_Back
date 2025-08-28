@@ -435,7 +435,7 @@ async function deleteProjectDocument(projectId, documentId) {
         // Suppression du fichier via le service
         const filePath = `Members/${project.owner}/Project_documents/${document.name}`;
         await uploadService.deleteFile(filePath);
-        console.log(`File ${document.name} deleted successfully from storage.`);
+
       } catch (fileError) {
         console.error("Error deleting file:", fileError);
         // Vous pouvez lancer une nouvelle erreur si la suppression du fichier échoue
@@ -445,7 +445,6 @@ async function deleteProjectDocument(projectId, documentId) {
 
     // Sauvegarder le projet après suppression
     await project.save();
-    console.log("Project updated successfully after document deletion.");
 
     return { message: "Document deleted successfully" };
   } catch (error) {
@@ -487,7 +486,7 @@ async function deleteProjectLogo(projectId) {
       const oldLogoName = getFileNameFromURL(project.logo);
       if (oldLogoName) {
         await uploadService.deleteFile(oldLogoName, `Members/${member.owner}/Project_logos`);
-        console.log('file deleted')
+        ('file deleted')
       }
 
       const updatedProject = await Project.findByIdAndUpdate(projectId, { logo: null }, { new: true });
@@ -503,7 +502,6 @@ async function deleteProjectLogo(projectId) {
 
 const getTheDraftProjects = async (memberId) => {
   try {
-    console.log("get the draft projects for memberId:", memberId);
     const Member = await MemberService.getMemberById(memberId);
     if (!Member) {
       throw new Error("Member not found");
@@ -630,7 +628,6 @@ cron.schedule("0 0 * * *", async () => {
       project.publicVisibilityPayment.paidAt = null;
       project.publicVisibilityPayment.expiresAt = null;
       await project.save();
-      console.log(`Project ${project._id} reverted to private due to expired payment.`);
     }
   } catch (err) {
     console.error("Error checking project visibility expiration:", err);
@@ -640,7 +637,6 @@ cron.schedule("0 0 * * *", async () => {
 // Cron : tous les jours à minuit
 // cron.schedule('0 0 * * *', async () => {
 //   try {
-//     console.log('[CRON] Démarrage de la tâche de masquage des projets publics...');
 
 //     const projects = await Project.find({ visbility: 'public', isDeleted: {$ne: true} });
 //     const memberIds = [...new Set(projects.map(project => String(project.owner)))]; 
@@ -685,7 +681,6 @@ cron.schedule("0 0 * * *", async () => {
 //         }
 //       }
 //     }
-//     console.log('[CRON] Fin de la tâche de masquage des projets publics.');
 //   } catch (err) {
 //     console.error('[CRON ERROR]', err);
 //   }

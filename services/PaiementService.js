@@ -312,7 +312,6 @@ const toValidNumber = (val) => {
  * @returns {object} - Processing result
  */
 const processPaymentCallback = async (data) => {
-  console.log('Processing payment callback:', data);
 
   if (data.status === 'CHARGED') {
     // Find approved transaction
@@ -505,8 +504,6 @@ const processPaymentCallback = async (data) => {
           // await EmailingService.sendPurchaseCreditsEmail(user._id, emailData);
           break;
       }
-
-      console.log('Subscription updated:', subscription);
 
       return {
         success: true,

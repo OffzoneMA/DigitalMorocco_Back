@@ -12,11 +12,11 @@ const { v4: uuidv4 } = require('uuid');
 const ActivityHistoryService = require('../services/ActivityHistoryService');
 
 function generateLegalDocumentId() {
-    return "DOC"+uuidv4();
+    return "DOC" + uuidv4();
 }
 
 function generateEmployeeId() {
-    return "EMP"+uuidv4();
+    return "EMP" + uuidv4();
 }
 
 const getAllMembers = async (args) => {
@@ -47,7 +47,7 @@ const getAllMembers = async (args) => {
             // const sectorsArray = args.sectors.split(',').map(sector => sector.trim());
             query.companyType = { $in: args.sectors.split(',') };
             // query.companyType = { $regex: sectorsArray.join('|'), $options: 'i' };
-        }        
+        }
 
         if (args.stages && args.stages.length > 0) {
             query.stage = { $in: args.stages.split(',') };
@@ -62,16 +62,16 @@ const getAllMembers = async (args) => {
         return { members, totalPages };
     } catch (error) {
         console.error('Error fetching members:', error);
-        throw new Error('Something went wrong');
+        throw new Error('Error fetching members: ' + error.message);
     }
 };
 
 async function getTestAllMembers() {
     try {
         const members = await Member.find()
-                                    .select('owner') 
-                                    .populate('owner'); 
-        
+            .select('owner')
+            .populate('owner');
+
         return members;
     } catch (error) {
         throw new Error('Error retrieving members: ' + error.message);
@@ -80,18 +80,18 @@ async function getTestAllMembers() {
 
 async function searchMembers(searchTerm) {
     try {
-        const regex = new RegExp(searchTerm, 'i'); 
-        
+        const regex = new RegExp(searchTerm, 'i');
+
         const members = await Member.find({
             $or: [
-                { 'companyName': regex }, 
+                { 'companyName': regex },
                 // { 'contactEmail': regex }, 
                 // { 'desc': regex }, 
                 // { 'companyType': regex },  
                 // { 'address': regex } 
             ]
-        }).populate('owner'); 
-        
+        }).populate('owner');
+
         return members;
     } catch (error) {
         throw new Error('Error searching members: ' + error.message);
@@ -121,7 +121,7 @@ const createCompany = async (userId, companyData) => {
             existingMember.country = companyData.country;
             existingMember.city = companyData.city?.name;
             existingMember.address = companyData.address,
-            existingMember.companyType = companyData.companyType;
+                existingMember.companyType = companyData.companyType;
             existingMember.taxNbr = companyData.taxIdentfier;
             existingMember.corporateNbr = companyData.corporateNbr;
             existingMember.logo = companyData.logo;
@@ -303,7 +303,7 @@ const createTestCompany = async (userId, role, companyData, logo) => {
 };
 
 
-async function CreateMember (userId, member) {
+async function CreateMember(userId, member) {
     try {
         return await Member.create({ ...member, owner: userId });
     } catch (error) {
@@ -385,7 +385,6 @@ const createEnterprise = async (memberId, infos, documents, logo) => {
 //         if (logoFile) {
 //             const logoURL = await uploadService.uploadFile(logoFile, 'Members/' + member.owner + "", 'logo');
 //             updatedCompanyData.logo = logoURL;
-//             console.log(logoURL)
 //         }
 
 //         const updatedMember = await Member.findByIdAndUpdate(memberId, updatedCompanyData);
@@ -453,7 +452,7 @@ const createTestProject = async (memberId, infos, documents) => {
         await ActivityHistoryService.createActivityHistory(
             member.owner,
             'project_updated',
-            { targetName: project?.name, targetDesc: `` , to: projectfirstName }
+            { targetName: project?.name, targetDesc: ``, to: projectfirstName }
         );
     }
 
@@ -467,30 +466,29 @@ async function createProject(ownerId, projectData, pitchDeck, businessPlan, fina
             throw new Error("Member not found");
         }
 
-        const project = new Project({ 
-            owner: ownerId, 
+        const project = new Project({
+            owner: ownerId,
             ...projectData,
             documents: []
         });
 
         const documents = [];
-        
+
         // Gérer le logo séparément
         if (logo) {
             try {
-                 // Supprimer l'ancien logo s'il existe
-                 if (project.logo) {
+                // Supprimer l'ancien logo s'il existe
+                if (project.logo) {
                     const oldLogoName = getFileNameFromURL(project.logo);
                     if (oldLogoName) {
                         await uploadService.deleteFile(oldLogoName, `Members/${member.owner}/Project_logos`);
-                        console.log('file deleted')
                     }
                 }
 
                 const uniqueLogoName = generateUniqueFileName(logo.originalname);
                 const logoLink = await uploadService.uploadFile(
-                    logo, 
-                    `Members/${member.owner}/Project_logos`, 
+                    logo,
+                    `Members/${member.owner}/Project_logos`,
                     uniqueLogoName
                 );
                 project.logo = logoLink;
@@ -503,15 +501,15 @@ async function createProject(ownerId, projectData, pitchDeck, businessPlan, fina
         // Fonction d'upload unique pour tous les types de documents
         async function uploadDocument(file, documentType = "other") {
             if (!file) return null;
-            
+
             try {
                 const uniqueFileName = generateUniqueFileName(file.originalname);
                 const fileLink = await uploadService.uploadFile(
-                    file, 
-                    `Members/${member.owner}/Project_documents`, 
+                    file,
+                    `Members/${member.owner}/Project_documents`,
                     uniqueFileName
                 );
-                
+
                 return {
                     name: file.originalname,
                     link: fileLink,
@@ -556,9 +554,9 @@ async function createProject(ownerId, projectData, pitchDeck, businessPlan, fina
         await ActivityHistoryService.createActivityHistory(
             member.owner,
             'project_created',
-            { 
-                targetName: project.name, 
-                targetDesc: `Project created successfully with ${documents.length} documents` 
+            {
+                targetName: project.name,
+                targetDesc: `Project created successfully with ${documents.length} documents`
             }
         );
 
@@ -579,12 +577,12 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
         }
 
         const projectFirstName = project.name;
-        
+
         // Mettre à jour les champs de base
         const fieldsToUpdate = [
-            'name', 'funding', 'totalRaised', 'currency', 'details', 
-            'stage', 'visbility', 'country', 'sector', 'website', 
-            'contactEmail', 'listMember', 'status' , 'publicVisibilityPayment'
+            'name', 'funding', 'totalRaised', 'currency', 'details',
+            'stage', 'visbility', 'country', 'sector', 'website',
+            'contactEmail', 'listMember', 'status', 'publicVisibilityPayment'
         ];
 
         fieldsToUpdate.forEach(field => {
@@ -599,11 +597,11 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
             const existingMilestonesMap = new Map(
                 project.milestones.map(milestone => [milestone.name, milestone])
             );
-        
+
             // Process each new milestone
             newData.milestones.forEach(newMilestone => {
                 const existingMilestone = existingMilestonesMap.get(newMilestone.name);
-        
+
                 if (existingMilestone) {
                     // Update existing milestone
                     Object.assign(existingMilestone, newMilestone);
@@ -621,8 +619,8 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
             try {
                 const uniqueLogoName = generateUniqueFileName(logo.originalname);
                 const logoLink = await uploadService.uploadFile(
-                    logo, 
-                    `Members/${project.owner}/Project_logos`, 
+                    logo,
+                    `Members/${project.owner}/Project_logos`,
                     uniqueLogoName
                 );
                 project.logo = logoLink;
@@ -699,10 +697,10 @@ async function updateProject(projectId, newData, pitchDeck, businessPlan, financ
         await ActivityHistoryService.createActivityHistory(
             member.owner,
             'project_updated',
-            { 
-                targetName: projectFirstName, 
+            {
+                targetName: projectFirstName,
                 targetDesc: `Project updated for projectId ${projectId}`,
-                to: project.name 
+                to: project.name
             }
         );
 
@@ -720,7 +718,7 @@ async function getAllProjectsForMember(memberId, args) {
         const pageSize = args.pageSize || 8;
         const skip = (page - 1) * pageSize;
 
-        const filter = { owner: memberId , status: { $ne: "Draft" } , isDeleted: { $ne: true } };
+        const filter = { owner: memberId, status: { $ne: "Draft" }, isDeleted: { $ne: true } };
 
         if (args.visibility) {
             filter.visibility = args.visibility;
@@ -737,7 +735,7 @@ async function getAllProjectsForMember(memberId, args) {
 
         const totalCount = await Project.countDocuments(filter);
         const totalPages = Math.ceil(totalCount / pageSize);
-        
+
         const projects = await Project.find(filter)
             .skip(skip)
             .sort({ dateCreated: 'desc' })
@@ -748,9 +746,9 @@ async function getAllProjectsForMember(memberId, args) {
     }
 }
 
-async function getAllProjectsForMemberWithoutPagination(memberId , args) {
+async function getAllProjectsForMemberWithoutPagination(memberId, args) {
     try {
-        const filter = { owner: memberId , status: { $ne: "Draft" } , isDeleted: { $ne: true } , mask: { $ne: true } };
+        const filter = { owner: memberId, status: { $ne: "Draft" }, isDeleted: { $ne: true }, mask: { $ne: true } };
 
         if (args.visibility) {
             filter.visibility = args.visibility;
@@ -771,9 +769,9 @@ async function getAllProjectsForMemberWithoutPagination(memberId , args) {
     }
 }
 
-async function getAllProjectsForMemberWithoutPaginationAndMaskNotFiltered(memberId , args) {
+async function getAllProjectsForMemberWithoutPaginationAndMaskNotFiltered(memberId, args) {
     try {
-        const filter = { owner: memberId , status: { $ne: "Draft" } , isDeleted: { $ne: true } };
+        const filter = { owner: memberId, status: { $ne: "Draft" }, isDeleted: { $ne: true } };
 
         if (args.visibility) {
             filter.visibility = args.visibility;
@@ -796,7 +794,7 @@ async function getAllProjectsForMemberWithoutPaginationAndMaskNotFiltered(member
 
 async function searchProjects(user, searchQuery) {
     try {
-        const filter = { status: { $ne: "Draft" } , isDeleted: { $ne: true } , mask: { $ne: true } };
+        const filter = { status: { $ne: "Draft" }, isDeleted: { $ne: true }, mask: { $ne: true } };
 
         if (user?.role?.toLowerCase() === 'member') {
             const member = await getMemberByUserId(user?._id)
@@ -805,8 +803,8 @@ async function searchProjects(user, searchQuery) {
 
         if (searchQuery) {
             filter.$or = [
-                { name: { $regex: searchQuery, $options: 'i' } },  
-                { details: { $regex: searchQuery, $options: 'i' } }  
+                { name: { $regex: searchQuery, $options: 'i' } },
+                { details: { $regex: searchQuery, $options: 'i' } }
             ];
         }
 
@@ -844,61 +842,61 @@ const deleteMember = async (userId) => {
 
 const deleteCompanyLogo = async (userId) => {
     try {
-      let existingCompany;
-      const user = await User.findById(userId);
-      if (!user) {
-        throw new Error("User not found");
-      }
-      // Récupérer les données de l'entreprise selon le rôle
-      switch (user.role?.toLowerCase()) {
-        case 'member':
-          existingCompany = await Member.findOne({ owner: userId });
-          break;
-        case 'investor':
-          existingCompany = await Investor.findOne({ owner: userId });
-          break;
-        case 'partner':
-          existingCompany = await Partner.findOne({ owner: userId });
-          break;
-        default:
-          throw new Error('Rôle non valide fourni');
-      }
-  
-      // Vérifier si l'entreprise existe
-      if (!existingCompany) {
-        throw new Error(`Aucune entreprise trouvée pour le rôle ${user?.role}`);
-      }
-  
-      // Vérifier si l'image ou le logo existe
-      const logoField = 'logo';
-      if (!existingCompany[logoField]) {
-        throw new Error("Aucun logo ou image associé à cette entreprise");
-      }
-  
-      // Extraire le chemin et le nom du fichier depuis l'URL
-      const [path, filename] = uploadService.extractPathAndFilename(existingCompany[logoField]);
-  
-      // Supprimer le fichier du stockage
-      const isDeleted = await uploadService.deleteFile(filename, path);
-      if (!isDeleted) {
-        throw new Error("Échec de la suppression du logo ou de l'image");
-      }
-  
-      // Mettre à jour l'entreprise pour supprimer la référence au logo
-      existingCompany[logoField] = null;
-      await existingCompany.save();  
-      await ActivityHistoryService.createActivityHistory(
+        let existingCompany;
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new Error("User not found");
+        }
+        // Récupérer les données de l'entreprise selon le rôle
+        switch (user.role?.toLowerCase()) {
+            case 'member':
+                existingCompany = await Member.findOne({ owner: userId });
+                break;
+            case 'investor':
+                existingCompany = await Investor.findOne({ owner: userId });
+                break;
+            case 'partner':
+                existingCompany = await Partner.findOne({ owner: userId });
+                break;
+            default:
+                throw new Error('Rôle non valide fourni');
+        }
+
+        // Vérifier si l'entreprise existe
+        if (!existingCompany) {
+            throw new Error(`Aucune entreprise trouvée pour le rôle ${user?.role}`);
+        }
+
+        // Vérifier si l'image ou le logo existe
+        const logoField = 'logo';
+        if (!existingCompany[logoField]) {
+            throw new Error("Aucun logo ou image associé à cette entreprise");
+        }
+
+        // Extraire le chemin et le nom du fichier depuis l'URL
+        const [path, filename] = uploadService.extractPathAndFilename(existingCompany[logoField]);
+
+        // Supprimer le fichier du stockage
+        const isDeleted = await uploadService.deleteFile(filename, path);
+        if (!isDeleted) {
+            throw new Error("Échec de la suppression du logo ou de l'image");
+        }
+
+        // Mettre à jour l'entreprise pour supprimer la référence au logo
+        existingCompany[logoField] = null;
+        await existingCompany.save();
+        await ActivityHistoryService.createActivityHistory(
             userId,
             'company_logo_deleted',
             { targetName: existingCompany?.companyName, targetDesc: `Company logo deleted.` }
-    );
-      return { success: true, message: "Logo supprimé avec succès" };
+        );
+        return { success: true, message: "Logo supprimé avec succès" };
     } catch (error) {
-      console.error("Error deleting company logo:", error.message);
-      return { success: false, message: error.message };
+        console.error("Error deleting company logo:", error.message);
+        return { success: false, message: error.message };
     }
 };
-  
+
 
 const getMemberById = async (id) => {
     return await Member.findById(id);
@@ -907,7 +905,7 @@ const getMemberByUserId = async (userId) => {
     try {
         const member = await Member.findOne({ owner: userId });
         return member;
-    }catch(error) {
+    } catch (error) {
         console.log(error)
     }
 }
@@ -989,7 +987,7 @@ const checkSubscriptionStatus = async () => {
 // };
 
 const getInvestorsForMember = async (memberId, args) => {
-    const page = parseInt(args.page, 10) || 1;  
+    const page = parseInt(args.page, 10) || 1;
     const pageSize = parseInt(args.pageSize, 10) || 10;
     const skip = (page - 1) * pageSize;
 
@@ -1031,7 +1029,7 @@ const getInvestorsForMember = async (memberId, args) => {
     const totalCount = await ContactRequest.countDocuments(query);
     const totalPages = Math.ceil(totalCount / pageSize);
 
-    const currentPage = page > totalPages ? 1 : page;  
+    const currentPage = page > totalPages ? 1 : page;
     const finalSkip = (currentPage - 1) * pageSize;
 
     const contactRequests = await ContactRequest.find(query)
@@ -1059,7 +1057,7 @@ const getInvestorsForMember = async (memberId, args) => {
         }
     }
 
-    return { investors: uniqueInvestors, totalPages, currentPage };  
+    return { investors: uniqueInvestors, totalPages, currentPage };
 };
 
 
@@ -1105,11 +1103,11 @@ const getContactRequestsForMember = async (memberId, args) => {
     let investorIds = [];
     if (args?.investorNames) {
         const investorNamesArray = Array.isArray(args.investorNames) ? args.investorNames : args.investorNames.split(',');
-        
+
         if (investorNamesArray.length > 0) {
             const investors = await Investor.find({ name: { $in: investorNamesArray } }).select('_id');
             investorIds = investors.map(investor => investor._id);
-            
+
             if (investorIds.length > 0) {
                 query.investor = { $in: investorIds };
             } else {
@@ -1195,10 +1193,10 @@ const searchInvestorsForMember = async (user, searchQuery) => {
 
         const regex = new RegExp(searchQuery, 'i');
 
-        const investors = await Investor.find({ 
+        const investors = await Investor.find({
             _id: { $in: uniqueInvestorIds },
             $or: [
-                { name: regex },       
+                { name: regex },
                 // { companyName: regex },          
                 // { companyType: regex },    
                 // { contactEmail: regex },    
@@ -1246,12 +1244,11 @@ async function removeAssociatedUserFromMember(memberId, userId) {
     }
 }
 
-
 const checkMemberStatus = async (memberId) => {
-    try{
+    try {
         const member = await Member.findOne({ owner: memberId, subStatus: 'active' });
         if (!member) {
-        return false;
+            return false;
         }
         // const subscription = await Subscription.findOne({ member: member._id });
         // if (!subscription) {
@@ -1259,16 +1256,14 @@ const checkMemberStatus = async (memberId) => {
         // }
         // const currentDate = new Date();
         // const expirationDate = new Date(subscription.dateExpired); 
-        // console.log("currentDate",currentDate)
-        // console.log("expirationDate",expirationDate)
         // if (currentDate > expirationDate) {
         // return false;
         // }
 
         return true;
     } catch (error) {
-    console.error('Error checking member status:', error);
-    return false;
+        console.error('Error checking member status:', error);
+        return false;
     }
 
 };
@@ -1305,14 +1300,15 @@ const getPathFromUrl = (url) => {
     }
 };
 
-module.exports = {checkMemberStatus, 
-createCompany,  deleteMember, getContacts, getAllMembers, createProject, 
-CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, getMemberByUserId, 
-checkSubscriptionStatus ,createCompany , getTestAllMembers , createTestProject , getInvestorsForMember ,
-    getAllProjectsForMember , updateProject , updateMember , createTestCompany , updateMember , 
-    getMemberInfoByUserId , CreateMemberWithLogo , searchProjects , searchMembers , searchInvestorsForMember , 
-    getDistinctInvestorsValuesForMember , getAllProjectsForMemberWithoutPagination , 
-getContactRequestsForMember , getInvestorsForMemberWithoutPagination , deleteCompanyLogo ,
-getAllProjectsForMemberWithoutPaginationAndMaskNotFiltered
-} 
+module.exports = {
+    checkMemberStatus,
+    createCompany, deleteMember, getContacts, getAllMembers, createProject,
+    CreateMember, createEnterprise, getMemberById, memberByNameExists, getMemberByName, getMemberByUserId,
+    checkSubscriptionStatus, createCompany, getTestAllMembers, createTestProject, getInvestorsForMember,
+    getAllProjectsForMember, updateProject, updateMember, createTestCompany, updateMember,
+    getMemberInfoByUserId, CreateMemberWithLogo, searchProjects, searchMembers, searchInvestorsForMember,
+    getDistinctInvestorsValuesForMember, getAllProjectsForMemberWithoutPagination,
+    getContactRequestsForMember, getInvestorsForMemberWithoutPagination, deleteCompanyLogo,
+    getAllProjectsForMemberWithoutPaginationAndMaskNotFiltered, createOrUpdateMember
+}
 

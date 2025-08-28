@@ -29,6 +29,7 @@ const { passport } = require("../config/passport-setup")
  *       500:
  *         description: Internal server error
  */
+
 /**
  * @swagger
  * /users:
@@ -324,7 +325,6 @@ router.get('/auth/linkedin/signin/callback', (req, res, next) => {
         }
     })(req, res, next);
 });
-
 
 router.get('/auth/google', passport.authenticate('google'));
 router.get('/auth/google/callback', (req, res, next) => {
@@ -1065,6 +1065,7 @@ router.put('/:userId/updateWithJsn', UserController.updateUserController);
  *   get:
  *     summary: Recherche un utilisateur par son adresse e-mail.
  *     description: Recherche un utilisateur dans la base de données en utilisant son adresse e-mail.
+ *     tags: [Users]
  *     parameters:
  *       - name: email
  *         in: path
@@ -1088,6 +1089,7 @@ router.get('/:email', UserController.getUserByEmail);
  *   delete:
  *     summary: Supprime un utilisateur.
  *     description: Supprime un utilisateur en fonction de son identifiant.
+ *     tags: [Users]
  *     parameters:
  *       - in: path
  *         name: userId
@@ -1111,6 +1113,7 @@ router.delete('/:userId', UserController.deleteOneUser )
  *   delete:
  *     summary: Supprime un utilisateur.
  *     description: Supprime un utilisateur en fonction de son identifiant.
+ *     tags: [Users]
  *     parameters:
  *       - in: path
  *         name: userId

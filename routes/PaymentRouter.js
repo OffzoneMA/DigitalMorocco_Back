@@ -9,6 +9,8 @@ router.get('/health', PaymentController.checkHealth);
 
 router.post('/callback', PaymentController.handlePaymentCallback);
 
+router.get('/return', PaymentController.handlePaymentReturn);
+
 // Create payment session
 router.post('/create-session', PaymentController.createPaymentSession);
 

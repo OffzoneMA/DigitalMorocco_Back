@@ -131,7 +131,7 @@ router.get('/members', ActivityHistoryController.getMemberHistories);
  * /activity-history/investors:
  *   get:
  *     summary: Récupère les historiques d'activité des investisseurs
- *     tags: [ActivityHistory]
+ *     tags: [Activity History]
  *   parameters:
  *     dateParam:
  *       in: query
@@ -163,7 +163,7 @@ router.get('/investors', ActivityHistoryController.getInvestorHistories);
  * /activity-history/partners:
  *   get:
  *     summary: Récupère les historiques d'activité des partenaires
- *     tags: [ActivityHistory]
+ *     tags: [Activity History]
  *   parameters:
  *     dateParam:
  *       in: query
@@ -195,7 +195,7 @@ router.get('/partners', ActivityHistoryController.getPartnerHistories);
  * /activity-history/users:
  *   get:
  *     summary: Récupère la liste des utilisateurs présents dans l'historique
- *     tags: [ActivityHistory]
+ *     tags: [Activity History]
  *     parameters:
  *       roleParam:
  *         in: query

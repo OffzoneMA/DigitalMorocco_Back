@@ -40,8 +40,8 @@ function getLanguageIdByLabel(label) {
   return language ? language.id : null;
 }
 
-async function saveShortCodeToTokenMapping(shortCode, token , userId) {
-  const shortCodeEntry = new TokenShortCode({ shortCode, token , userId});
+async function saveShortCodeToTokenMapping(shortCode, token, userId) {
+  const shortCodeEntry = new TokenShortCode({ shortCode, token, userId });
   return await shortCodeEntry.save();
 }
 
@@ -56,7 +56,7 @@ async function getTokenFromShortCode(shortCode) {
 }
 
 async function markTokenAsUsed(shortCode) {
-  await TokenShortCode.findByIdAndUpdate( shortCode ,{ used: true });
+  await TokenShortCode.findByIdAndUpdate(shortCode, { used: true });
 }
 
 const SHORT_CODE_SECRET = process.env.SHORT_CODE_SECRET || '28103bclqaponul71gjqkjpomllaxwvi';
@@ -65,28 +65,30 @@ const SHORT_CODE_SECRET = process.env.SHORT_CODE_SECRET || '28103bclqaponul71gjq
 function generateShortCodeFromToken(token, userId) {
   const data = `${token}-${userId}-${Date.now()}`;
   return crypto.createHmac('sha256', SHORT_CODE_SECRET)
-               .update(data)
-               .digest('hex')
-               .slice(0, 20); 
+    .update(data)
+    .digest('hex')
+    .slice(0, 20);
 }
 
 async function sendEmail(userEmail, subject, emailContent, isHTML) {
   const transporter = nodemailer.createTransport({
-    host: 'mail.digitalmorocco.net',
-    port: 465,
-    secure: true,
+    // host: "smtp-mail.outlook.com",
+    host: 'smtp.office365.com',
+    // port: 465,
+    port: 587,
     // host: "smtp.gmail.com",
     // port: 587,
-    // secure: false,
+    secure: false,
     auth: {
       user: process.env.email,
       pass: process.env.password,
     },
     tls: {
-      rejectUnauthorized: false,
+      ciphers: 'SSLv3',
+      // rejectUnauthorized: false,
     },
-    //  logger: true, 
-    // debug: true
+    logger: true,
+    debug: true
   });
 
   const emailOptions = {
@@ -100,7 +102,7 @@ async function sendEmail(userEmail, subject, emailContent, isHTML) {
 
 }
 
-async function sendContactFromWeb( email, subject, emailContent, isHTML) {
+async function sendContactFromWeb(email, subject, emailContent, isHTML) {
   const transporter = nodemailer.createTransport({
     host: 'mail.digitalmorocco.net',
     port: 465,
@@ -134,22 +136,22 @@ async function sendContactFromWeb( email, subject, emailContent, isHTML) {
 }
 
 //Users
-async function sendVerificationEmail(userId , language) {
+async function sendVerificationEmail(userId, language) {
   try {
     const user = await User.findById(userId);
 
     const userLanguage = language || getLanguageIdByLabel(user?.language);
 
-    if(userLanguage) {
+    if (userLanguage) {
       await i18n.changeLanguage(userLanguage);
     }
     const title = i18n.t('verify_title');
 
     const token = generateVerificationToken(userId);
 
-    const shortCode = generateShortCodeFromToken(token , userId);
+    const shortCode = generateShortCodeFromToken(token, userId);
 
-    const saved = await saveShortCodeToTokenMapping(shortCode, token ,userId );
+    const saved = await saveShortCodeToTokenMapping(shortCode, token, userId);
 
     const verificationLink = `${process.env.BACKEND_URL}/verify/${saved?._id}?lang=${userLanguage}`;
 
@@ -160,9 +162,9 @@ async function sendVerificationEmail(userId , language) {
     // const accountVerificationContent = fs.readFileSync(accountVerificationPath, 'utf-8');
 
     // Attendre la résolution des promesses renderFile
-    const compiledTemplate2 = await ejs.renderFile(accountVerificationPath, {t: i18n.t.bind(i18n), verificationLink });
+    const compiledTemplate2 = await ejs.renderFile(accountVerificationPath, { t: i18n.t.bind(i18n), verificationLink });
 
-    const compiledTemplate = await ejs.renderFile(commonTemplatePath, {t: i18n.t.bind(i18n) , title, body: compiledTemplate2 });
+    const compiledTemplate = await ejs.renderFile(commonTemplatePath, { t: i18n.t.bind(i18n), title, body: compiledTemplate2 });
 
     const messageId = await sendEmail(user.email, title, compiledTemplate, true);
     return messageId;
@@ -171,40 +173,40 @@ async function sendVerificationEmail(userId , language) {
   }
 }
 
-async function sendContactEmail(firstName , lastName , email , phone , message) {
+async function sendContactEmail(firstName, lastName, email, phone, message) {
 
-    try {
-      const title = 'Contact Message from Digital Morocco';
+  try {
+    const title = 'Contact Message from Digital Morocco';
 
-      const contactSitePath = path.join(__dirname, '..', 'templates', 'contactSite.ejs');
-      const contactSiteContent = fs.readFileSync(contactSitePath, 'utf-8');
-  
-      const compiledTemplate2 = ejs.compile(contactSiteContent)
-  
-      const htmlContent2 = compiledTemplate2({
-        title,
-        firstName,
-        lastName,
-        email,
-        phone,
-        message
-      });
+    const contactSitePath = path.join(__dirname, '..', 'templates', 'contactSite.ejs');
+    const contactSiteContent = fs.readFileSync(contactSitePath, 'utf-8');
 
-      const messageId = await sendContactFromWeb(email, title, htmlContent2, true);
-      return messageId;
-    } catch (error) {
-      throw error;
-    }
+    const compiledTemplate2 = ejs.compile(contactSiteContent)
+
+    const htmlContent2 = compiledTemplate2({
+      title,
+      firstName,
+      lastName,
+      email,
+      phone,
+      message
+    });
+
+    const messageId = await sendContactFromWeb(email, title, htmlContent2, true);
+    return messageId;
+  } catch (error) {
+    throw error;
+  }
 }
 
-async function sendContactEmailConfirm(firstName , lastName , email , message , language) {
+async function sendContactEmailConfirm(firstName, lastName, email, message, language) {
 
   try {
 
-    if(language) {
+    if (language) {
       await i18n.changeLanguage(language);
     }
-    
+
     const title = i18n.t('contactSite.confirm.subject');
 
     const contactSitePath = path.join(__dirname, '..', 'templates', 'contactConfirm.ejs');
@@ -226,7 +228,7 @@ async function sendContactEmailConfirm(firstName , lastName , email , message , 
   }
 }
 
-async function sendVerificationOtpEmail(userId , otpCode) {
+async function sendVerificationOtpEmail(userId, otpCode) {
   try {
     const user = await User.findById(userId);
     const title = 'Account Verification';
@@ -256,53 +258,27 @@ async function sendVerificationOtpEmail(userId , otpCode) {
   }
 }
 
-async function sendForgotPasswordEmail(userId , language) {
-    try {
-      const user = await User.findById(userId);
-      const userLanguage = language || getLanguageIdByLabel(user?.language) ;
-
-      if(userLanguage) {
-        await i18n.changeLanguage(userLanguage);
-      }
-      const title = i18n.t('reset_password.title');
-
-      const token = generateForgotPassworToken(userId);
-
-      const shortCode = generateShortCodeFromToken(token , userId);
-
-      const tokenEntry = new TokenShortCode({ shortCode , userId, token });
-      await tokenEntry.save();
-
-      const resetPasswordLink = `${process.env.BACKEND_URL}/users/verify-reset-token?token=${tokenEntry._id}&lang=${userLanguage}`;
-      
-      const resetPasswordPath = path.join(__dirname, '..', 'templates', 'resetPassword1.ejs');
-      const resetPasswordContent = await ejs.renderFile(resetPasswordPath, {t: i18n.t.bind(i18n),title , resetPasswordLink });
-
-      const messageId = await sendEmail(user.email, title, resetPasswordContent, true);
-      return messageId;
-
-    } catch (error) {
-      console.log(error)
-      throw error;
-    }
-
-}
-
-async function sendResetPasswordConfirmation(userId , language) {
+async function sendForgotPasswordEmail(userId, language) {
   try {
     const user = await User.findById(userId);
-    const userLanguage = language || getLanguageIdByLabel(user?.language) ;
+    const userLanguage = language || getLanguageIdByLabel(user?.language);
 
-    if(userLanguage) {
+    if (userLanguage) {
       await i18n.changeLanguage(userLanguage);
     }
-    const title = i18n.t('reset_password.confirmTitle');
+    const title = i18n.t('reset_password.title');
 
+    const token = generateForgotPassworToken(userId);
 
-    const resetPasswordSignIn = `${process.env.FRONTEND_URL}/SignIn?lang=${userLanguage}`;
-    
-    const resetPasswordPath = path.join(__dirname, '..', 'templates', 'resetPasswordSuccess.ejs');
-    const resetPasswordContent = await ejs.renderFile(resetPasswordPath, {t: i18n.t.bind(i18n),title , resetPasswordSignIn });
+    const shortCode = generateShortCodeFromToken(token, userId);
+
+    const tokenEntry = new TokenShortCode({ shortCode, userId, token });
+    await tokenEntry.save();
+
+    const resetPasswordLink = `${process.env.BACKEND_URL}/users/verify-reset-token?token=${tokenEntry._id}&lang=${userLanguage}`;
+
+    const resetPasswordPath = path.join(__dirname, '..', 'templates', 'resetPassword1.ejs');
+    const resetPasswordContent = await ejs.renderFile(resetPasswordPath, { t: i18n.t.bind(i18n), title, resetPasswordLink });
 
     const messageId = await sendEmail(user.email, title, resetPasswordContent, true);
     return messageId;
@@ -314,81 +290,107 @@ async function sendResetPasswordConfirmation(userId , language) {
 
 }
 
-async function sendUnderReviewEmail(userId , lang) {
-    try {
-      const user = await User.findById(userId);
-      const userLanguage = lang || getLanguageIdByLabel(user?.language) ;
+async function sendResetPasswordConfirmation(userId, language) {
+  try {
+    const user = await User.findById(userId);
+    const userLanguage = language || getLanguageIdByLabel(user?.language);
 
-      if(userLanguage) {
-        await i18n.changeLanguage(userLanguage);
-      }
-
-      const title = i18n.t('ack_request.email_subject');
-  
-      // const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
-      // const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
-  
-      const underReviewPath = path.join(__dirname, '..', 'templates', 'underReview.ejs');
-      const underReviewContent = await ejs.renderFile(underReviewPath, {t: i18n.t.bind(i18n),title, name: user?.displayName });
-
-      // const underReviewContent = fs.readFileSync(underReviewPath, 'utf-8');
-  
-      // const compiledTemplate = ejs.compile(commonTemplateContent);
-
-      // const htmlContent = compiledTemplate({
-      //   title,
-      //   body: underReviewContent,
-      // });
-
-  
-      const messageId = await sendEmail(user.email, title, underReviewContent, true);
-      return messageId;
-    } catch (err) {
-      throw err;
+    if (userLanguage) {
+      await i18n.changeLanguage(userLanguage);
     }
+    const title = i18n.t('reset_password.confirmTitle');
+
+
+    const resetPasswordSignIn = `${process.env.FRONTEND_URL}/SignIn?lang=${userLanguage}`;
+
+    const resetPasswordPath = path.join(__dirname, '..', 'templates', 'resetPasswordSuccess.ejs');
+    const resetPasswordContent = await ejs.renderFile(resetPasswordPath, { t: i18n.t.bind(i18n), title, resetPasswordSignIn });
+
+    const messageId = await sendEmail(user.email, title, resetPasswordContent, true);
+    return messageId;
+
+  } catch (error) {
+    console.log(error)
+    throw error;
   }
+
+}
+
+async function sendUnderReviewEmail(userId, lang) {
+  try {
+    const user = await User.findById(userId);
+    const userLanguage = lang || getLanguageIdByLabel(user?.language);
+
+    if (userLanguage) {
+      await i18n.changeLanguage(userLanguage);
+    }
+
+    const title = i18n.t('ack_request.email_subject');
+
+    // const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
+    // const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
+
+    const underReviewPath = path.join(__dirname, '..', 'templates', 'underReview.ejs');
+    const underReviewContent = await ejs.renderFile(underReviewPath, { t: i18n.t.bind(i18n), title, name: user?.displayName });
+
+    // const underReviewContent = fs.readFileSync(underReviewPath, 'utf-8');
+
+    // const compiledTemplate = ejs.compile(commonTemplateContent);
+
+    // const htmlContent = compiledTemplate({
+    //   title,
+    //   body: underReviewContent,
+    // });
+
+
+    const messageId = await sendEmail(user.email, title, underReviewContent, true);
+    return messageId;
+  } catch (err) {
+    throw err;
+  }
+}
 
 async function sendAcceptedEmail(userId) {
-    try {
-      const user = await User.findById(userId);
+  try {
+    const user = await User.findById(userId);
 
-      const userLanguage = getLanguageIdByLabel(user?.language);
+    const userLanguage = getLanguageIdByLabel(user?.language);
 
-      if(userLanguage) {
-        await i18n.changeLanguage(userLanguage);
-      }
-      const title = i18n.t('request_approved.title');
-  
-      const requestApprovedPath = path.join(__dirname, '..', 'templates', 'requestApproved.ejs');
-      const requestApprovedContent = await ejs.renderFile(requestApprovedPath, {t: i18n.t.bind(i18n),title , name : user?.displayName });
-
-  
-      const messageId = await sendEmail(user.email, title, requestApprovedContent, true);
-      return messageId;
-    } catch (err) {
-      throw err;
+    if (userLanguage) {
+      await i18n.changeLanguage(userLanguage);
     }
+    const title = i18n.t('request_approved.title');
+
+    const requestApprovedPath = path.join(__dirname, '..', 'templates', 'requestApproved.ejs');
+    const requestApprovedContent = await ejs.renderFile(requestApprovedPath, { t: i18n.t.bind(i18n), title, name: user?.displayName });
+
+
+    const messageId = await sendEmail(user.email, title, requestApprovedContent, true);
+    return messageId;
+  } catch (err) {
+    throw err;
   }
-  
+}
+
 async function sendRejectedEmail(userId) {
-    try {
-      const user = await User.findById(userId);
-      const userLanguage = getLanguageIdByLabel(user?.language) ;
+  try {
+    const user = await User.findById(userId);
+    const userLanguage = getLanguageIdByLabel(user?.language);
 
-      if(userLanguage) {
-        await i18n.changeLanguage(userLanguage);
-      }
-      const title = i18n.t('request_reject.title');
-  
-      const rejectionPath = path.join(__dirname, '..', 'templates', 'rejectionRequest.ejs');
-      const requestRejectContent = await ejs.renderFile(rejectionPath, {t: i18n.t.bind(i18n),title , name : user?.displayName });
-  
-      const messageId = await sendEmail(user.email, title, requestRejectContent, true);
-      return messageId;
-    } catch (err) {
-      throw err;
+    if (userLanguage) {
+      await i18n.changeLanguage(userLanguage);
     }
+    const title = i18n.t('request_reject.title');
+
+    const rejectionPath = path.join(__dirname, '..', 'templates', 'rejectionRequest.ejs');
+    const requestRejectContent = await ejs.renderFile(rejectionPath, { t: i18n.t.bind(i18n), title, name: user?.displayName });
+
+    const messageId = await sendEmail(user.email, title, requestRejectContent, true);
+    return messageId;
+  } catch (err) {
+    throw err;
   }
+}
 
 // async function VerifyUser(userId, token) {
 //   try {
@@ -444,7 +446,7 @@ async function VerifyUser(shortCode) {
       case 'notVerified':
         // Proceed to verify the token only if the status is 'notVerified'
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-        
+
         // Check if the token is expired
         if (decoded.exp && Date.now() >= decoded.exp * 1000) {
           throw new Error('Token has expired');
@@ -496,7 +498,7 @@ async function verifyResetToken(tokenId) {
 }
 
 //Investors
-async function sendNewContactRequestEmail(userId, companyName,country) {
+async function sendNewContactRequestEmail(userId, companyName, country) {
   try {
     const user = await User.findById(userId);
     const title = 'New Contact Request Notification';
@@ -522,7 +524,7 @@ async function sendNewContactRequestEmail(userId, companyName,country) {
       body: htmlContent2,
     });
 
-   const messageId = await sendEmail(user?.email, title, htmlContent, true);
+    const messageId = await sendEmail(user?.email, title, htmlContent, true);
     return messageId;
   } catch (err) {
     throw err;
@@ -535,32 +537,32 @@ const sendNewProjectShareRequestEmail = async (userId, companyName, country, pro
   const link = `${process.env.FRONTEND_URL}/Dashboard_investor#Contact Requests`;
 
   const commonTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.ejs');
-    const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
+  const commonTemplateContent = fs.readFileSync(commonTemplatePath, 'utf-8');
 
-    const contactRequestPath = path.join(__dirname, '..', 'templates', 'contactRequest.ejs');
-    const contactRequestContent = fs.readFileSync(contactRequestPath, 'utf-8');
+  const contactRequestPath = path.join(__dirname, '..', 'templates', 'contactRequest.ejs');
+  const contactRequestContent = fs.readFileSync(contactRequestPath, 'utf-8');
 
-    const compiledTemplate = ejs.compile(commonTemplateContent);
-    const compiledTemplate2 = ejs.compile(contactRequestContent);
+  const compiledTemplate = ejs.compile(commonTemplateContent);
+  const compiledTemplate2 = ejs.compile(contactRequestContent);
 
-    const htmlContent2 = compiledTemplate2({
-      link,
-      companyName,
-      country
-    });
+  const htmlContent2 = compiledTemplate2({
+    link,
+    companyName,
+    country
+  });
 
-    const htmlContent = compiledTemplate({
-      title,
-      body: htmlContent2,
-    });
+  const htmlContent = compiledTemplate({
+    title,
+    body: htmlContent2,
+  });
 
-   const messageId = await sendEmail(user.email, title, htmlContent, true);
+  const messageId = await sendEmail(user.email, title, htmlContent, true);
 
 };
 
 async function sendContactAcceptToMember(userId, InvestorName, linkedin_link, eventDate) {
   try {
-     const user = await User.findById(userId);
+    const user = await User.findById(userId);
     const title = 'Your contact request has been accepted! ';
     const link = `${process.env.FRONTEND_URL}/Dashboard_member#Contacts`;
 
@@ -601,7 +603,7 @@ async function sendContactAcceptToMember(userId, InvestorName, linkedin_link, ev
 
 async function sendContactRejectToMember(userId, InvestorName, linkedin_link, eventDate) {
   try {
-     const user = await User.findById(userId);
+    const user = await User.findById(userId);
     const title = 'Your contact request has been rejected! ';
     const link = `${process.env.FRONTEND_URL}/Dashboard_member#Contact%20Requests`;
 
@@ -781,7 +783,7 @@ async function sendCancellationEmail(userId, planDetails) {
 }
 
 //Events
-async function sendTicketToUser(billingData, eventId){
+async function sendTicketToUser(billingData, eventId) {
   try {
     const event = await Event.findById(eventId);
     const title = 'Get Ready - Your Exclusive Event Ticket Details';
@@ -803,7 +805,7 @@ async function sendTicketToUser(billingData, eventId){
         day: 'numeric',
         year: 'numeric',
       }),
-      eventTitle : event.title,
+      eventTitle: event.title,
       eventTime: `${formatTime(event.startTime)} - ${formatTime(event.endTime)} ${getTimezoneOffset(event.startTime)}`,
       eventZoomLink: event.zoomLink,
       eventZoomId: event.zoomMeetingID,
@@ -836,7 +838,7 @@ function formatTime(time) {
 function getTimezoneOffset(time) {
   const eventDate = new Date(`2000-01-01T${time}`);
   const offset = eventDate.getTimezoneOffset();
-  
+
   return offset === -60 ? '+01' : ''; // If offset is -60 minutes, it's GMT+1
 }
 
@@ -866,14 +868,36 @@ function isTokenExpired(decoded) {
   }
 }
 
-module.exports = { sendEmail, generateVerificationToken, isTokenExpired, generateForgotPassworToken, 
-  sendNewContactRequestEmail, sendContactAcceptToMember,sendContactRejectToMember,
-  sendVerificationEmail, sendVerificationOtpEmail, VerifyUser, sendRejectedEmail,sendAcceptedEmail,
-  sendUnderReviewEmail,sendForgotPasswordEmail,verifyResetToken , sendTicketToUser , sendContactEmail ,
-getTokenFromShortCode , generateShortCodeFromToken , saveShortCodeToTokenMapping , sendContactEmailConfirm , 
-sendNewProjectShareRequestEmail , getLanguageIdByLabel , markTokenAsUsed ,sendResetPasswordConfirmation , 
-sendSubscriptionEmail,
+async function testSendEmail(email, subject, htmlContent, textContent) {
+  try {
+    const userEmail = email || "destinataire@example.com"; // email de test
+    const emailSubject = subject || "Test Email depuis Node.js";
+    const emailHtmlContent = htmlContent || "<h1>Hello !</h1><p>Ceci est un test d'envoi d'email via Outlook.</p>";
+    const emailTextContent = textContent || "Hello ! Ceci est un test d'envoi d'email via Outlook.";
+
+    // Envoi HTML
+    const resultHTML = await sendEmail(userEmail, emailSubject, emailHtmlContent, true);
+    console.log("Email HTML envoyé avec succès :", resultHTML.messageId);
+
+    // Envoi texte
+    const resultText = await sendEmail(userEmail, emailSubject, emailTextContent, false);
+    console.log("Email texte envoyé avec succès :", resultText.messageId);
+
+  } catch (error) {
+    console.error("Erreur lors de l'envoi de l'email :", error);
+  }
+}
+
+module.exports = {
+  sendEmail, generateVerificationToken, isTokenExpired, generateForgotPassworToken,
+  sendNewContactRequestEmail, sendContactAcceptToMember, sendContactRejectToMember,
+  sendVerificationEmail, sendVerificationOtpEmail, VerifyUser, sendRejectedEmail, sendAcceptedEmail,
+  sendUnderReviewEmail, sendForgotPasswordEmail, verifyResetToken, sendTicketToUser, sendContactEmail,
+  getTokenFromShortCode, generateShortCodeFromToken, saveShortCodeToTokenMapping, sendContactEmailConfirm,
+  sendNewProjectShareRequestEmail, getLanguageIdByLabel, markTokenAsUsed, sendResetPasswordConfirmation,
+  sendSubscriptionEmail,
   sendNewSubscriptionEmail,
   sendRenewalEmail,
-  sendUpgradeEmail, sendCancellationEmail}
+  sendUpgradeEmail, sendCancellationEmail , testSendEmail
+}
 

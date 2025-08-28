@@ -5,7 +5,7 @@ const router = require('express').Router();
 /**
  * @swagger
  * tags:
- *   name: PaymentMethode
+ *   name: Payment Methods
  *   description: API for managing payment methods
  */
 

@@ -139,7 +139,7 @@ const deleteSubscription = async (req, res) => {
 const deductionCredits = async (req, res) => {
     const userId = req.userId;
     const { credits , serviceType } = req.body;
-    console.log("Deduction Credits:", req.body);
+
     if (!credits || credits <= 0) {
         return res.status(400).json({ error: 'Invalid credits amount' });
     }

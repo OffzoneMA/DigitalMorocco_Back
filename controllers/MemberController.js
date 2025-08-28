@@ -79,8 +79,6 @@ const createCompany = async (req, res)=> {
         const memberId = req.memberId;
         const companyData = req.body;
         const logo = req.file;
-        //console.log("data" ,companyData);
-        //console.log("logo" , logo)
         const result = await MemberService.createCompany(memberId ,companyData , logo);
         res.json(result);
     } catch (error) {
@@ -109,12 +107,6 @@ const createProject= async (req, res) => {
             const financialProjection = req.files['financialProjection'];
             const files = req.files['files']; 
             const logo = req.files['logo'];
-            // console.log("pitchDeck",pitchDeck)
-            // console.log("businessPlan",businessPlan)
-
-            // console.log("financialProjection",financialProjection)
-
-            // console.log("files",files)
 
             const result = await MemberService.createProject(req.memberId, data, pitchDeck?.[0], businessPlan?.[0] , financialProjection?.[0], files , logo?.[0]);
             const member = await MemberService.getMemberById(req.memberId);
@@ -135,13 +127,6 @@ const updateProject= async (req, res) => {
         const financialProjection = req.files['financialProjection'];
         const files = req.files['files'];
         const logo = req.files['logo']; 
-
-        // console.log("pitchDeck",pitchDeck)
-        // console.log("businessPlan",businessPlan)
-
-        // console.log("financialProjection",financialProjection)
-
-        // console.log("files",files)
 
         const result = await MemberService.updateProject(req.params.projectId, data, pitchDeck?.[0], businessPlan?.[0] , financialProjection?.[0], files , logo?.[0]);
         const member = await MemberService.getMemberById(result.owner);
@@ -199,7 +184,6 @@ const contactRequest = async (req, res) => {
         res.status(200).json(result);
     } catch (error) {
         res.status(500).json({ message: error.message });
-        console.log( "send contact"  ,error)
     }
 }
 

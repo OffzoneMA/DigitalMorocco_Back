@@ -43,6 +43,7 @@ const upload = require("../middelware/multer")
  *         logo: https://firebasestorage.googleapis.com/v0/b/digital-morocco-806c5.appspot.com/o/Members%2F64d0fd3f4ad21c95e8456f69%2Flogo?alt=media&token=4e609d74-43a4-4f8b-926f-3b8c19a70d37
  *         website: Works.net
  */
+
 /**
  * @swagger
  * tags:
@@ -311,7 +312,6 @@ router.route("/name/:name").get(MemberController.getByName)
  */
 router.route("/project").post(AuthController.AuthenticateMember, upload.fields([{ name: 'businessPlan', maxCount: 1 },{ name: 'financialProjection', maxCount: 1 },{ name: 'pitchDeck', maxCount: 1 }, { name: 'logo', maxCount: 1 },{ name: 'files'}]), MemberController.createProject)
 
-
 /**
  * @swagger
  * /members/project/{projectId}:
@@ -547,7 +547,7 @@ router.route("/ContactRequest").get(AuthController.AuthenticateMember, MemberCon
  *   get:
  *     summary: Get all members's contacts 
  *     description: list of all member's accepted contacts by investor
- *     tags: [Members]
+ *     tags: [ContactRequests]
  *     security:
  *       - jwtToken: []
  *     responses:
@@ -688,7 +688,6 @@ router.post("/company",AuthController.AuthenticateMember, upload.single('logo'),
  */
 router.post('/companies', AuthController.AuthenticateUser, upload.single('logo'), MemberController.createTestCompany);
 
-
 /**
  * @swagger
  * /members/{userId}:
@@ -777,7 +776,7 @@ router.get("/testAll", MemberController.getTestAllMembers);
  * /members/contact-requests:
  *   get:
  *     summary: Get all contact requests for a member
- *     tags: [Members]
+ *     tags: [ContactRequests]
  *     parameters:
  *       - in: path
  *         name: memberId
@@ -925,7 +924,6 @@ router.get('/projects',AuthController.AuthenticateMember, MemberController.getAl
  */
 router.get('/projectswithoutpage',AuthController.AuthenticateMember, MemberController.getAllProjectsForMemberWithoutPagination);
 
-
 /**
  * @swagger
  * /members/projectswithoutpage-mask-not-filtered:
@@ -961,7 +959,6 @@ router.get('/projectswithoutpage',AuthController.AuthenticateMember, MemberContr
  *         description: Internal server error.
  */
 router.get('/projectswithoutpage-mask-not-filtered',AuthController.AuthenticateMember, MemberController.getAllProjectsForMemberWithoutPaginationAndMaskNotFiltered);
-
 
 /**
  * @swagger
@@ -1041,6 +1038,7 @@ router.put('/members/:id', MemberController.updateMember);
  *   get:
  *     summary: Get unique countries
  *     description: Retrieve a list of unique countries from members
+ *     tags: [Members]
  *     responses:
  *       200:
  *         description: A list of unique countries
@@ -1059,6 +1057,7 @@ router.get('/unique-countries', MemberController.getUniqueCountries);
  *   get:
  *     summary: Get unique stages
  *     description: Retrieve a list of unique stages from members
+ *     tags: [Members]
  *     responses:
  *       200:
  *         description: A list of unique stages
@@ -1077,6 +1076,7 @@ router.get('/unique-stages', MemberController.getUniqueStages);
  *   get:
  *     summary: Get unique company types
  *     description: Retrieve a list of unique company types from members
+ *     tags: [Members]
  *     responses:
  *       200:
  *         description: A list of unique company types
@@ -1095,6 +1095,7 @@ router.get('/unique-companyTypes', MemberController.getUniqueCompanyTypes);
  *   post:
  *     summary: Create or update a test company
  *     description: Create or update a test company for a given user ID
+ *     tags: [Members]
  *     parameters:
  *       - in: path
  *         name: userId
@@ -1318,6 +1319,7 @@ router.get('/my-investors', AuthController.AuthenticateMember , MemberController
  *   get:
  *     summary: Get all investors for a member
  *     description: Retrieve the list of all unique investors associated with a member.
+ *     tags: [Members]
  *     responses:
  *       200:
  *       500:

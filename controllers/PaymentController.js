@@ -6,23 +6,23 @@ const PaiementService = require('../services/PaiementService');
    */
 const createPaymentSession = async (req, res) => {
   try {
-    const { name, price, currency, customerId , subscriptionId , language , type , metadata = {} } = req.body;
-    
+    const { name, price, currency, customerId, subscriptionId, language, type, metadata = {} } = req.body;
+
     if (!price) {
       return res.status(400).json({
         success: false,
         message: 'Price is required'
       });
     }
-    
+
     const paymentSession = await PaiementService.generatePaymentSession({
       name,
       price,
       currency,
-      customerId ,
-      subscriptionId ,
-      language ,
-      type ,
+      customerId,
+      subscriptionId,
+      language,
+      type,
       metadata
     });
 
@@ -49,31 +49,30 @@ const handlePaymentCallback = async (req, res) => {
     // Get raw request body and signature
     const rawBody = req.rawBody;
     const receivedSignature = req.headers['x-callback-signature'];
-    
+
     // Verify signature
     const isValidSignature = PaiementService.verifyCallbackSignature(rawBody, receivedSignature);
-    
+
     if (!isValidSignature) {
-      console.log('Invalid callback signature');
+
       return res.status(403).json({
         status: 'KO',
         message: 'Error signature'
       });
     }
-    
+
     // Process payment data
     const callbackData = JSON.parse(rawBody);
     const result = await PaiementService.processPaymentCallback(callbackData);
-    
+
     if (result.success) {
-      // Here you would typically update your database with payment confirmation
-      console.log('Payment callback processed successfully:', result);
+
       return res.status(200).json({
         status: 'OK',
         message: 'Status recorded successfully'
       });
     } else {
-      console.log('Payment callback processing failed:', result.error);
+
       return res.status(200).json({
         status: 'KO',
         message: 'Status not recorded successfully'
@@ -117,16 +116,16 @@ const checkHealth = async (req, res) => {
 const getTransaction = async (req, res) => {
   try {
     const { transactionId } = req.params;
-    
+
     if (!transactionId) {
       return res.status(400).json({
         success: false,
         message: 'Transaction ID is required'
       });
     }
-    
+
     const transactionData = await PaiementService.getTransaction(transactionId);
-    
+
     res.status(200).json({
       success: true,
       data: transactionData
@@ -149,19 +148,19 @@ const captureTransaction = async (req, res) => {
   try {
     const { transactionId } = req.params;
     const { amount } = req.body;
-    
+
     if (!transactionId) {
       return res.status(400).json({
         success: false,
         message: 'Transaction ID is required'
       });
     }
-    
+
     const captureResult = await PaiementService.captureTransaction(
       transactionId,
       amount || null
     );
-    
+
     res.status(200).json({
       success: true,
       data: captureResult
@@ -183,16 +182,16 @@ const captureTransaction = async (req, res) => {
 const cancelTransaction = async (req, res) => {
   try {
     const { transactionId } = req.params;
-    
+
     if (!transactionId) {
       return res.status(400).json({
         success: false,
         message: 'Transaction ID is required'
       });
     }
-    
+
     const cancelResult = await PaiementService.cancelTransaction(transactionId);
-    
+
     res.status(200).json({
       success: true,
       data: cancelResult
@@ -215,19 +214,19 @@ const refundTransaction = async (req, res) => {
   try {
     const { transactionId } = req.params;
     const { amount } = req.body;
-    
+
     if (!transactionId) {
       return res.status(400).json({
         success: false,
         message: 'Transaction ID is required'
       });
     }
-    
+
     const refundResult = await PaiementService.refundTransaction(
       transactionId,
       amount || null
     );
-    
+
     res.status(200).json({
       success: true,
       data: refundResult
@@ -241,6 +240,26 @@ const refundTransaction = async (req, res) => {
   }
 };
 
+// backend/controllers/PaymentController.js
+const handlePaymentReturn = async (req, res) => {
+  try {
+    const { status, orderId } = req.query;
+
+    // Exemple : status peut être "AUTHORISED", "DECLINED", "CANCELLED"
+    if (status === 'AUTHORISED') {
+      return res.redirect(`${process.env.FRONTEND_URL}/Subscription?statuspaid=success`);
+    } else if (status === 'DECLINED') {
+      return res.redirect(`${process.env.FRONTEND_URL}/Subscription?statuspaid=failed`);
+    } else {
+      return res.redirect(`${process.env.FRONTEND_URL}/Subscription?statuspaid=cancelled`);
+    }
+  } catch (error) {
+    console.error('Payment return error:', error);
+    return res.redirect(`${process.env.FRONTEND_URL}/Subscription?statuspaid=error`);
+  }
+};
+
+
 module.exports = {
   createPaymentSession,
   handlePaymentCallback,
@@ -248,5 +267,6 @@ module.exports = {
   getTransaction,
   captureTransaction,
   cancelTransaction,
-  refundTransaction
+  refundTransaction,
+  handlePaymentReturn
 };

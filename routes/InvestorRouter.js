@@ -412,12 +412,12 @@ router.post('/', InvestorController.addInvestor);
 /**
  * @swagger
  * tags:
- *   name: InvestorRequests
+ *   name: Investor Requests
  *   description: Managing API of Investor Requests
  * /investors/investor-requests:
  *   get:
  *     summary: Récupérer la liste des demandes d'investisseurs
- *     tags: [Investors]
+ *     tags: [Investor Requests]
  *     responses:
  *       '200':
  *         description: OK - La liste des demandes d'investisseurs a été récupérée avec succès.
@@ -482,11 +482,12 @@ router.get('/investor-requests', InvestorController.getInvestorRequests);
 /**
  * @swagger
  * tags:
- *   name: InvestorRequests
+ *   name: Investor Requests
  *   description: Managing API of Investor Requests
- * /api/investor-requests:
+ * /investors/investor-requests:
  *   get:
  *     summary: Récupérer la liste des demandes d'investisseurs
+ *     tags: [Investor Requests]
  *     responses:
  *       '200':
  *         description: OK - La liste des demandes d'investisseurs a été récupérée avec succès.
@@ -554,7 +555,7 @@ router.get('/investor-requests', InvestorController.getInvestorRequests);
  *   get:
  *     summary: Get all contact requests from the member 
  *     description: list of all the sent member's contact requets the pending ones rejected and accepted
- *     tags: [Investors]
+ *     tags: [Investor Requests]
  *     parameters:
  *       - in: query
  *         name: page
@@ -628,7 +629,7 @@ router.route("/ContactRequest").get(AuthController.AuthenticateInvestor, Investo
  *     summary: Get 5 most recent approved contact requests
  *     description: Retrieve the 5 most recent contact requests with status 'Approved' for the logged-in user (either investor or member).
  *     tags:
- *       - Investors
+ *       - [Investor Requests]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -647,7 +648,7 @@ router.get('/contact-requests/recent-approved', AuthController.AuthenticateInves
  *   get:
  *     summary: Get all contact requests from the member 
  *     description: list of all the sent member's contact requets the pending ones rejected and accepted
- *     tags: [Investors]
+ *     tags: [Investor Requests]
  *     parameters:
  *       - in: path
  *         name: investorId
@@ -727,7 +728,7 @@ router.route("/ContactRequestByUser/:investorId").get(InvestorController.getCont
  *   put:
  *     summary: Update contact request status
  *     description: Update the status of a contact request based on the requestId.
- *     tags: [Investors]
+ *     tags: [Investor Requests]
  *     security:
  *       - jwtToken: []
  *     parameters:
@@ -757,13 +758,14 @@ router.route("/ContactRequestByUser/:investorId").get(InvestorController.getCont
  *         description: Internal Server Error
  */
 router.route("/ContactRequest/:requestId/:status").put(AuthController.AuthenticateInvestor , InvestorController.updateContactStatus);
+
 /**
  * @swagger
  * /investors/Contacts:
  *   get:
  *     summary: Get all investor's contacts 
  *     description: list of all investor's accepted contacts of member 
- *     tags: [Investors]
+ *     tags: [Investor Requests]
  *     security:
  *       - jwtToken: []
  *     responses:
@@ -785,34 +787,6 @@ router.route("/ContactRequest/:requestId/:status").put(AuthController.Authentica
  *         description: Internal server error
  */
 router.route("/Contacts").get(AuthController.AuthenticateInvestor, InvestorController.getContacts)
-
-/**
- * @swagger
- * /investors/Projects:
- *   get:
- *     summary: Get all member's projects 
- *     description: list of all member's projects 
- *     tags: [Investors]
- *     security:
- *       - jwtToken: []
- *     responses:
- *       200:
- *         description: Successful response
- *       400:
- *         description: Bad request
- *         content:
- *           application/json:
- *             example:
- *               message: Error message describing the issue
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden (user not authorized)
- *       404:
- *         description: User not found
- *       500:
- *         description: Internal server error
- */
 
 /**
  * @swagger
@@ -858,7 +832,6 @@ router.route("/Projects").get(AuthController.AuthenticateInvestor, InvestorContr
  *         description: Erreur serveur
  */
 router.put("/byId/:id", InvestorController.getInvestorById);
-
 
 /**
  * @swagger
@@ -982,6 +955,7 @@ router.put("/:id", InvestorController.updateInvestor);
  *         description: Erreur serveur
  */
 router.get("/:investorId/details", AuthController.AuthenticateMember , InvestorController.getInvestorDetails);
+
 /**
  * @swagger
  * /investors/distinct/{field}:
@@ -1066,7 +1040,7 @@ router.get('/contactRequests/distinct-project-fields', AuthController.Authentica
  *   get:
  *     summary: Get distinct field values from contact requests
  *     description: Retrieve distinct values of a specified field for contact requests by member or investor.
- *     tags: [ContactRequests]
+ *     tags: [Investor Requests]
  *     parameters:
  *       - name: field
  *         in: path

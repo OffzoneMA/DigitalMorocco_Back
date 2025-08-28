@@ -58,7 +58,6 @@ const getLastAccessLogByConnectedUser = async (req, res) => {
         const log = await accessLogService.getLastAccessLogByUser(userId);
         res.json(log);
     } catch (error) {
-        console.log("Erreur dans getLastAccessLogByConnectedUser:", error);
         res.status(500).json({ message: error.message });
     }   
 };

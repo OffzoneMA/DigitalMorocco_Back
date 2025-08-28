@@ -14,7 +14,7 @@ const UserLog = require('../models/UserLog');
 const salt=10
 
 const getUsers = async (args) => {
-    return await User.find().skip(args.start ? args.start : null).limit(args.qt ? args.qt : null).sort({ dateCreated: 'desc' });
+    return await User.find().skip(args.start ? args.start : 0).limit(args.qt ? args.qt : null).sort({ dateCreated: 'desc' });
 }
 
 const deleteUser = async (id) => {

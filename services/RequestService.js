@@ -6,27 +6,49 @@ const User = require('../models/User');
 const uploadService = require('./FileService')
 
 
-const createRequest = async (data, id, role,file) => {
-    if (role === "investor") {
-        return await Investor.create({ linkedin_link: data?.linkedin_link, user: id })
-            .then(async(res) => await User.findByIdAndUpdate(id, {status:'pending',role}))
-    }
-    else if (role === "partner") {
-        return await Partner.create({ num_rc: data?.num_rc, user: id })
-            .then(async (res) => await User.findByIdAndUpdate(id, { status: 'pending', role }))
-    }
-    else if (role === "member") {
-       if (!file) {    
-           throw new Error( 'File required' );
-        }
-     return  await Member.create({user: id }).then(async(member)=>{
-            const fileLink = await uploadService.uploadFile(file, "Members/" + id + "", "rc_ice")
-         await Member.findByIdAndUpdate(member._id, { rc_ice: fileLink })
-             .then(async (res) => {
-                await User.findByIdAndUpdate(id, { status: 'pending', role })})
-        })
-    }
-}
+// const createRequest = async (data, id, role,file) => {
+//     if (role === "investor") {
+//         return await Investor.create({ linkedin_link: data?.linkedin_link, user: id })
+//             .then(async(res) => await User.findByIdAndUpdate(id, {status:'pending',role}))
+//     }
+//     else if (role === "partner") {
+//         return await Partner.create({ num_rc: data?.num_rc, user: id })
+//             .then(async (res) => await User.findByIdAndUpdate(id, { status: 'pending', role }))
+//     }
+//     else if (role === "member") {
+//        if (!file) {    
+//            throw new Error( 'File required' );
+//         }
+//      return  await Member.create({user: id }).then(async(member)=>{
+//             const fileLink = await uploadService.uploadFile(file, "Members/" + id + "", "rc_ice")
+//          await Member.findByIdAndUpdate(member._id, { rc_ice: fileLink })
+//              .then(async (res) => {
+//                 await User.findByIdAndUpdate(id, { status: 'pending', role })})
+//         })
+//     }
+// }
+
+const createRequest = async (data, id, role, file) => {
+  if (role === "investor") {
+    await Investor.create({ linkedin_link: data?.linkedin_link, user: id });
+    return await User.findByIdAndUpdate(id, { status: 'pending', role });
+  } 
+  else if (role === "partner") {
+    await Partner.create({ num_rc: data?.num_rc, user: id });
+    return await User.findByIdAndUpdate(id, { status: 'pending', role });
+  } 
+  else if (role === "member") {
+    if (!file) throw new Error('File required');
+
+    const member = await Member.create({ user: id });
+    const fileLink = await uploadService.uploadFile(file, `Members/${id}`, 'rc_ice');
+    await Member.findByIdAndUpdate(member._id, { rc_ice: fileLink });
+    return await User.findByIdAndUpdate(id, { status: 'pending', role });
+  } 
+  else {
+    throw new Error('Invalid role');
+  }
+};
 
 const createRequestTest = async (data, id, role) => {
     if (role === "investor") {
@@ -48,13 +70,13 @@ const createRequestTest = async (data, id, role) => {
 
 const getRequests = async (args) => {
     if (args.type === "investor") {
-        return await Investor.find().populate({ path: 'user', select: 'email' }).skip(args.start ? args.start : null).limit(args.qt ? args.qt : 8);
+        return await Investor.find().populate({ path: 'user', select: 'email' }).skip(args.start ? args.start : 0).limit(args.qt ? args.qt : 8);
     }
     else if (args.type === "partner") {
-        return await Partner.find().populate({ path: 'user', select: 'email' }).skip(args.start ? args.start : null).limit(args.qt ? args.qt : 8);
+        return await Partner.find().populate({ path: 'user', select: 'email' }).skip(args.start ? args.start : 0).limit(args.qt ? args.qt : 8);
     }
     else if (args.type === "member") {
-        return await Member.find().populate({ path: 'user', select: 'email' }).skip(args.start ? args.start : null).limit(args.qt ? args.qt : 8);
+        return await Member.find().populate({ path: 'user', select: 'email' }).skip(args.start ? args.start : 0).limit(args.qt ? args.qt : 8);
     }
 }
 

@@ -109,7 +109,6 @@ router.get('/', SubscriptionController.getSubscriptions);
  */
 router.get('/forUser', AuthController.AuthenticateUser, SubscriptionController.getSubscriptionsByUser);
 
-
 /**
  * @swagger
  * /subscriptions/user/plan/{planId}:
@@ -243,6 +242,7 @@ router.patch('/:id/cancel', SubscriptionController.cancelSubscription);
  * /subscriptions/auto-cancel:
  *   post:
  *     summary: Auto-cancel expired subscriptions
+ *     tags: [Subscription]
  *     responses:
  *       200:
  *         description: List of cancelled subscriptions
@@ -282,6 +282,7 @@ router.patch('/:id/pause', SubscriptionController.pauseSubscription);
  * /subscriptions/{subscriptionId}/renew:
  *   post:
  *     summary: Renew a subscription
+ *     tags: [Subscription]
  *     parameters:
  *       - in: path
  *         name: subscriptionId

@@ -8,21 +8,21 @@ const EmployeeService = require('../services/EmployeeService');
 const Employee = require('../models/Employees');
 const Investor = require('../models/Investor');
 
-async function createDocument(userId , documentData, docFile) {
+async function createDocument(userId, documentData, docFile) {
     try {
         const user = await UserService.getUserByID(userId);
         if (!user) {
             throw new Error('User not found');
         }
         if (docFile) {
-            const docURL = await uploadService.uploadFile(docFile, 'Documents/'+ user._id +"/uploadBy/" +user._id, docFile.originalname);
+            const docURL = await uploadService.uploadFile(docFile, 'Documents/' + user._id + "/uploadBy/" + user._id, docFile.originalname);
             documentData.link = docURL;
             documentData.docType = docFile.mimetype;
             documentData.documentName = docFile.originalname;
         }
         const document = new Document(documentData);
         document.owner = user._id;
-      
+
         await document.save();
         const extension = document.documentName?.split('.')?.pop();
         await ActivityHistoryService.createActivityHistory(
@@ -36,7 +36,7 @@ async function createDocument(userId , documentData, docFile) {
     }
 }
 
-async function updateDocument(documentId, updateData, docFile ) {
+async function updateDocument(documentId, updateData, docFile) {
     try {
         const document = await Document.findById(documentId);
         if (!document) {
@@ -44,14 +44,14 @@ async function updateDocument(documentId, updateData, docFile ) {
         }
 
         if (docFile) {
-            await uploadService.deleteFile(document.documentName , 'Documents/'+ document.owner +"/uploadBy/" + document.owner)
-            const docURL = await uploadService.uploadFile(docFile, 'Documents/'+ document.owner +"/uploadBy/" + document.owner, docFile.originalname);
+            await uploadService.deleteFile(document.documentName, 'Documents/' + document.owner + "/uploadBy/" + document.owner)
+            const docURL = await uploadService.uploadFile(docFile, 'Documents/' + document.owner + "/uploadBy/" + document.owner, docFile.originalname);
             updateData.link = docURL;
             updateData.docType = docFile.mimetype;
             updateData.documentName = docFile.originalname;
         }
 
-        Object.assign(document, updateData); 
+        Object.assign(document, updateData);
         await document.save();
         const extension = document.documentName?.split('.')?.pop();
         await ActivityHistoryService.createActivityHistory(
@@ -65,7 +65,7 @@ async function updateDocument(documentId, updateData, docFile ) {
     }
 }
 
-async function shareDocument(documentId, userIds , shareWithType) {
+async function shareDocument(documentId, userIds, shareWithType) {
     try {
         const document = await Document.findById(documentId);
         if (!document) {
@@ -77,12 +77,12 @@ async function shareDocument(documentId, userIds , shareWithType) {
 
         // Combine employee and investor IDs
         const foundUserIds = [
-        ...existingEmployees.map(employee => employee._id.toString()),
-        ...existingInvestors.map(investor => investor._id.toString()),
+            ...existingEmployees.map(employee => employee._id.toString()),
+            ...existingInvestors.map(investor => investor._id.toString()),
         ];
 
-        if (foundUserIds.length !== userIds.length) {
-        throw new Error('One or more employees or investors not found');
+        if (!foundUserIds.length > 0) {
+            throw new Error('One or more employees or investors not found');
         }
 
         document.shareWith = shareWithType;
@@ -93,7 +93,7 @@ async function shareDocument(documentId, userIds , shareWithType) {
         await ActivityHistoryService.createActivityHistory(
             document.owner,
             'document_shared',
-            { targetName: `${document?.title}.${extension}`, targetDesc: `Document shared with users: ${userIds.join(', ')}` , to: shareWithType}
+            { targetName: `${document?.title}.${extension}`, targetDesc: `Document shared with users: ${userIds.join(', ')}`, to: shareWithType }
         );
         return document;
     } catch (error) {
@@ -146,88 +146,88 @@ async function getDocumentById(documentId) {
 
 async function getDocumentsForUser(userId, args = {}) {
     try {
-      const page = args.page || 1;
-      const pageSize = args.pageSize || 8;
-      const skip = (page - 1) * pageSize;
-  
-      // Récupérer les documents avec pagination
-      const documents = await Document.find({ owner: userId })
-        .populate('owner') // Charger les infos de l'owner
-        .sort({ uploadDate: 'desc' }) // Trier par date décroissante
-        .skip(skip)
-        .limit(pageSize);
-  
-      // Récupérer les IDs des utilisateurs partagés
-      const userIds = documents.flatMap((doc) => doc.shareWithUsers.map((id) => id.toString()));
-  
-      // Trouver les employés et investisseurs correspondant aux IDs
-      const [employees, investors] = await Promise.all([
-        Employee.find({ _id: { $in: userIds } }).select('fullName workEmail status jobTitle'),
-        Investor.find({ _id: { $in: userIds } }).select('name companyName legalName type contactEmail'),
-      ]);
-  
-      // Créer un dictionnaire pour un accès rapide aux utilisateurs
-      const employeesMap = Object.fromEntries(employees.map((emp) => [emp._id.toString(), emp]));
-      const investorsMap = Object.fromEntries(investors.map((inv) => [inv._id.toString(), inv]));
-  
-      // Formater les documents avec les utilisateurs partagés
-      const formattedDocuments = documents.map((doc) => {
-        const shareWithUsersInfos = doc.shareWithUsers.map((userId) => {
-          if (employeesMap[userId]) {
-            const employee = employeesMap[userId];
+        const page = args.page || 1;
+        const pageSize = args.pageSize || 8;
+        const skip = (page - 1) * pageSize;
+
+        // Récupérer les documents avec pagination
+        const documents = await Document.find({ owner: userId })
+            .populate('owner') // Charger les infos de l'owner
+            .sort({ uploadDate: 'desc' }) // Trier par date décroissante
+            .skip(skip)
+            .limit(pageSize);
+
+        // Récupérer les IDs des utilisateurs partagés
+        const userIds = documents.flatMap((doc) => doc.shareWithUsers.map((id) => id.toString()));
+
+        // Trouver les employés et investisseurs correspondant aux IDs
+        const [employees, investors] = await Promise.all([
+            Employee.find({ _id: { $in: userIds } }).select('fullName workEmail status jobTitle'),
+            Investor.find({ _id: { $in: userIds } }).select('name companyName legalName type contactEmail'),
+        ]);
+
+        // Créer un dictionnaire pour un accès rapide aux utilisateurs
+        const employeesMap = Object.fromEntries(employees.map((emp) => [emp._id.toString(), emp]));
+        const investorsMap = Object.fromEntries(investors.map((inv) => [inv._id.toString(), inv]));
+
+        // Formater les documents avec les utilisateurs partagés
+        const formattedDocuments = documents.map((doc) => {
+            const shareWithUsersInfos = doc.shareWithUsers.map((userId) => {
+                if (employeesMap[userId]) {
+                    const employee = employeesMap[userId];
+                    return {
+                        id: employee._id,
+                        fullName: employee.fullName,
+                        email: employee.workEmail,
+                        type: employee.status,
+                        userType: 'Employee',
+                    };
+                } else if (investorsMap[userId]) {
+                    const investor = investorsMap[userId];
+                    return {
+                        id: investor._id,
+                        fullName: investor?.name || investor?.companyName || investor?.legalName,
+                        type: investor.type,
+                        email: investor.contactEmail,
+                        userType: 'Investor',
+                    };
+                }
+                return null; // Si aucun utilisateur correspondant
+            }).filter(Boolean); // Supprimer les utilisateurs non valides
+
+            // Créer une chaîne de noms séparés par des virgules
+            const shareWithUsersNames = shareWithUsersInfos.map((user) => user.fullName).join(', ');
+
             return {
-              id: employee._id,
-              fullName: employee.fullName,
-              email: employee.workEmail,
-              type: employee.status,
-              userType: 'Employee',
+                _id: doc._id,
+                title: doc.title,
+                documentName: doc.documentName,
+                docType: doc.docType,
+                uploadDate: doc.uploadDate,
+                link: doc.link,
+                owner: doc.owner,
+                shareWithUsers: doc.shareWithUsers,
+                shareWithUsersInfos,
+                shareWithUsersNames, // Propriété pour les noms
             };
-          } else if (investorsMap[userId]) {
-            const investor = investorsMap[userId];
-            return {
-              id: investor._id,
-              fullName: investor?.name || investor?.companyName || investor?.legalName,
-              type: investor.type,
-              email: investor.contactEmail,
-              userType: 'Investor',
-            };
-          }
-          return null; // Si aucun utilisateur correspondant
-        }).filter(Boolean); // Supprimer les utilisateurs non valides
-  
-        // Créer une chaîne de noms séparés par des virgules
-        const shareWithUsersNames = shareWithUsersInfos.map((user) => user.fullName).join(', ');
-  
+        });
+
+        // Compter le nombre total de documents
+        const totalCount = await Document.countDocuments({ owner: userId });
+        const totalPages = Math.ceil(totalCount / pageSize);
+
         return {
-          _id: doc._id,
-          title: doc.title,
-          documentName: doc.documentName,
-          docType: doc.docType,
-          uploadDate: doc.uploadDate,
-          link: doc.link,
-          owner: doc.owner,
-          shareWithUsers: doc.shareWithUsers,
-          shareWithUsersInfos,
-          shareWithUsersNames, // Propriété pour les noms
+            documents: formattedDocuments,
+            totalDocuments: totalCount,
+            totalPages,
+            currentPage: page,
+            pageSize,
         };
-      });
-  
-      // Compter le nombre total de documents
-      const totalCount = await Document.countDocuments({ owner: userId });
-      const totalPages = Math.ceil(totalCount / pageSize);
-  
-      return {
-        documents: formattedDocuments,
-        totalDocuments: totalCount,
-        totalPages,
-        currentPage: page,
-        pageSize,
-      };
     } catch (error) {
-      throw new Error('Error getting documents for user: ' + error.message);
+        throw new Error('Error getting documents for user: ' + error.message);
     }
-}  
-  
+}
+
 async function getDocumentSharedUsers(documentId) {
     try {
         // Find the document and populate the shareWithUsers field
@@ -253,10 +253,10 @@ async function getDocumentSharedUsers(documentId) {
 
         // Find all employees and investors that match these IDs
         const [employees, investors] = await Promise.all([
-            Employee.find({ 
+            Employee.find({
                 _id: { $in: userIds }
             }).select('firstName lastName email role'),
-            Investor.find({ 
+            Investor.find({
                 _id: { $in: userIds }
             }).select('firstName lastName email type')
         ]);
@@ -266,7 +266,7 @@ async function getDocumentSharedUsers(documentId) {
             documentTitle: document.title,
             documentType: document.docType,
             shareType: document.shareWith,
-            shareWithUsers : document.shareWithUsers,
+            shareWithUsers: document.shareWithUsers,
             users: [
                 ...employees.map(emp => ({
                     id: emp._id,
@@ -298,19 +298,21 @@ async function getDocumentSharedUsers(documentId) {
 async function searchDocuments(user, searchTerm) {
     try {
         const userRole = user?.role?.toLowerCase();
-        const regex = new RegExp(searchTerm, 'i'); 
+        const regex = new RegExp(searchTerm, 'i');
         let query;
 
         if (userRole === 'admin') {
-            query = { $or: [{ title: regex }, 
-                // { documentName: regex }
-            ] }; 
+            query = {
+                $or: [{ title: regex },
+                    // { documentName: regex }
+                ]
+            };
         } else {
             query = {
                 owner: user?._id,
                 $or: [{ title: regex },
                     //  { documentName: regex }
-                    ] 
+                ]
             };
         }
 
@@ -370,20 +372,20 @@ async function getShareWithData(userId) {
 
         const result = [
             ...employees.map(employee => ({
-              _id: employee._id,
-              type: 'Employee',
-              name: employee.fullName,
-              email: employee.workEmail,
-              phoneNumber: employee.phoneNumber,
-              image: employee.image,
+                _id: employee._id,
+                type: 'Employee',
+                name: employee.fullName,
+                email: employee.workEmail,
+                phoneNumber: employee.phoneNumber,
+                image: employee.image,
             })),
             ...investors.map(investor => ({
-              _id: investor._id,
-              type: 'Investor',
-              name: investor.name,
-              email: investor.contactEmail,
-              phoneNumber: investor.phoneNumber,
-              image: investor.image,
+                _id: investor._id,
+                type: 'Investor',
+                name: investor.name,
+                email: investor.contactEmail,
+                phoneNumber: investor.phoneNumber,
+                image: investor.image,
             })),
         ];
         return result;
@@ -393,6 +395,8 @@ async function getShareWithData(userId) {
 }
 
 
-module.exports = {createDocument , updateDocument , getAllDocuments, getDocumentById,
-getDocumentsForUser , getDocumentsByUploader, deleteDocument , shareDocument , 
-getShareWithData  , searchDocuments}
+module.exports = {
+    createDocument, updateDocument, getAllDocuments, getDocumentById,
+    getDocumentsForUser, getDocumentsByUploader, deleteDocument, shareDocument,
+    getShareWithData, searchDocuments
+}

@@ -39,7 +39,6 @@ const languages = [
 async function convertCurrency1(amount, from = 'USD', to = 'MAD') {
     try {
         const response = await axios.get(`https://latest.currency-api.pages.dev/v1/currencies/${from.toLowerCase()}.json`);
-        // console.log('Response:', response.data);
         const rate = response.data[from.toLowerCase()][to.toLowerCase()];
         return amount * rate;
     } catch (error) {
@@ -146,7 +145,6 @@ async function createSubscriptionForUser(userId, planId, data) {
 
         // Cas d’un plan gratuit (sans paiement)
         if (isFreePlan) {
-            console.log("subscription for free plan", isFreePlan);
             const newSubscription = await Subscription.create({
                 ...subscriptionPayload,
                 subscriptionStatus: 'active',

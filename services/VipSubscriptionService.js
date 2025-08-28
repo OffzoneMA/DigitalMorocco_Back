@@ -119,7 +119,6 @@ cron.schedule('0 0 * * *', async () => { // Every day at midnight
         subscription.active = false;
         subscription.paymentStatus = 'FAILED';
         await subscription.save();
-        console.log(`Not enough credits for user ${user._id} to renew vip subscription ${subscription._id}`);
         continue;
       }
       userSubscription.totalCredits -= requiredCredits;

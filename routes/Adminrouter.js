@@ -5,6 +5,4 @@ const AdminController = require("../controllers/AdminController")
 
 router.route("/").post(AuthController.AuthenticateAdmin,AdminController.addAdmin)
 
-
-
 module.exports = router

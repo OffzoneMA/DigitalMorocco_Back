@@ -23,14 +23,14 @@ const getAllSubscriptionLogs = async (args) => {
         return await SubscriptionLogs.find()
         .sort({ subscriptionDate: 'desc' })
                 .populate([{ path: 'user' }, { path: 'subscriptionId'}])
-        .skip(args.start ? args.start : null).limit(args.qt ? args.qt : 8);
+        .skip(args.start ? args.start : 0).limit(args.qt ? args.qt : 8);
 }
 
 const getAllSubscriptionLogsUser = async (userId,args) => {
         return await SubscriptionLogs.find({ user: userId })
         .sort({ subscriptionDate: 'desc' })
                 .populate({ path: 'subscriptionId' })
-        .skip(args.start ? args.start : null).limit(args.qt ? args.qt : 8);
+        .skip(args.start ? args.start : 0).limit(args.qt ? args.qt : 8);
 }
 
 async function getSubscriptionLogs(subscriptionId) {

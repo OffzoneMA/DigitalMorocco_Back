@@ -2,80 +2,69 @@ const passport = require('passport');
 const LinkedInStrategy = require('passport-linkedin-oauth2').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
-const User = require('../models/User'); 
+const User = require('../models/User');
 const AuthService = require('../services/AuthService');
 const MemberService = require('../services/MemberService');
 const PartnerService = require('../services/PartnerService');
 const InvestorService = require('../services/InvestorService');
 const ProjectService = require('../services/ProjectService');
 const EventService = require('../services/EventService');
-const {generateAccessToken} = require('../services/AuthService'); 
-const UserLogService = require('../services/UserLogService'); 
+const { generateAccessToken } = require('../services/AuthService');
+const UserLogService = require('../services/UserLogService');
 
 const generateUserInfos = async (user) => {
-  console.log('generateUserInfos input user:', user?._id); // Debug log
 
-  
-  const accessToken = await generateAccessToken(user);
-  console.log('Generated accessToken:', accessToken); // Debug log
+    const accessToken = await generateAccessToken(user);
 
-  let data = null;
-  let projectCount = 0;
-  let eventCount = 0;
+    let data = null;
+    let projectCount = 0;
+    let eventCount = 0;
 
-  // Vérifier si user et role existent avant de faire le toLowerCase()
-  const userRole = user?.role?.toLowerCase();
-  console.log('User role:', userRole); // Debug log
+    // Vérifier si user et role existent avant de faire le toLowerCase()
+    const userRole = user?.role?.toLowerCase();
 
-  if (userRole) {
-      if (userRole === "member") {
-          let member = await MemberService.getMemberByUserId(user._id);
-          console.log(user)
-          console.log('Found member:', member ); // Debug log
-          
-          if (member?._id) {
-              projectCount = await ProjectService.countProjectsByMemberId(member._id);
-              data = {
-                  ...(member._doc || member),
-                  projectCount
-              };
-          }
-      }
-      else if (userRole === "partner") {
-          let partner = await PartnerService.getPartnerByUserId(user._id);
-          console.log('Found partner:', partner); // Debug log
-          data = partner?._doc || partner;
-      }
-      else if (userRole === "investor") {
-          let investor = await InvestorService.getInvestorByUserId(user._id);
-          console.log('Found investor:', investor); // Debug log
-          data = investor?._doc || investor;
-      }
-  }
+    if (userRole) {
+        if (userRole === "member") {
+            let member = await MemberService.getMemberByUserId(user._id);
 
-  eventCount = await EventService.countEventsByUserId(user?._id);
-  console.log('Event count:', eventCount); // Debug log
+            if (member?._id) {
+                projectCount = await ProjectService.countProjectsByMemberId(member._id);
+                data = {
+                    ...(member._doc || member),
+                    projectCount
+                };
+            }
+        }
+        else if (userRole === "partner") {
+            let partner = await PartnerService.getPartnerByUserId(user._id);
+            data = partner?._doc || partner;
+        }
+        else if (userRole === "investor") {
+            let investor = await InvestorService.getInvestorByUserId(user._id);
+            data = investor?._doc || investor;
+        }
+    }
 
-  // Simplifier la logique de construction du résultat
-  const baseUser = user?._doc || user;
-  const result = {
-      ...baseUser,
-      eventCount
-  };
+    eventCount = await EventService.countEventsByUserId(user?._id);
 
-  // N'ajouter les données spécifiques au rôle que si elles existent
-  if (userRole && data) {
-      result[userRole] = data;
-  }
+    // Simplifier la logique de construction du résultat
+    const baseUser = user?._doc || user;
+    const result = {
+        ...baseUser,
+        eventCount
+    };
 
-  console.log('Final result:', { accessToken, user: "user data" }); // Debug log
+    // N'ajouter les données spécifiques au rôle que si elles existent
+    if (userRole && data) {
+        result[userRole] = data;
+    }
 
-  await UserLogService.createUserLog('Generate user info', user?._id);
+    await UserLogService.createUserLog('Generate user info', user?._id);
 
-  return { 
-      accessToken, 
-      user: result 
-  };
+    return {
+        accessToken,
+        user: result
+    };
 }
 
 passport.use(
@@ -88,21 +77,21 @@ passport.use(
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
-                const existingUser = await User.findOne({ googleId: profile.id }) ;
+                const existingUser = await User.findOne({ googleId: profile.id });
                 if (existingUser) {
                     const result = await generateUserInfos(existingUser)
                     const log = await UserLogService.createUserLog('Account Signin', existingUser._id);
-                    return done(null, { user: result.user, auth: result.accessToken , socialId: profile.id , provider: 'google'});
+                    return done(null, { user: result.user, auth: result.accessToken, socialId: profile.id, provider: 'google' });
                 }
                 const existingEmail = await User.findOne({ email: profile.emails[0].value })
-                if (existingEmail){
+                if (existingEmail) {
                     throw new Error('An account already exists with this email')
                 }
-                
+
                 const newUser = await User.create({
                     googleId: profile.id,
                     email: profile.emails[0].value,
-                    displayName: profile.displayName, 
+                    displayName: profile.displayName,
                     status: 'verified'
 
                 });
@@ -110,7 +99,7 @@ passport.use(
                 const result = await generateUserInfos(newUser)
                 const log = await UserLogService.createUserLog('Account Initial Signup', newUser._id);
                 const log2 = await UserLogService.createUserLog('Verified', newUser._id);
-                return done(null, { user: result.user, auth: result.accessToken , socialId: profile.id , provider: 'google'});
+                return done(null, { user: result.user, auth: result.accessToken, socialId: profile.id, provider: 'google' });
             } catch (error) {
                 const errorMessage = error.message;
                 return done(null, false, { error: errorMessage });
@@ -191,26 +180,25 @@ passport.use(
             clientID: process.env.LINKEDIN_CLIENT_ID,
             clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
             callbackURL: '/users/auth/linkedin/callback',
-            scope: ['r_liteprofile', 'r_emailaddress'], 
+            scope: ['r_liteprofile', 'r_emailaddress'],
             state: false,
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
-             
-             
-                const existingUser = await User.findOne({ linkedinId: profile.id }) ;
+
+
+                const existingUser = await User.findOne({ linkedinId: profile.id });
 
                 if (existingUser) {
                     const result = await generateUserInfos(existingUser)
                     const log = await UserLogService.createUserLog('Account Signin', existingUser._id);
-                    console.log("eee", result)
-                    return done(null, { user: result.user, auth: result.accessToken , socialId: profile.id , provider: 'linkedin'});
+                    return done(null, { user: result.user, auth: result.accessToken, socialId: profile.id, provider: 'linkedin' });
                 }
 
                 const existingEmail = await User.findOne({ email: profile.emails[0].value })
                 if (existingEmail) {
                     throw new Error('An account already exists with this email')
-                }               
+                }
 
                 const newUser = await User.create({
                     linkedinId: profile.id,
@@ -220,10 +208,10 @@ passport.use(
 
                 });
 
-                 const result = await AuthService.generateUserInfos(newUser)
+                const result = await AuthService.generateUserInfos(newUser)
                 const log = await UserLogService.createUserLog('Account Initial Signup', newUser._id);
                 const log2 = await UserLogService.createUserLog('Verified', newUser._id);
-                return done(null, { user: result.user, auth: result.accessToken ,socialId: profile.id , provider: 'linkedin' });
+                return done(null, { user: result.user, auth: result.accessToken, socialId: profile.id, provider: 'linkedin' });
             } catch (error) {
                 const errorMessage = error.message;
                 return done(null, false, { error: errorMessage });
@@ -239,7 +227,7 @@ passport.use('linkedin-signup',
             clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
             callbackURL: `${process.env.BACKEND_URL}/users/auth/linkedin/signup/callback`,
             userProfileURL: 'https://api.linkedin.com/v2/userinfo',
-            scope: ['email', 'profile','openid'],
+            scope: ['email', 'profile', 'openid'],
             state: false,
         },
         async (accessToken, refreshToken, profile, done) => {
@@ -285,47 +273,47 @@ passport.use('linkedin-signin',
             clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
             callbackURL: `${process.env.BACKEND_URL}/users/auth/linkedin/signin/callback`,
             userProfileURL: 'https://api.linkedin.com/v2/userinfo',
-            scope: ['email', 'profile','openid'],
+            scope: ['email', 'profile', 'openid'],
             state: false,
         },
         async (accessToken, refreshToken, profile, done) => {
-            try {                
+            try {
                 // Extract email properly from LinkedIn response
                 const email = profile.emails?.[0]?.value || profile.email;
-                
+
                 if (!email) {
                     console.error('No email found in LinkedIn profile');
                     return done(null, false, { error: 'No email found in LinkedIn profile' });
                 }
-                        
+
                 const existingUser = await User.findOne({ linkedinId: profile.id });
-        
+
                 if (existingUser) {
                     await UserLogService.createUserLog('Account Signin LinkedIn', existingUser._id);
-                    
+
                     try {
                         const result = await generateUserInfos(existingUser);
-                        
+
                         // Validate the result before returning
                         if (!result || !result.accessToken) {
                             return done(null, false, { error: 'Failed to generate authentication token' });
                         }
-                        
-                        const returnObject = { 
-                            user: result.user, 
-                            auth: result.accessToken, 
-                            socialId: profile.id, 
-                            provider: 'linkedin' 
+
+                        const returnObject = {
+                            user: result.user,
+                            auth: result.accessToken,
+                            socialId: profile.id,
+                            provider: 'linkedin'
                         };
-                    
-                        
+
+
                         return done(null, returnObject);
                     } catch (genError) {
                         console.error('Error generating user info:', genError);
                         return done(null, false, { error: 'Failed to generate user information' });
                     }
                 }
-        
+
                 // Check if user exists with this email
                 const existingEmail = await User.findOne({ email });
                 if (existingEmail) {
@@ -349,18 +337,17 @@ passport.use(
         clientID: process.env.FACEBOOK_CLIENT_ID,
         clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
         callbackURL: '/users/auth/facebook/callback',
-        profileFields   : ['id', 'displayName', 'emails'],
-      },
-      async( accessToken, refreshToken, profile, cb) => {
-        try {
-            const existingUser = await User.findOne({ facebookId: profile.id }) ;
+        profileFields: ['id', 'displayName', 'emails'],
+    },
+        async (accessToken, refreshToken, profile, cb) => {
+            try {
+                const existingUser = await User.findOne({ facebookId: profile.id });
 
                 if (existingUser) {
                     const result = await generateUserInfos(existingUser)
                     const log = await UserLogService.createUserLog('Account Signin', existingUser._id);
-                    return cb(null, { user: result.user, auth: result.accessToken , socialId: profile.id , provider: 'facebook'});
+                    return cb(null, { user: result.user, auth: result.accessToken, socialId: profile.id, provider: 'facebook' });
                 }
-                console.log(profile)
 
                 const existingEmail = await User.findOne({ email: profile.emails[0].value })
                 if (existingEmail) {
@@ -378,11 +365,11 @@ passport.use(
                 const result = await generateUserInfos(newUser)
                 const log = await UserLogService.createUserLog('Account Initial Signup', newUser._id);
                 const log2 = await UserLogService.createUserLog('Verified', newUser._id);
-                return cb(null, { user: result.user, auth: result.accessToken , socialId: profile.id , provider: 'facebook'});
-        } catch (error) {
-            console.log(error)
+                return cb(null, { user: result.user, auth: result.accessToken, socialId: profile.id, provider: 'facebook' });
+            } catch (error) {
+                console.log(error)
+            }
         }
-      }
     )
 );
 
@@ -466,4 +453,4 @@ passport.deserializeUser(async (id, done) => {
     }
 });
 
-module.exports = {passport};
+module.exports = { passport };

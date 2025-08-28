@@ -12,8 +12,6 @@ const rawBodyMiddleware = async (req, res, next) => {
       encoding: 'utf-8' // ici l'encodage est passé à la lib, pas directement au stream
     });
 
-    console.log('Corps brut reçu:', raw);
-
     req.rawBody = raw;
     next();
   } catch (err) {
