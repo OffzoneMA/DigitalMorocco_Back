@@ -73,22 +73,23 @@ function generateShortCodeFromToken(token, userId) {
 async function sendEmail(userEmail, subject, emailContent, isHTML) {
   const transporter = nodemailer.createTransport({
     // host: "smtp-mail.outlook.com",
-    host: 'smtp.office365.com',
+    // host: 'smtp.office365.com',
     // port: 465,
-    port: 587,
-    // host: "smtp.gmail.com",
     // port: 587,
-    secure: false,
+    host: "mail.digitalmorocco.net",
+    port: 465,
+    secure: true,
+    // secure: false,
     auth: {
       user: process.env.email,
       pass: process.env.password,
     },
     tls: {
-      ciphers: 'SSLv3',
-      // rejectUnauthorized: false,
+      // ciphers: 'SSLv3',
+      rejectUnauthorized: false,
     },
-    logger: true,
-    debug: true
+    // logger: true,
+    // debug: true
   });
 
   const emailOptions = {
