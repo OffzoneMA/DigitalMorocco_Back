@@ -629,8 +629,6 @@ router.route("/UserInfo").get(AuthController.userInfo)
 router.route("/Login").post(AuthController.login);
 
 
-
-
 /**
  * @swagger
  * /users/count-by-month:

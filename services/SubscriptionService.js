@@ -65,7 +65,7 @@ async function convertUSDtoMAD(amount) {
         return parseFloat(result1.toFixed(2));
     } catch (error1) {
         console.log('❌ API principale échouée, tentative avec l\'API de secours...');
-        
+
         // Deuxième tentative
         try {
             const result2 = await convertCurrency2(amount);
@@ -111,6 +111,38 @@ const dateIn1Month = () => dateInDays(31);
 
 const dateIn1Year = () => dateInDays(365);
 
+// Calcule une nouvelle date en ajoutant des jours à une date existante
+const addDays = (date, days) => {
+    const newDate = new Date(date);
+    newDate.setDate(newDate.getDate() + days);
+    return newDate;
+};
+
+// Calcule une nouvelle date en ajoutant des mois à une date existante
+const addMonths = (date, months) => {
+    const newDate = new Date(date);
+    newDate.setMonth(newDate.getMonth() + months);
+    return newDate;
+};
+
+// Calcule une nouvelle date en ajoutant des années à une date existante
+const addYears = (date, years) => {
+    const newDate = new Date(date);
+    newDate.setFullYear(newDate.getFullYear() + years);
+    return newDate;
+};
+
+// Calcul de la nouvelle échéance en empilant
+const getNewExpirationDate = (currentExpiration, billing) => {
+    const baseDate = currentExpiration ? new Date(currentExpiration) : new Date();
+
+    if (billing === "year") return addYears(baseDate, 1);
+    if (billing === "month") return addMonths(baseDate, 1);
+    if (billing === "week") return addDays(baseDate, 7);
+
+    return addDays(baseDate, 1); // fallback
+};
+
 const getDateExpires = sub => sub.dateExpired || (sub.billing === 'year' ? dateIn1Year() : dateIn1Month());
 
 const isSubscriptionActive = sub => sub.dateExpired > Date.now();
@@ -130,7 +162,7 @@ async function createSubscriptionForUser(userId, planId, data) {
         }
 
         //Date d'expiration de la souscription
-        const dateExpired = plan?.price <=0 ? dateIn1Year() : (data.billing === 'year' ? dateIn1Year() : dateIn1Month());
+        const dateExpired = plan?.price <= 0 ? getNewExpirationDate(null , 'year') : getNewExpirationDate(null , data.billing);
 
         const isFreePlan = plan.price <= 0;
         const newCredits = plan.credits + (existingSubscription?.totalCredits || 0);
@@ -220,7 +252,7 @@ async function createSubscriptionForUser(userId, planId, data) {
                 data: paymentSession,
             };
         }
-        
+
     } catch (error) {
         console.error(error);
         throw new Error('Error creating subscription: ' + error.message);
@@ -261,7 +293,7 @@ async function upgradeSubscription(subscriptionId, newPlanId, newBilling) {
             throw new Error('User not found.');
         }
 
-        const newExpirationDate = newBilling === 'year' ? dateIn1Year() : dateIn1Month();
+        const newExpirationDate = getNewExpirationDate(subscription.dateExpired, newBilling);
 
         subscription.pendingUpgrade = {
             newPlan: newPlan._id,
@@ -274,16 +306,16 @@ async function upgradeSubscription(subscriptionId, newPlanId, newBilling) {
             currency: 'USD'
         };
 
-        if((oldPlan.price > newPlan.price) && user?.role?.toLowerCase() == 'member') {
+        if ((oldPlan.price > newPlan.price) && user?.role?.toLowerCase() == 'member') {
 
             const member = await MemberService.getMemberByUserId(user._id);
 
-            const totalProjects = await MemberService.getAllProjectsForMemberWithoutPagination(member._id , {});
+            const totalProjects = await MemberService.getAllProjectsForMemberWithoutPagination(member._id, {});
             const totalMaskedProjects = totalProjects.filter(p => p.mask);
 
             subscription.previousPlanInfo = {
                 planName: oldPlan.name,
-                isDowngrade: true ,
+                isDowngrade: true,
                 userRole: user?.role,
                 totalProjects: totalProjects?.length || 0,
                 totalMaskedProjects: totalMaskedProjects?.length || 0
@@ -506,7 +538,7 @@ async function renewSubscription(subscriptionId) {
             throw new Error('Cannot renew a free subscription plan.');
         }
 
-        const newExpirationDate = subscription.billing === 'year' ? dateIn1Year() : dateIn1Month();
+        const newExpirationDate = getNewExpirationDate(subscription.dateExpired, subscription.billing);
 
         subscription.pendingUpgrade = {
             newPlan: plan._id,
@@ -548,7 +580,7 @@ async function renewSubscription(subscriptionId) {
         throw new Error('Error renewing subscription: ' + error.message);
     }
 }
- 
+
 
 async function checkUserSubscription(userId) {
     try {
@@ -632,7 +664,7 @@ async function achatCredits(userId, data) {
     }
 }
 
-async function deductionCredits(userId , credits , serviceType) {
+async function deductionCredits(userId, credits, serviceType) {
     try {
         const user = await User.findById(userId);
         if (!user) {
@@ -651,7 +683,7 @@ async function deductionCredits(userId , credits , serviceType) {
         subscription.totalCredits -= credits;
         await subscription.save({ new: true });
 
-        if(serviceType === 'ADD_PROJECT') {
+        if (serviceType === 'ADD_PROJECT') {
             // Ajouter le projet draft à l'utilisateur
             const member = await Member.findOne({ owner: userId });
             if (!member) {
@@ -663,11 +695,11 @@ async function deductionCredits(userId , credits , serviceType) {
                 name: 'Draft Project',
                 status: 'Draft',
             });
-        } 
+        }
 
-        if(serviceType === "ACCESS_INVESTORS") {
+        if (serviceType === "ACCESS_INVESTORS") {
             // Log access 
-            await InvestorAccessLogService.logAccess(userId , true);
+            await InvestorAccessLogService.logAccess(userId, true);
         }
 
         return {
@@ -679,12 +711,12 @@ async function deductionCredits(userId , credits , serviceType) {
         console.error('Error deducting credits:', error);
         throw new Error('Error deducting credits: ' + error);
     }
-    
+
 }
 
 module.exports = {
     createSubscriptionForUser, upgradeSubscription, getSubscriptionById,
     cancelSubscription, autoCancelExpiredSubscriptions, pauseSubscription, getSubscriptionsByUser, renewSubscription, dateInDays, dateIn1Month,
     dateIn1Year, getDateExpires, checkUserSubscription, getSubscriptions, updateSubscription,
-    deleteSubscription, searchSubscriptionsByUser, formatDate, getLanguageIdByLabel, achatCredits , deductionCredits
+    deleteSubscription, searchSubscriptionsByUser, formatDate, getLanguageIdByLabel, achatCredits, deductionCredits
 };

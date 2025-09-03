@@ -10,7 +10,7 @@ const paymentConfig = {
     customerCountry : 'MA',
     mode : 'DEEP_LINK',	// fixed value				
     paymentMethod : 'CREDIT_CARD' ,	// fixed value
-    callbackUrl : `${'https://b2b1cef257f7.ngrok-free.app'}/payment/callback`,
+    callbackUrl : `${process.env.BACKEND_URL}/payment/callback`,
     successUrl : `${process.env.FRONTEND_URL}/Subscription?statuspaid=success`,
     successCreditsUrl: `${process.env.FRONTEND_URL}/ManageCredits?statuspaid=success`,
     failureUrl : `${process.env.FRONTEND_URL}/Subscription?statuspaid=failed`,
