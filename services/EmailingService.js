@@ -121,48 +121,81 @@ async function getGraphAccessToken() {
 // }
 
 // Envoi d’email via Graph API
-async function sendEmail(email, subject, content, isHTML = false) {
-  const accessToken = await getGraphAccessToken();
+// async function sendEmail(email, subject, content, isHTML = false) {
+//   const accessToken = await getGraphAccessToken();
 
-  const mailData = {
-    message: {
-      subject: subject,
-      body: {
-        contentType: isHTML ? "HTML" : "Text",
-        content: content,
-      },
-      from: {
-        emailAddress: {
-          address: process.env.email,
-        },
-      },
-      toRecipients: [
-        {
-          emailAddress: {
-            address: email,
-          },
-        },
-      ],
+//   const mailData = {
+//     message: {
+//       subject: subject,
+//       body: {
+//         contentType: isHTML ? "HTML" : "Text",
+//         content: content,
+//       },
+//       from: {
+//         emailAddress: {
+//           address: process.env.email,
+//         },
+//       },
+//       toRecipients: [
+//         {
+//           emailAddress: {
+//             address: email,
+//           },
+//         },
+//       ],
+//     },
+//     saveToSentItems: "true",
+//   };
+
+//   try {
+//     const response = await axios.post(
+//       `https://graph.microsoft.com/v1.0/users/${process.env.email}/sendMail`,
+//       mailData,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${accessToken}`,
+//           "Content-Type": "application/json",
+//         },
+//       }
+//     );
+//     return {success: true, messageId: response.headers['client-request-id'] || null};
+//   } catch (error) {
+//     console.error("❌ Erreur envoi mail:", error.response?.data || error.message);
+//     return {success: false, error: error.message};
+//   }
+// }
+
+async function sendEmail(userEmail, subject, emailContent, isHTML) {
+  const transporter = nodemailer.createTransport({
+    host: 'mail.digitalmorocco.net',
+    port: 465,
+    secure: true,
+    // host: "smtp.gmail.com",
+    // port: 587,
+    // secure: false,
+    auth: {
+      user: process.env.email,
+      pass: process.env.password,
     },
-    saveToSentItems: "true",
+    tls: {
+      rejectUnauthorized: false,
+    },
+    //  logger: true, 
+    // debug: true
+  });
+
+  const emailOptions = {
+    from: {
+      name: 'Digital Morocco',
+      address: process.env.email
+    },
+    to: userEmail,
+    subject: subject,
+    [isHTML ? 'html' : 'text']: emailContent,
   };
 
-  try {
-    const response = await axios.post(
-      `https://graph.microsoft.com/v1.0/users/${process.env.email}/sendMail`,
-      mailData,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    return {success: true, messageId: response.headers['client-request-id'] || null};
-  } catch (error) {
-    console.error("❌ Erreur envoi mail:", error.response?.data || error.message);
-    return {success: false, error: error.message};
-  }
+  return await transporter.sendMail(emailOptions);
+
 }
 
 function generateShortCodeFromToken(token, userId) {
@@ -173,50 +206,87 @@ function generateShortCodeFromToken(token, userId) {
     .slice(0, 20);
 }
 
-async function sendContactFromWeb(to, subject, emailContent, isHTML = false) {
-  const accessToken = await getGraphAccessToken();
+// async function sendContactFromWeb(to, subject, emailContent, isHTML = false) {
+//   const accessToken = await getGraphAccessToken();
 
-  const mailData = {
-    message: {
-      subject: subject,
-      body: {
-        contentType: isHTML ? "HTML" : "Text",
-        content: emailContent,
-      },
-      from: {
-        emailAddress: {
-          address: process.env.email,
-        },
-      },
-      toRecipients: [
-        {
-          emailAddress: {
-            address: to,
-          },
-        },
-      ],
+//   const mailData = {
+//     message: {
+//       subject: subject,
+//       body: {
+//         contentType: isHTML ? "HTML" : "Text",
+//         content: emailContent,
+//       },
+//       from: {
+//         emailAddress: {
+//           address: process.env.email,
+//         },
+//       },
+//       toRecipients: [
+//         {
+//           emailAddress: {
+//             address: to,
+//           },
+//         },
+//       ],
+//     },
+//     saveToSentItems: "true",
+//   };
+
+//   try {
+//     const response = await axios.post(
+//       `https://graph.microsoft.com/v1.0/users/${process.env.email}/sendMail`,
+//       mailData,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${accessToken}`,
+//           "Content-Type": "application/json",
+//         },
+//       }
+//     );
+//     return response.data;
+//   } catch (error) {
+//     console.error("❌ Erreur envoi mail:", error.response?.data || error.message);
+//   }
+// }
+
+//Users
+
+async function sendContactFromWeb( email, subject, emailContent, isHTML) {
+  const transporter = nodemailer.createTransport({
+    host: 'mail.digitalmorocco.net',
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.email,
+      pass: process.env.password,
     },
-    saveToSentItems: "true",
+    tls: {
+      rejectUnauthorized: false,
+    },
+    // logger: true, 
+    // debug: true
+  });
+  const emailOptions = {
+    from: {
+      name: 'Digital Morocco',
+      address: process.env.email
+    },
+    to: 'contact@offzone.net',
+    subject: subject,
+    [isHTML ? 'html' : 'text']: emailContent,
   };
 
   try {
-    const response = await axios.post(
-      `https://graph.microsoft.com/v1.0/users/${process.env.email}/sendMail`,
-      mailData,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    return response.data;
+    const info = await transporter.sendMail(emailOptions);
+    return info;
   } catch (error) {
-    console.error("❌ Erreur envoi mail:", error.response?.data || error.message);
+    console.error('Error sending email: ', error);
+    throw error;
   }
+
+
 }
 
-//Users
 async function sendVerificationEmail(userId, language) {
   try {
     const user = await User.findById(userId);
@@ -987,6 +1057,8 @@ async function testSendEmail(email, subject, htmlContent, textContent) {
     // Envoi HTML
     const resultHTML = await sendEmail(userEmail, emailSubject, emailHtmlContent, true);
     console.log("Email HTML envoyé avec succès :", resultHTML);
+
+    const contactResult = await sendContactFromWeb(userEmail, "Test contact email from Web", "Ceci est un test d'envoi d'email via Outlook.", false);
 
   } catch (error) {
     console.error("Erreur lors de l'envoi de l'email :", error);
