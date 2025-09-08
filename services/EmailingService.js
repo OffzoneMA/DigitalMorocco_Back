@@ -131,6 +131,11 @@ async function sendEmail(email, subject, content, isHTML = false) {
         contentType: isHTML ? "HTML" : "Text",
         content: content,
       },
+      from: {
+        emailAddress: {
+          address: process.env.email,
+        },
+      },
       toRecipients: [
         {
           emailAddress: {
@@ -153,9 +158,10 @@ async function sendEmail(email, subject, content, isHTML = false) {
         },
       }
     );
-    return response.data;
+    return {success: true, messageId: response.headers['client-request-id'] || null};
   } catch (error) {
     console.error("❌ Erreur envoi mail:", error.response?.data || error.message);
+    return {success: false, error: error.message};
   }
 }
 
@@ -167,7 +173,7 @@ function generateShortCodeFromToken(token, userId) {
     .slice(0, 20);
 }
 
-async function sendContactFromWeb(subject, emailContent, isHTML = false) {
+async function sendContactFromWeb(to, subject, emailContent, isHTML = false) {
   const accessToken = await getGraphAccessToken();
 
   const mailData = {
@@ -177,10 +183,15 @@ async function sendContactFromWeb(subject, emailContent, isHTML = false) {
         contentType: isHTML ? "HTML" : "Text",
         content: emailContent,
       },
+      from: {
+        emailAddress: {
+          address: process.env.email,
+        },
+      },
       toRecipients: [
         {
           emailAddress: {
-            address: "contact@offzone.net",
+            address: to,
           },
         },
       ],
@@ -262,7 +273,33 @@ async function sendContactEmail(firstName, lastName, email, phone, message) {
       message
     });
 
-    const messageId = await sendContactFromWeb(title, htmlContent2, true);
+    const messageId = await sendContactFromWeb("contact@offzone.net", title, htmlContent2, true);
+    return messageId;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function sendContactEmailFromWebSiteSC(firstName, lastName, email, phone, message) {
+
+  try {
+    const title = 'Contact Message from Safouan Chalouah website';
+
+    const contactSitePath = path.join(__dirname, '..', 'templates', 'contactSite.ejs');
+    const contactSiteContent = fs.readFileSync(contactSitePath, 'utf-8');
+
+    const compiledTemplate2 = ejs.compile(contactSiteContent)
+
+    const htmlContent2 = compiledTemplate2({
+      title,
+      firstName,
+      lastName,
+      email,
+      phone,
+      message
+    });
+
+    const messageId = await sendContactFromWeb("haute.gamme.n1@gmail.com", title, htmlContent2, true);
     return messageId;
   } catch (error) {
     throw error;
@@ -965,7 +1002,7 @@ module.exports = {
   sendNewProjectShareRequestEmail, getLanguageIdByLabel, markTokenAsUsed, sendResetPasswordConfirmation,
   sendSubscriptionEmail,
   sendNewSubscriptionEmail,
-  sendRenewalEmail,
+  sendRenewalEmail, sendContactEmailFromWebSiteSC ,
   sendUpgradeEmail, sendCancellationEmail , testSendEmail
 }
 

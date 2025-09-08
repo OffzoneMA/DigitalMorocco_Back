@@ -431,6 +431,17 @@ const sendContactEmail = async (req, res) => {
   }
 };
 
+const sendContactEmailFromWebSiteSC = async (req, res) => {
+
+  try {
+      await EmailingService.sendContactEmailFromWebSiteSC(req.body?.firstName, req.body?.lastName, req.body?.email, req.body?.phone, req.body?.message);
+      await EmailingService.sendContactEmailConfirm(req.body?.firstName, req.body?.lastName, req.body?.email, req.body?.message , req.body?.language);
+      res.status(200).send({message: 'Email sent successfully'});
+  } catch (error) {
+      res.status(500).send({message: error.message});
+  }
+};
+
 const getUserByID = async (req, res) => {
   try {
     const id = req.params.id;
