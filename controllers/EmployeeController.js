@@ -44,6 +44,19 @@ const getEmployeeById = async (req, res) => {
     }
 };
 
+const getEmployeesByIds = async (req, res) => {
+    try {
+        const { employeeIds } = req.query;
+        if (!employeeIds) {
+            return res.status(400).json({ error: 'Employee IDs are required' });
+        }
+        const employees = await EmployeeService.getEmployeeByIds(employeeIds);
+        res.status(200).json(employees);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
 const deleteEmployee = async (req, res) => {
     try {
         const { employeeId } = req.params;
@@ -101,5 +114,5 @@ module.exports = {
     getEmployeeById,
     deleteEmployee,
     getAllEmployees, deleteEmployeeImage ,
-    getAllEmployeesByUser, getAllEmployeesByUserWithoutPagination
+    getAllEmployeesByUser, getAllEmployeesByUserWithoutPagination , getEmployeesByIds
 };

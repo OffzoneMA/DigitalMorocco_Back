@@ -263,6 +263,36 @@ router.get("/byuser", AuthController.AuthenticateUser , EmployeeController.getAl
  */
 router.get("/byuserWithoutPage", AuthController.AuthenticateUser , EmployeeController.getAllEmployeesByUserWithoutPagination);
 
+/**
+ * @swagger
+ * /employee/byids:
+ *   get:
+ *     summary: Get multiple employees by IDs
+ *     description: Get multiple employees from the database by their IDs.
+ *     tags: [Employees]
+ *     parameters:
+ *       - in: query
+ *         name: employeeIds
+ *         required: true
+ *         description: Array of employee IDs to retrieve
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Employee'
+ *       404:
+ *         description: Employees not found
+ */
+router.get("/byids", EmployeeController.getEmployeesByIds);
+
 
 /**
  * @swagger

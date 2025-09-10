@@ -75,6 +75,14 @@ async function getEmployeeById(employeeId) {
     }
 }
 
+async function getEmployeeByIds (employeeIds) {
+    try {
+        return await Employee.find({ _id: { $in: employeeIds } });
+    } catch (error) {
+        throw new Error('Error getting employees: ' + error.message);
+    }
+}
+
 async function deleteEmployee(employeeId) {
     try {
         const employee = await Employee.findByIdAndDelete(employeeId);
@@ -228,5 +236,5 @@ module.exports = {
     getAllEmployees,
     getAllEmployeesByUser,
     getEmployeeByUser , searchEmployees , 
-    getAllEmployeesByUserWithoutPagination , deleteEmployeeImage
+    getAllEmployeesByUserWithoutPagination , deleteEmployeeImage , getEmployeeByIds
 };
